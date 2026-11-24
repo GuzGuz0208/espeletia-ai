@@ -1,6 +1,6 @@
 """Valida el Paquete Páramo contra sus contratos (docs/contratos/) y las referencias entre archivos.
 
-Uso:  python herramientas/validar_contratos.py [--raiz CARPETA]
+Uso:  python herramientas/validar_contratos.py
 
 Comprueba:
 - paquete.json, cada ficha de chat.json, models/parque.json y audios/manifiesto.json (si existe) contra su JSON Schema;
@@ -44,7 +44,7 @@ def leer_json(ruta, inf):
     return None
 
 
-def esquema(raiz, nombre):
+def esquema(nombre):
     with open(os.path.join(AQUI, 'docs', 'contratos', nombre), encoding='utf-8') as f:
         s = json.load(f)
     Draft202012Validator.check_schema(s)
@@ -76,7 +76,7 @@ def revisar_chat(raiz, inf):
             inf.error('chat.json', f'falta la clave {k!r}')
     if not isinstance(chat.get('fichas'), list):
         return None
-    val = esquema(raiz, 'chat-ficha.schema.json')
+    val = esquema('chat-ficha.schema.json')
     fuentes = chat.get('fuentes', {})
     for f in chat['fichas']:
         donde = f"chat.json ficha {f.get('id', '?')}"
@@ -107,7 +107,7 @@ def revisar_paquete(raiz, ids_fichas, inf):
     p = leer_json(os.path.join(raiz, 'paquete.json'), inf)
     if p is None:
         return None
-    validar_esquema(esquema(raiz, 'paquete.schema.json'), p, 'paquete.json', inf)
+    validar_esquema(esquema('paquete.schema.json'), p, 'paquete.json', inf)
     est = unicos(p.get('estaciones', []), 'id', 'paquete.json estaciones', inf)
     cla = unicos(p.get('clases', []), 'id', 'paquete.json clases', inf)
     cap = unicos(p.get('capitulos', []), 'id', 'paquete.json capitulos', inf)
@@ -157,7 +157,7 @@ def revisar_parque(raiz, est, inf):
     q = leer_json(os.path.join(raiz, 'models', 'parque.json'), inf)
     if q is None:
         return
-    validar_esquema(esquema(raiz, 'parque.schema.json'), q, 'models/parque.json', inf)
+    validar_esquema(esquema('parque.schema.json'), q, 'models/parque.json', inf)
     if est is not None:
         for k in (q.get('estaciones') or {}):
             if k not in est:
@@ -180,7 +180,7 @@ def revisar_audios(raiz, inf):
     m = leer_json(ruta, inf)
     if m is None:
         return
-    validar_esquema(esquema(raiz, 'audios.schema.json'), m, 'audios/manifiesto.json', inf)
+    validar_esquema(esquema('audios.schema.json'), m, 'audios/manifiesto.json', inf)
     for a in m.get('audios', []):
         if isinstance(a, dict) and a.get('archivo') and not os.path.exists(os.path.join(raiz, a['archivo'])):
             inf.error('audios/manifiesto.json', f"no existe {a['archivo']}")
@@ -242,15 +242,14 @@ def revisar_i18n(raiz, inf):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[0])
-    ap.add_argument('--raiz', default=AQUI, help='carpeta del repositorio (por defecto, la de este script)')
-    a = ap.parse_args()
+    ap.parse_args()
     inf = Informe()
-    ids = revisar_chat(a.raiz, inf)
-    est = revisar_paquete(a.raiz, ids, inf)
-    revisar_parque(a.raiz, est, inf)
-    revisar_audios(a.raiz, inf)
-    revisar_sw(a.raiz, inf)
-    revisar_i18n(a.raiz, inf)
+    ids = revisar_chat(AQUI, inf)
+    est = revisar_paquete(AQUI, ids, inf)
+    revisar_parque(AQUI, est, inf)
+    revisar_audios(AQUI, inf)
+    revisar_sw(AQUI, inf)
+    revisar_i18n(AQUI, inf)
     for x in inf.avisos:
         print(f'  aviso  {x}')
     for x in inf.errores:

@@ -1,6 +1,6 @@
 """Verifica los modelos congelados: cada archivo grande de models/partes.json contra sus partes en disco.
 
-Uso:  python herramientas/verificar_modelos.py [--raiz CARPETA]
+Uso:  python herramientas/verificar_modelos.py
 
 Para cada entrada (modelo de la Lente, modelo del chat, motor WASM) comprueba que:
 - todas las partes existan, en orden (.00, .01, …), y ninguna pase de 8 MB;
@@ -61,8 +61,8 @@ def verificar(raiz):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[0])
-    ap.add_argument('--raiz', default=AQUI, help='carpeta del repositorio (por defecto, la de este script)')
-    errores, n = verificar(ap.parse_args().raiz)
+    ap.parse_args()
+    errores, n = verificar(AQUI)
     for e in errores:
         print(f'  ERROR  {e}')
     if errores:

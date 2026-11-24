@@ -14,6 +14,8 @@ ejemplo, un clon superficial), solo revisa el formato y lo avisa.
 import argparse, datetime, os, re, subprocess, sys
 
 AQUI = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Una base válida es un nombre de rama o un commit; nunca algo que empiece por «-» (git lo leería como opción).
+BASE_VALIDA = re.compile(r'^[A-Za-z0-9][A-Za-z0-9._/~^@{}-]*$')
 PATRON = re.compile(r"const VERSION = '(v(\d+)-(\d{4}-\d{2}-\d{2}))';")
 
 
@@ -40,6 +42,9 @@ def check(raiz, base):
         print("  ERROR  sw.js: VERSION no tiene el formato v<número>-AAAA-MM-DD (const VERSION = 'v17-2026-11-25';)")
         return 1
     print(f'  VERSION actual: {v}')
+    if not BASE_VALIDA.match(base or ''):
+        print(f'  aviso  base {base!r} no es un nombre de rama o commit válido: solo se revisó el formato')
+        return 0
     codigo, _ = git(raiz, 'rev-parse', '--verify', '--quiet', base)
     if codigo != 0:
         print(f'  aviso  no existe la base {base!r}: solo se revisó el formato')
@@ -88,9 +93,8 @@ def main():
     g.add_argument('--check', action='store_true', help='comprobar formato y que VERSION suba si cambió la app')
     g.add_argument('--subir', action='store_true', help='subir VERSION a v<N+1>-<hoy>')
     ap.add_argument('--base', default='origin/main', help='rama o commit con que comparar (por defecto origin/main)')
-    ap.add_argument('--raiz', default=AQUI, help='carpeta del repositorio')
     a = ap.parse_args()
-    sys.exit(check(a.raiz, a.base) if a.check else subir(a.raiz))
+    sys.exit(check(AQUI, a.base) if a.check else subir(AQUI))
 
 
 if __name__ == '__main__':

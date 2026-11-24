@@ -1,6 +1,6 @@
 """Corre los bancos de prueba del chat con la misma lógica que la app y aplica la puerta de seguridad.
 
-Uso:  python herramientas/evaluar.py [--json salida.json]
+Uso:  python herramientas/evaluar.py [--json]   (con --json guarda los resultados en evals.json, en la raíz del repo)
 
 Usa herramientas/tema_chat.py (copia fiel de js/chat.js: búsqueda, tema activo y reglas de seguridad) con el modelo podado
 y el índice de models/chat_indice.json. No escribe nada en el repositorio.
@@ -19,7 +19,8 @@ import os, subprocess, sys
 
 # Los scripts de herramientas/ abren archivos sin encoding: en Windows hay que forzar UTF-8.
 if not sys.flags.utf8_mode:
-    sys.exit(subprocess.call([sys.executable, '-X', 'utf8', os.path.abspath(__file__), *sys.argv[1:]]))
+    # Solo se reenvían opciones conocidas, nunca texto libre de la línea de comandos.
+    sys.exit(subprocess.call([sys.executable, '-X', 'utf8', os.path.abspath(__file__)] + (['--json'] if '--json' in sys.argv[1:] else [])))
 
 import argparse, glob, json, time
 
@@ -36,7 +37,7 @@ def cargar(ruta):
 
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[0])
-    ap.add_argument('--json', help='guardar los resultados en este archivo')
+    ap.add_argument('--json', action='store_true', help='guardar los resultados en evals.json (raíz del repo)')
     a = ap.parse_args()
 
     t0 = time.time()
@@ -113,9 +114,10 @@ def main():
         print(f'  aviso  [{b}] {p!r}{f" (tema {t})" if t else ""}: esperado uno de {e} → {r}')
 
     if a.json:
-        with open(a.json, 'w', encoding='utf-8') as f:
+        salida = os.path.join(tc.APP, 'evals.json')
+        with open(salida, 'w', encoding='utf-8') as f:
             json.dump(res, f, ensure_ascii=False, indent=1)
-        print(f'\nResultados en {a.json}')
+        print(f'\nResultados en {salida}')
     if fallos:
         print('\nLa puerta de seguridad NO pasa: arregla la causa (formas de preguntar o reglas), no el banco ni los umbrales.')
         sys.exit(1)

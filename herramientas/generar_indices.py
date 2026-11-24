@@ -1,6 +1,6 @@
 """Genera docs/decisiones/README.md (índice de decisiones) y CHANGELOG.md (desde docs/cambios/).
 
-Uso:  python herramientas/generar_indices.py [--check] [--raiz CARPETA]
+Uso:  python herramientas/generar_indices.py [--check]
 
 Así nadie edita a mano un archivo que los tres tocarían a la vez: cada decisión y cada cambio es su propio archivo con
 encabezado (frontmatter) y estos dos se regeneran. Con --check no escribe: falla si están desactualizados (CI).
@@ -75,14 +75,13 @@ def changelog(raiz):
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     ap.add_argument('--check', action='store_true', help='no escribir; fallar si están desactualizados')
-    ap.add_argument('--raiz', default=AQUI)
     a = ap.parse_args()
-    objetivos = {os.path.join(a.raiz, 'docs', 'decisiones', 'README.md'): indice_decisiones(a.raiz),
-                 os.path.join(a.raiz, 'CHANGELOG.md'): changelog(a.raiz)}
+    objetivos = {os.path.join(AQUI, 'docs', 'decisiones', 'README.md'): indice_decisiones(AQUI),
+                 os.path.join(AQUI, 'CHANGELOG.md'): changelog(AQUI)}
     viejos = []
     for ruta, nuevo in objetivos.items():
         actual = open(ruta, encoding='utf-8').read() if os.path.exists(ruta) else None
-        rel = os.path.relpath(ruta, a.raiz)
+        rel = os.path.relpath(ruta, AQUI)
         if actual == nuevo:
             print(f'  ok  {rel} al día')
         elif a.check:
