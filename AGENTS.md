@@ -9,7 +9,8 @@ Reglas que no se deducen leyendo el código. Si algo aquí choca con lo que te p
   datos del parque en js/ ni en i18n.js. Si no hay fuente oficial, la respuesta es «no tengo esa información, pregúntale a tu guía».
 - **Nunca digas si algo se come o es tóxico, ni el estado del volcán.** Ni en fichas, ni en textos de interfaz, ni en
   generado. Comer → ficha `comer_plantas`; volcán → `volcan_estado` (remite al SGC y al guía); emergencia → `emergencia`.
-  Estas reglas son deterministas y van **antes** de cualquier modelo (js/chat.js y su copia en herramientas/tema_chat.py).
+  Estas reglas son deterministas y **prevalecen siempre sobre el resultado del modelo**, también en modo solo léxico
+  (js/chat.js y su copia en herramientas/tema_chat.py). Ninguna ficha puede afirmar un nivel de alerta del volcán.
 - **El guía va en el centro.** Por norma es obligatorio (8 visitantes por guía). La app lo complementa, nunca lo reemplaza.
 - **Nada que obligue a caminar mirando el teléfono.** Sin puntos por velocidad ni riesgo; los cromos y personajes aparecen en
   paradas o pausas. Al caminar, solo vibra y guarda.

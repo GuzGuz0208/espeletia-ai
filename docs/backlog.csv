@@ -1,0 +1,33 @@
+id,rol,prioridad,cuando,titulo,descripcion,spec
+1,R1,P0,hoy,"Llamar a UTON/PNN: estaciones, coordenadas, apertura y permiso de QR","Confirmar si las estaciones 2 y 3 son Aguacerales y Arenales, la coordenada de la estación 1 (el centro de inducción está a 483 m de la de la app), si Brisas opera el 26 (cierre 23-27 nov) y si se permiten QR en la señalética. Ver docs/investigacion/recorrido-pnn.md.",
+2,R1,P0,hoy,"Banco adversarial de seguridad (≥40 preguntas)","pruebas/preguntas_seguridad.json con jerga colombiana, faltas de ortografía, inglés y trampas sobre emergencia, comer, volcán y mal de altura. Prueba ciega: no se usa para ajustar.",docs/specs/2026-11-24-banco-seguridad.md
+3,R1,P0,mañana,"Fichas nuevas desde el anexo oficial del PNN","Edad 6-70, seguro de accidentes y rescate, charla de inducción, horario de ingreso, drones, ruido, no salirse del sendero. Fuente: anexo de reglamentación dic-2023 con página.",docs/specs/2026-11-24-paquete-validado.md
+4,R1,P0,mañana,"Guion por parada y libro de frases del guía (es/en)","Qué cuenta el guía en cada parada y frases frecuentes pre-traducidas. Base de las paradas narradas.",docs/specs/2026-11-24-guion-paradas.md
+5,R1,P0,mañana,"Validar fichas críticas y marcar estado","emergencia, mal_altura, comer_plantas, volcan_estado y servicios con estado borrador/validado y teléfono oficial de UTON.",docs/specs/2026-11-24-paquete-validado.md
+6,R1,P0,mañana,"Guion de demo","Llenar docs/guion-demo.md con la historia de 5 minutos, roles y preguntas del jurado.",
+7,R1,P1,mañana,"Grabar voces es-CO y revisar audios en/fr/pt-BR/es-ES","Grabación con consentimiento de los textos validados; revisión de los audios sintetizados offline.",docs/specs/2026-11-24-grabacion-voces.md
+8,R1,P1,mañana,"Textos del PDF final y del certificado","Portada, certificado «Guardián del páramo», créditos y fuentes, en es/en.",docs/specs/2026-11-24-album-pdf-collage.md
+9,R1,P1,mañana,"Léxico de tono (incluida variante para niños)","Registro, urgencia y frases de empatía aprobadas; variantes corta/larga/niños por ficha crítica.",docs/specs/2026-11-24-capa-tono.md
+10,R1,P1,mañana,"Fotos para la Lente y parque.json","Fotos por clase (incluida «otra cosa») con imágenes oficiales o impresas; publicar models/parque.json.",
+11,R1,P0,jueves,"Afinar con los expertos: estaciones, guion y especies","Usar la lista de preguntas de docs/investigacion/recorrido-pnn.md y congelar el contenido.",
+12,R1,P2,mañana,"Traducciones fr/de/pt-BR como borrador","Textos de cromos y fichas críticas marcados como borrador.",
+13,R2,P0,hoy,"Arreglos de iPhone","Sin vibración (alternativa visual), plan B de wake lock, QR que abra en Safari/Chrome, guía de instalación en iPhone.",docs/specs/2026-11-24-arreglos-iphone.md
+14,R2,P0,mañana,"Álbum final en PDF + collage","PDF generado en el teléfono con portada de Manizales y el Nevado, cromos por capítulo, collage de fotos, recorrido sobre el relieve real, certificado y fuentes; collage como imagen.",docs/specs/2026-11-24-album-pdf-collage.md
+15,R2,P1,mañana,"Compañeros 2D en la cámara","Fray, Cóndor y Magma aparecen sobre la cámara en paradas o pausas, con paralaje; foto con el personaje para el collage.",docs/specs/2026-11-24-companeros-2d-camara.md
+16,R2,P1,mañana,"Paradas narradas y cromo del guía por parada","El QR de parada del guía abre la parada en el idioma del visitante y entrega el cromo al terminar la explicación.",docs/specs/2026-11-24-paradas-narradas.md
+17,R2,P1,mañana,"Pausa de aclimatación como cromo","Pausa por estación (duración según ficha aclimatar) que entrega un cromo; solo en el parque.",docs/specs/2026-11-24-pausa-aclimatacion.md
+18,R2,P1,mañana,"Reproductor de audio por idioma","Audio pregrabado con respaldo a speechSynthesis local y a texto; volumen bajo y aviso de audífonos.",docs/specs/2026-11-24-reproductor-audio.md
+19,R2,P1,mañana,"Escalera de degradación en la interfaz","Timeout y reinicio del worker, re-verificar caché, alternativas a cámara/GPS y menú de temas + teléfono de UTON.",docs/specs/2026-11-24-escalera-degradacion-ui.md
+20,R2,P1,mañana,"Capa de tono determinista","Elegir variante corta/larga/niños por reglas sin cambiar el dato ni la fuente.",docs/specs/2026-11-24-capa-tono.md
+21,R2,P1,mañana,"Accesibilidad, rol visible, insignia validado/borrador y ahorro de energía","Alto contraste, tamaños, lector de pantalla, rol guía/visitante visible, insignia de estado y medidas de ahorro.",
+22,R2,P2,jueves,"Spike: traducción en vivo guía → visitante","Medir reconocimiento de voz y traducción offline (tamaño, RAM, latencia, licencia, privacidad).",docs/specs/2026-11-24-traduccion-en-vivo.md
+23,R2,P2,jueves,"Spike: chat en vivo y modo Pro nativo","LLM nativo que reformula y verifica contra la ficha; vuelve a la ficha si algo no coincide.",
+24,R3,P0,hoy,"Harness base, investigación y specs","AGENTS.md, docs, decisiones, specs, contratos, herramientas de verificación y CI (PR r3/harness-base).",
+25,R3,P0,hoy,"Netlify conectado al repo con previews por PR","main = producción y cada PR con URL de preview; reemplaza el despliegue manual (hoy v3.4).",docs/specs/2026-11-24-despliegue-netlify.md
+26,R3,P0,mañana,"Pruebas en 3 teléfonos con batería (incl. iPhone)","Modo avión, instalación, tiempos de carga y consumo de batería en un recorrido simulado de 3 h.",docs/specs/2026-11-24-pruebas-en-telefonos.md
+27,R3,P0,mañana,"Proteger main","PR obligatorio y checks contratos + evals; lo aplica el admin.",
+28,R3,P1,mañana,"Contrato de paradas y audios (audios.py)","Esquema y verificación del manifiesto de audios con huella del texto; síntesis offline opcional.",docs/specs/2026-11-24-manifiesto-audios.md
+29,R3,P1,mañana,"Prueba automática del PDF","Playwright genera el PDF y pypdf comprueba páginas, imágenes y texto.",docs/specs/2026-11-24-album-pdf-collage.md
+30,R3,P1,mañana,"Versión del SW calculada en el despliegue","Huella de los archivos de APP en el despliegue; mientras tanto version_sw.py --check en CI.",docs/specs/2026-11-24-version-sw.md
+31,R3,P1,mañana,"Verificar licencias de modelos, voces y librería PDF","e5-small, MobileNetV2, Piper/Kokoro y voces, librería PDF; enlace a cada ficha oficial.",
+32,R3,P0,jueves,"Ensayo general y congelamiento","Ensayo con el guion en 3 teléfonos, congelamiento y etiqueta del commit de la demo.",
