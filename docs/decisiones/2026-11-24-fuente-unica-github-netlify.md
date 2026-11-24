@@ -18,5 +18,5 @@ Proponemos **Netlify conectado a GitHub**: main se publica solo, cada PR tiene s
 
 ## Consecuencias
 - Buenas: lo que está en main es lo que ven los teléfonos; se prueba antes de fusionar.
-- Malas o riesgos: requiere acceso de dueño a la cuenta de Netlify (dsalazardev).
+- Malas o riesgos: requiere que Eduardo, que tiene la cuenta de Netlify, conecte el repo (y quizá que dsalazardev apruebe la app de Netlify en GitHub).
 - Cómo se verifica: la versión del SW que muestra Ajustes coincide con la de main.

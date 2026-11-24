@@ -24,4 +24,4 @@ Comparar la versión que muestra Ajustes con `sw.js` de main después de fusiona
 Dominio propio y analítica.
 
 ## Notas
-Requiere que el dueño de la cuenta de Netlify (dsalazardev) conecte el repo: Site configuration → Build & deploy → Link repository.
+La cuenta de Netlify la tiene Eduardo (@Eduardo37830): él conecta el repo (Site configuration → Build & deploy → Link repository → dsalazardev/espeletia-ai, rama main, deploy previews activados). Para autorizar la app de Netlify en GitHub puede necesitar que el dueño del repo (dsalazardev) la apruebe.
