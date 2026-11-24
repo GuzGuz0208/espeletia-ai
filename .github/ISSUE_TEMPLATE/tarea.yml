@@ -1,0 +1,37 @@
+name: Tarea
+description: Trabajo planeado del backlog (una spec o una parte de ella)
+title: "[tarea] "
+body:
+  - type: dropdown
+    id: rol
+    attributes:
+      label: Rol dueño
+      options: ["R1 · Contenido, campo y seguridad", "R2 · Producto y experiencia", "R3 · Plataforma, arquitectura y calidad"]
+    validations:
+      required: true
+  - type: dropdown
+    id: prioridad
+    attributes:
+      label: Prioridad
+      options: ["P0 · sin esto no hay demo", "P1 · mejora clara", "P2 · si sobra tiempo"]
+    validations:
+      required: true
+  - type: dropdown
+    id: cuando
+    attributes:
+      label: Cuándo
+      options: ["hoy", "mañana", "jueves"]
+    validations:
+      required: true
+  - type: input
+    id: spec
+    attributes:
+      label: Spec
+      placeholder: docs/specs/AAAA-MM-DD-slug.md
+  - type: textarea
+    id: que
+    attributes:
+      label: Qué hay que hacer y cómo sabremos que está hecho
+      description: Criterios «Cuando… entonces…» si no hay spec.
+    validations:
+      required: true
