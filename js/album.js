@@ -5,6 +5,7 @@ import { $, $$, h, esc, animar, reducido, aviso, hablar, distancia, fmtDist, atr
 import { ilustracion } from './art.js';
 import { cromoEl, activarBrillo, num } from './cromo.js';
 import { cromoPNG, descargar } from './exportar.js';
+import { formCodigo } from './guia.js';
 
 let pagina = 0;            // índice del capítulo visible
 let nav = () => {};         // función para cambiar de vista (la pone app.js)
@@ -196,7 +197,7 @@ export async function abrirDetalle(id) {
       <button class="btn btn-flor" data-a="guardar">${esc(t('det.guardar'))}</button>
       <button class="btn btn-linea" data-a="compartir">${esc(t('det.compartir'))}</button>
       <button class="btn btn-linea" data-a="escuchar">${esc(t('det.escuchar'))}</button>
-      ${['gps', 'qr', 'guia', 'contemplacion'].includes(c.tipo) ? `<button class="btn btn-linea" data-a="foto">${esc(t('det.foto'))}</button>` : ''}
+      ${['gps', 'qr', 'guia', 'contemplacion', 'camara'].includes(c.tipo) ? `<button class="btn btn-linea" data-a="foto">${esc(t('det.foto'))}</button>` : ''}
     </div>`);
     caja.appendChild(acc);
     acc.querySelector('[data-a="guardar"]').onclick = async () => { descargar(await cromoPNG(id), `cromo-${num(c.n)}-${id}.png`); aviso(t('det.guardado')); };
@@ -238,6 +239,18 @@ async function comoConseguir(c) {
     </div>`);
   const txt = $('.como-txt', box), acc = $('.como-accion', box);
   const boton = (clave, fn) => { const b = h(`<button class="btn btn-flor">${esc(t(clave))}</button>`); b.onclick = fn; acc.appendChild(b); };
+  // Lo que entrega el guía con su código: si gana un cromo, se abre el sobre; si no, se avisa y se refresca
+  const alGuia = async (r) => {
+    if (r.ganado) { cerrarDetalle(); accionesExtra.abrirSobres(); return; }
+    aviso(t(r.msg, r.vars), 3500);
+    if (r.msg === 'guia.aqui') { cerrarDetalle(); abrirDetalle(c.id); }
+  };
+  // Plan B con el guía, plegado para no distraer
+  const planB = (resumen, accion) => {
+    const d = h(`<details class="plan-b"><summary>${esc(resumen)}</summary></details>`);
+    d.appendChild(formCodigo(accion, alGuia));
+    acc.appendChild(d);
+  };
   switch (c.tipo) {
     case 'gps': {
       const est = estacion(c.estacion);
@@ -248,50 +261,36 @@ async function comoConseguir(c) {
         b.onclick = () => { cerrarDetalle(); accionesExtra.simular(est); };
         acc.appendChild(b);
       }
+      planB(t('planb.gps'), `e:${est.id}`);
       break;
     }
     case 'camara':
       if (bl?.tipo === 'despuesDe') txt.textContent = t('como.camaraDespues', { otro: texto(getCromo(bl.de)).nombre });
+      else if (bl?.tipo === 'otraPlanta') txt.textContent = t('como.otraPlanta');
       else txt.textContent = t('como.camara', { cosa: nombreClase(c.clase).toLowerCase() });
       boton('accion.lente', () => { cerrarDetalle(); accionesExtra.abrirLente('reconocer'); });
+      if (bl?.tipo !== 'despuesDe') planB(t('planb.camara'), `c:${c.clase}`);
       break;
     case 'qr':
       txt.textContent = t('como.qr');
       boton('accion.qr', () => { cerrarDetalle(); accionesExtra.abrirLente('qr'); });
       break;
-    case 'guia': {
+    case 'guia':
       txt.textContent = t('como.guia');
-      const f = h(`<form class="codigo" autocomplete="off">
-          <label class="codigo-et" for="codigo-in">${esc(t('codigo.etiqueta'))}</label>
-          <div class="codigo-fila">
-            <input id="codigo-in" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="• • • •" enterkeyhint="done">
-            <button class="btn btn-flor">${esc(t('codigo.ok'))}</button>
-          </div>
-        </form>`);
-      f.onsubmit = async (e) => {
-        e.preventDefault();
-        const inp = $('input', f);
-        if (inp.value.trim() === c.codigo) {
-          cerrarDetalle();
-          await ganar(c.id);
-          accionesExtra.abrirSobres();
-        } else {
-          aviso(t('codigo.mal'));
-          vibrar([40, 40, 40]);
-          animar(inp, [{ transform: 'translateX(0)' }, { transform: 'translateX(-8px)' }, { transform: 'translateX(8px)' }, { transform: 'translateX(-5px)' }, { transform: 'translateX(0)' }], { duration: 320 });
-          inp.select();
-        }
-      };
-      acc.appendChild(f);
+      acc.appendChild(formCodigo(`h:${c.id}`, alGuia));
+      boton('accion.qrGuia', () => { cerrarDetalle(); accionesExtra.abrirLente('qr'); });
+      $('.como-accion > .btn', box)?.classList.replace('btn-flor', 'btn-linea');
       break;
-    }
     case 'grupo':
-      if (bl) txt.textContent = t('como.grupoFalta', { n: bl.faltan });
-      else { txt.textContent = t('como.grupo'); boton('accion.grupo', () => { cerrarDetalle(); accionesExtra.pedirFoto(c.id, t('lente.fotoGrupo')); }); }
-      break;
     case 'contemplacion':
-      txt.textContent = t('como.contemplacion', { min: Math.round(c.segundos / 60) });
-      boton('accion.pausa', () => { cerrarDetalle(); accionesExtra.pausa(c); });
+      if (bl?.tipo === 'requiere') { txt.textContent = t('como.grupoFalta', { n: bl.faltan }); break; }
+      if (bl?.tipo === 'lugar') {
+        txt.textContent = t('como.lugar');
+        acc.appendChild(formCodigo('aqui', alGuia));
+        break;
+      }
+      if (c.tipo === 'grupo') { txt.textContent = t('como.grupo'); boton('accion.grupo', () => { cerrarDetalle(); accionesExtra.pedirFoto(c.id, t('lente.fotoGrupo')); }); }
+      else { txt.textContent = t('como.contemplacion', { min: Math.round(c.segundos / 60) }); boton('accion.pausa', () => { cerrarDetalle(); accionesExtra.pausa(c); }); }
       break;
   }
   return box;

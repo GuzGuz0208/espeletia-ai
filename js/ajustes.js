@@ -32,7 +32,7 @@ export async function abrirAjustes() {
       <p class="estado-offline ${listo ? 'listo' : ''}"><span class="punto"></span>${esc(listo ? t('aj.listo') : t('aj.noListo'))}</p>
       <div class="estado-ia" id="aj-ia"></div>
       <div class="hoja-pie">
-        <button class="link" id="aj-equipo">${esc(t('aj.equipo'))}</button>
+        <span class="hoja-links"><button class="link" id="aj-guia">${esc(t('aj.guia'))}</button><button class="link" id="aj-equipo">${esc(t('aj.equipo'))}</button></span>
         <span class="version">${esc(t('aj.version', { v: E.paquete.version }))}</span>
       </div>
       <button class="btn btn-flor btn-ancho" id="aj-cerrar">${esc(t('aj.cerrar'))}</button>
@@ -58,7 +58,8 @@ export async function abrirAjustes() {
   $('#aj-voz').onchange = (e) => { E.ajustes.voz = e.target.checked; guardar(); };
   $('#aj-vibrar').onchange = (e) => { E.ajustes.vibrar = e.target.checked; guardar(); };
   $('#aj-poster').onclick = async () => descargar(await albumPNG(), 'album-del-paramo.png');
-  $('#aj-equipo').onclick = async () => { await cerrar(); pedirPIN(); };
+  $('#aj-equipo').onclick = async () => { await cerrar(); pedirPIN(PIN, 'equipo', t('eq.pin')); };
+  $('#aj-guia').onclick = async () => { await cerrar(); pedirPIN(E.paquete.guia.pin, 'guia', t('guia.pin')); };
   $('#aj-cerrar').onclick = cerrar;
   pintarIA(hoja);
   capa.onclick = (e) => { if (e.target === capa) cerrar(); };
@@ -71,12 +72,12 @@ export function aplicarTema() {
 matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', () => E.paquete && aplicarTema());
 
 // ---------- PIN con teclado propio ----------
-function pedirPIN() {
+function pedirPIN(clave, destino, titulo) {
   const capa = $('#capa-ajustes');
   capa.innerHTML = '';
   let v = '';
   const hoja = h(`<div class="hoja hoja-pin">
-      <h2>${esc(t('eq.pin'))}</h2>
+      <h2>${esc(titulo)}</h2>
       <div class="pin-puntos" aria-live="polite"><i></i><i></i><i></i><i></i></div>
       <div class="teclado">${[1, 2, 3, 4, 5, 6, 7, 8, 9, '', 0, '⌫'].map((k) => `<button ${k === '' ? 'disabled aria-hidden="true"' : ''} data-k="${k}" ${k === '⌫' ? 'aria-label="Borrar"' : ''}>${k}</button>`).join('')}</div>
       <button class="btn btn-linea btn-ancho" data-x>${esc(t('cerrar'))}</button>
@@ -91,7 +92,7 @@ function pedirPIN() {
     if (k === '⌫') v = v.slice(0, -1); else if (v.length < 4) v += k;
     pintar(); vibrar(8);
     if (v.length === 4) {
-      if (v === PIN) { fin(); ctx.irA('equipo'); }
+      if (v === clave) { fin(); ctx.irA(destino); }
       else { vibrar([40, 40, 40]); await animar($('.pin-puntos', hoja), [{ transform: 'translateX(-10px)' }, { transform: 'translateX(10px)' }, { transform: 'translateX(0)' }], { duration: 260 }); aviso(t('eq.pinMal')); v = ''; pintar(); }
     }
   }));
@@ -111,10 +112,14 @@ export function pintarEquipo() {
         <div id="clases" class="clases"></div>
         <div class="fila"><button id="eq-probar" class="btn btn-linea">${esc(t('eq.probar'))}</button><span id="eq-prueba" class="sub"></span></div>
         <div class="fila">
-          <button id="eq-exportar" class="btn btn-linea">${esc(t('eq.exportar'))}</button>
           <label class="btn btn-linea">${esc(t('eq.importar'))}<input id="eq-importar" type="file" accept=".json,application/json" hidden></label>
           <button id="eq-borrar" class="btn btn-peligro">${esc(t('eq.borrar'))}</button>
         </div>
+      </details>
+      <details open><summary>${esc(t('eq.publicar'))}</summary>
+        <p class="sub">${esc(t('eq.publicarSub'))}</p>
+        <p class="sub" id="eq-pub-estado"></p>
+        <button id="eq-exportar" class="btn btn-flor btn-ancho">${esc(t('eq.publicarBtn'))}</button>
       </details>
       <details><summary>${esc(t('eq.estaciones'))}</summary><p class="sub">${esc(t('eq.estacionesSub'))}</p><ol id="eq-est" class="estaciones"></ol></details>
       <details><summary>${esc(t('eq.codigos'))}</summary><p class="sub">${esc(t('eq.codigosSub'))}</p><button id="eq-imprimir" class="btn btn-linea">${esc(t('eq.verCodigos'))}</button></details>
@@ -126,10 +131,18 @@ export function pintarEquipo() {
     </div>`));
   $('#eq-volver').onclick = () => ctx.irA('mapa');
   $('#eq-probar').onclick = probar;
-  $('#eq-exportar').onclick = () => descargar(new Blob([ml.exportModel()], { type: 'application/json' }), 'modelo-lente-paramo.json');
+  $('#eq-exportar').onclick = async () => {
+    await ml.load().catch(() => {});
+    descargar(new Blob([JSON.stringify(paqueteParque())], { type: 'application/json' }), 'parque.json');
+    aviso(t('eq.publicado'), 5000);
+  };
   $('#eq-importar').onchange = async (e) => {
-    try { await ml.load(); await ml.importModel(await e.target.files[0].text()); pintarClases(); aviso(t('eq.importado')); }
-    catch (err) { aviso(err.message, 4000); }
+    try {
+      await ml.load();
+      const data = await ml.importModel(await e.target.files[0].text());
+      if (data.estaciones) { Object.assign(E.fijadas, data.estaciones); await guardar(); pintarEstaciones(); }
+      pintarClases(); aviso(t('eq.importado'));
+    } catch (err) { aviso(err.message, 4000); }
   };
   $('#eq-borrar').onclick = async () => { if (confirm(t('eq.borrarSeguro'))) { await ml.clearSamples(); pintarClases(); } };
   $('#eq-demo').onchange = async (e) => { E.ajustes.demo = e.target.checked; await guardar(); };
@@ -151,16 +164,34 @@ export async function entrarEquipo() {
 }
 export function salirEquipo() { if (streamEq) { streamEq.getTracks().forEach((x) => x.stop()); streamEq = null; } }
 
+// El paquete del parque: lo que el equipo enseñó a la Lente y las estaciones fijadas en campo.
+// Se guarda como models/parque.json en el repositorio y todos los teléfonos lo reciben al abrir la app.
+function paqueteParque() {
+  const est = {};
+  for (const e of estaciones()) if (e.fijada) est[e.id] = { lat: +e.lat.toFixed(6), lon: +e.lon.toFixed(6), ...(e.altura ? { altura: e.altura } : {}) };
+  return { tipo: 'paramo-parque', version: 1, fecha: new Date().toISOString().slice(0, 10), lente: ml.codificar(), estaciones: est };
+}
+
+function pintarPublicar() {
+  const el = $('#eq-pub-estado');
+  if (!el) return;
+  const c = ml.counts(), b = ml.counts({ soloBase: true });
+  const clases = E.paquete.clases.filter((k) => (c[k.id] || 0) >= E.paquete.camara.minPorClase).length;
+  const fij = estaciones().filter((e) => e.fijada).length;
+  el.textContent = t('eq.pubEstado', { clases, total: E.paquete.clases.length, fotos: Object.values(c).reduce((a, x) => a + x, 0), base: Object.values(b).reduce((a, x) => a + x, 0), fij, est: estaciones().length, fecha: E.parque?.fecha || '—' });
+}
+
 function pintarClases() {
   const box = $('#clases');
   if (!box) return;
+  pintarPublicar();
   const cont = ml.counts();
   box.innerHTML = '';
   for (const k of E.paquete.clases) {
     const n = cont[k.id] || 0;
     const fila = h(`<div class="clase">
         <span><b>${esc(k[E.lang])}</b>${k.ayuda ? `<small>${esc(k.ayuda[E.lang])}</small>` : ''}<small class="cuenta ${n >= 15 ? 'lista' : ''}">${esc(t('eq.fotos', { n }))}${n >= 15 ? ` — ${esc(t('eq.lista'))}` : ''}</small></span>
-        <button class="btn btn-flor btn-mini" data-c="${k.id}">${esc(t('eq.mas'))}</button>
+        <span class="clase-btns"><label class="btn btn-linea btn-mini">${esc(t('eq.galeria'))}<input type="file" accept="image/*" multiple hidden></label><button class="btn btn-flor btn-mini" data-c="${k.id}">${esc(t('eq.mas'))}</button></span>
       </div>`);
     const b = $('button', fila);
     const una = async () => {
@@ -171,8 +202,23 @@ function pintarClases() {
       const nn = ml.counts()[k.id] || 0;
       $('.cuenta', fila).textContent = `${t('eq.fotos', { n: nn })}${nn >= 15 ? ` — ${t('eq.lista')}` : ''}`;
       $('.cuenta', fila).classList.toggle('lista', nn >= 15);
+      pintarPublicar();
     };
     b.onclick = una;
+    // Desde la galería: varias fotos a la vez, una por una para no llenar la memoria
+    $('input[type=file]', fila).onchange = async (e) => {
+      const files = [...e.target.files]; e.target.value = '';
+      if (!files.length) return;
+      try { await ml.load(); } catch (err) { aviso(t('lente.sinModelo')); return; }
+      const cu = $('.cuenta', fila);
+      let ok = 0;
+      for (const [i, f] of files.entries()) {
+        cu.textContent = t('eq.galeriaProg', { i: i + 1, n: files.length });
+        try { await ml.addSampleImagen(k.id, f); ok++; } catch (err) { console.warn('foto no válida', f.name, err); }
+      }
+      aviso(t('eq.galeriaOk', { n: ok, cosa: k[E.lang] }));
+      pintarClases();
+    };
     let rafaga = null;
     b.onpointerdown = () => { rafaga = setTimeout(function r() { una(); rafaga = setTimeout(r, 280); }, 450); };
     b.onpointerup = b.onpointerleave = b.onpointercancel = () => clearTimeout(rafaga);
@@ -200,7 +246,7 @@ function pintarEstaciones() {
       if (p.precision > 30) { aviso(t('eq.precision', { m: Math.round(p.precision) }), 3500); return; }
       await fijarEstacion(e.id, p);
       aviso(t('eq.fijadaOk', { est: e.nombre }));
-      pintarEstaciones();
+      pintarEstaciones(); pintarPublicar();
     };
     li.appendChild(b);
     ol.appendChild(li);
@@ -212,7 +258,7 @@ function hojaCodigos() {
     const q = window.qrcode(0, 'M'); q.addData(c.codigo); q.make();
     return `<figure><img src="${q.createDataURL(8, 2)}" alt="QR ${esc(c.codigo)}"><figcaption><b>${c.n}. ${esc(texto(c).nombre)}</b><br>${esc(c.codigo)}</figcaption></figure>`;
   }).join('');
-  const guias = cromos().filter((c) => c.tipo === 'guia').map((c) => `<li><b>${c.n}. ${esc(texto(c).nombre)}</b>: <code>${esc(c.codigo)}</code></li>`).join('');
+  const guias = `<li>${esc(t('eq.codigosGuia', { pin: E.paquete.guia.pin }))}</li>`;
   const w = window.open('', '_blank');
   if (!w) { aviso(t('eq.ventanas')); return; }
   w.document.write(`<!DOCTYPE html><html lang="${E.lang}"><head><meta charset="utf-8"><title>${esc(t('eq.codigos'))}</title>

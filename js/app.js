@@ -12,6 +12,7 @@ import { iniciarAjustes, abrirAjustes, aplicarTema, entrarEquipo, salirEquipo, p
 import { lluvia } from './celebrar.js';
 import * as ml from './ml.js';
 import { iniciarChatUI, entrarChat, retraducirChat } from './chatui.js';
+import { iniciarGuia, entrarGuia, salirGuia } from './guia.js';
 
 let vista = null;
 
@@ -20,8 +21,9 @@ export async function irA(v, opciones = {}) {
   const antes = vista;
   if (antes === 'lente') lente.salir();
   if (antes === 'equipo') salirEquipo();
+  if (antes === 'guia') salirGuia();
   vista = v;
-  for (const id of ['album', 'lente', 'mapa', 'chat', 'equipo']) $(`#v-${id}`).hidden = id !== v;
+  for (const id of ['album', 'lente', 'mapa', 'chat', 'equipo', 'guia']) $(`#v-${id}`).hidden = id !== v;
   document.body.dataset.vista = v;
   $$('.muelle button').forEach((b) => (b.dataset.vista === v || (v === 'equipo' && b.dataset.vista === 'mapa') ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current')));
   const el = $(`#v-${v}`);
@@ -31,6 +33,7 @@ export async function irA(v, opciones = {}) {
   if (v === 'equipo') await entrarEquipo();
   if (v === 'album') pintarCabezote();
   if (v === 'chat') entrarChat();
+  if (v === 'guia') await entrarGuia();
 }
 
 // Pausa de contemplación: 2 minutos sin tocar la pantalla.
@@ -109,10 +112,11 @@ async function iniciar() {
     simular: (e) => mapa.simular(e),
   };
   iniciarAlbum({ irA, acciones });
+  iniciarGuia({ irA });
   iniciarSobres({ irA });
   lente.iniciarLente({ onGanar: despuesDeGanar });
   mapa.iniciarMapa({ llegada: async (id, { simulado }) => { pintarCabezote(); if (simulado && vista === 'album') abrirSobres(); } });
-  iniciarAjustes({ irA, alCambiar: () => { retraducir(); retraducirChat(); if (vista === 'mapa') mapa.pintar(); if (vista === 'equipo') pintarEquipo(); } });
+  iniciarAjustes({ irA, alCambiar: () => { retraducir(); retraducirChat(); if (vista === 'mapa') mapa.pintar(); if (vista === 'equipo') pintarEquipo(); if (vista === 'guia') entrarGuia(); } });
   celebrar();
 
   $$('.muelle button[data-vista]').forEach((b) => (b.onclick = () => irA(b.dataset.vista)));
@@ -123,6 +127,7 @@ async function iniciar() {
     navigator.serviceWorker.addEventListener('message', (e) => {
       if (e.data?.tipo === 'progreso') progresoOffline(e.data.p);
       if (e.data?.tipo === 'listo') { progresoOffline(1); estadoOffline(); }
+      if (e.data?.tipo === 'error') import('./motor.js').then((m) => m.anotar('Guardar para usar sin señal', e.data.detalle));
     });
     // Si ya había una versión guardada y llega una nueva, recargar una sola vez para mostrarla
     const habiaVersion = !!navigator.serviceWorker.controller;
@@ -131,7 +136,7 @@ async function iniciar() {
       if (habiaVersion && !recargado) { recargado = true; location.reload(); }
     });
     navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
-      .then((reg) => reg.update())
+      .then((reg) => { if (reg.active) reg.update().catch(() => {}); })
       .catch((e) => console.warn('SW', e));
   }
   import('./db.js').then((db) => db.persist());

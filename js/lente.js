@@ -1,6 +1,7 @@
 // La Lente: reconoce cosas del páramo, lee QR y toma fotos (grupo o "ponerle mi foto").
 import * as ml from './ml.js';
-import { E, cromo as getCromo, cromos, texto, nombreClase, tiene, ganar, pendienteDeClase, ponerFoto } from './estado.js';
+import { E, cromo as getCromo, cromos, texto, nombreClase, tiene, ganar, pendienteDeClase, bloqueadoDeClase, ponerFoto } from './estado.js';
+import * as guia from './guia.js';
 import { t } from './i18n.js';
 import { $, $$, animar, vibrar, hablar, aviso } from './util.js';
 import { personajes } from './art.js';
@@ -9,6 +10,7 @@ const MAX_MS = 3 * 60 * 1000; // la cámara se apaga sola para cuidar la baterí
 let stream = null, bucle = null, apagado = null, ocupado = false, frente = false;
 let modo = 'reconocer', objetivo = null, ultimoId = null, qr = null, activa = false;
 let alGanar = async () => {};
+let ultimoQR = null; // para no procesar dos veces el mismo QR del guía mientras sigue en el visor
 
 export function iniciarLente({ onGanar }) {
   alGanar = onGanar;
@@ -60,7 +62,7 @@ export function ponerModo(m) {
   $('#lente-abrir').hidden = true; $('#lente-escuchar').hidden = true;
   $('#lente-chip').hidden = true;
   fijar(false);
-  ultimoId = null;
+  ultimoId = null; ultimoQR = null;
   if (modo === 'qr') decir(t('lente.qrApunta'));
   else if (enFoto) decir(objetivo?.msg || t('lente.foto'));
   else decir(ml.ready() ? t('lente.apunta') : t('lente.cargando'));
@@ -141,6 +143,9 @@ async function pasoReconocer() {
         await ganar(pendiente.id, { foto });
         await alGanar(pendiente.id);
       };
+    } else if (bloqueadoDeClase(r.clase)?.otraPlanta) {
+      ab.hidden = true;
+      decir(`${tx.dato} ${t('lente.otraPlanta')}`);
     } else {
       ab.hidden = false; ab.disabled = true; ab.textContent = t('lente.yaLoTienes');
     }
@@ -160,8 +165,23 @@ async function pasoQR() {
       valor = window.jsQR(d.data, d.width, d.height, { inversionAttempts: 'attemptBoth' })?.data || null;
     }
     if (!valor) return;
-    const c = cromos().find((k) => k.tipo === 'qr' && k.codigo === valor.trim());
     const chip = $('#lente-chip');
+    if (guia.esDelGuia(valor)) {
+      if (valor === ultimoQR) return;
+      ultimoQR = valor;
+      // QR del teléfono del guía: se verifica la firma con el reloj, sin internet
+      const g = await guia.leerQR(valor);
+      if (!g) { decir(t('lente.qrAjeno')); return; }
+      if (g.vencido) { decir(t('guia.vencido')); return; }
+      const r = await guia.aplicar(g);
+      if (r.ganado) {
+        fijar(true); vibrar([30, 40, 30]); personaje(getCromo(r.ganado).personaje);
+        clearInterval(bucle); bucle = null;
+        await alGanar(r.ganado);
+      } else { vibrar(30); decir(t(r.msg, r.vars)); }
+      return;
+    }
+    const c = cromos().find((k) => k.tipo === 'qr' && k.codigo === valor.trim());
     if (!c) { decir(t('lente.qrAjeno')); chip.hidden = true; return; }
     personaje(c.personaje);
     if (tiene(c.id)) { decir(t('lente.qrRepetido', { n: c.n, nombre: texto(c).nombre })); return; }

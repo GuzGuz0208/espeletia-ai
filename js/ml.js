@@ -2,6 +2,7 @@
 // MobileNetV2 (ONNX, ~9 MB) convierte cada imagen en una "huella" de 1280 números.
 // El equipo enseña cada clase con fotos reales del páramo y se clasifica por vecinos más cercanos (k-NN).
 import * as db from './db.js';
+import { E } from './estado.js';
 import { sesion, anotar } from './motor.js';
 
 const MEAN = [0.485, 0.456, 0.406];
@@ -10,7 +11,8 @@ const SIZE = 224;
 const K = 7;
 
 let ort, session, cargando = null;
-let samples = []; // { clase, v: Float32Array }
+let samples = []; // { clase, v: Float32Array, base?: true }  base = vienen del paquete del parque (models/parque.json)
+let base = null;
 const canvas = document.createElement('canvas');
 canvas.width = canvas.height = SIZE;
 const ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -30,7 +32,31 @@ export const ready = () => !!session;
 
 async function loadSamples() {
   const rows = await db.all('muestras');
-  samples = rows.map((r) => ({ clase: r.clase, v: new Float32Array(r.v) }));
+  base ??= E.parque?.lente ? decodificar(E.parque.lente).map((x) => ({ ...x, base: true })) : [];
+  samples = [...base, ...rows.map((r) => ({ clase: r.clase, v: new Float32Array(r.v) }))];
+}
+
+// ---------- Formato compacto: vectores int8 con una escala por vector, en base64 ----------
+const DIM = 1280;
+function aB64(u8) { let s = ''; for (let i = 0; i < u8.length; i += 0x8000) s += String.fromCharCode.apply(null, u8.subarray(i, i + 0x8000)); return btoa(s); }
+function deB64(b) { const s = atob(b); const u = new Uint8Array(s.length); for (let i = 0; i < s.length; i++) u[i] = s.charCodeAt(i); return u; }
+export function codificar(lista = samples) {
+  const n = lista.length, q = new Int8Array(n * DIM), es = new Float32Array(n);
+  lista.forEach((m, k) => {
+    let mx = 0; for (let d = 0; d < DIM; d++) mx = Math.max(mx, Math.abs(m.v[d]));
+    const e = mx / 127 || 1; es[k] = e;
+    for (let d = 0; d < DIM; d++) q[k * DIM + d] = Math.round(m.v[d] / e);
+  });
+  return { dim: DIM, clases: lista.map((m) => m.clase), vectores: aB64(new Uint8Array(q.buffer)), escalas: aB64(new Uint8Array(es.buffer)) };
+}
+function decodificar(L) {
+  const q = new Int8Array(deB64(L.vectores).buffer), es = new Float32Array(deB64(L.escalas).buffer);
+  return L.clases.map((clase, k) => {
+    const v = new Float32Array(DIM); let n = 0;
+    for (let d = 0; d < DIM; d++) { v[d] = q[k * DIM + d] * es[k]; n += v[d] * v[d]; }
+    n = Math.sqrt(n) || 1; for (let d = 0; d < DIM; d++) v[d] /= n;
+    return { clase, v };
+  });
 }
 
 // Recorta el centro de la imagen (como lo que ve el visitante en el visor) y la pasa a 224×224.
@@ -68,18 +94,24 @@ export async function addSample(clase, source) {
   return counts();
 }
 
-export function counts() {
+export function counts({ soloBase = false } = {}) {
   const c = {};
-  for (const s of samples) c[s.clase] = (c[s.clase] || 0) + 1;
+  for (const s of samples) if (!soloBase || s.base) c[s.clase] = (c[s.clase] || 0) + 1;
   return c;
 }
 
+// Enseñar con fotos de la galería: cada archivo se convierte en un ejemplo de la clase
+export async function addSampleImagen(clase, archivo) {
+  const bmp = await createImageBitmap(archivo);
+  try { return await addSample(clase, bmp); } finally { bmp.close?.(); }
+}
+
+// Borra lo enseñado en este teléfono (lo publicado en el paquete del parque se queda)
 export async function clearSamples(clase) {
-  if (!clase) { await db.clear('muestras'); samples = []; return counts(); }
-  const keep = samples.filter((s) => s.clase !== clase);
+  const keep = samples.filter((s) => !s.base && clase && s.clase !== clase);
   await db.clear('muestras');
   for (const s of keep) await db.put('muestras', undefined, { clase: s.clase, v: Array.from(s.v) });
-  samples = keep;
+  samples = [...base, ...keep];
   return counts();
 }
 
@@ -112,16 +144,15 @@ export async function classify(source, { simMin = 0.5, simOk = 0.68 } = {}) {
   return { clase, confianza: (peso / total) * cobertura * parecido, similitud: mejor, votos: peso / total };
 }
 
-// Exportar / importar el "modelo del parque" para pasarlo a todos los celulares dentro del Paquete Páramo.
-export function exportModel() {
-  return JSON.stringify({ tipo: 'paramo-knn', version: 1, dim: 1280, muestras: samples.map((s) => ({ c: s.clase, v: Array.from(s.v, (x) => +x.toFixed(4)) })) });
-}
-
+// Importar: un paquete del parque (parque.json) o un modelo antiguo (v1). Queda como enseñado en este teléfono.
 export async function importModel(text) {
   const data = JSON.parse(text);
-  if (data.tipo !== 'paramo-knn') throw new Error('Este archivo no es un modelo de cromos del páramo.');
+  let lista;
+  if (data.tipo === 'paramo-parque' && data.lente) lista = decodificar(data.lente);
+  else if (data.tipo === 'paramo-knn') lista = data.muestras.map((m) => ({ clase: m.c, v: m.v }));
+  else throw new Error('Este archivo no es un paquete del parque ni un modelo de la Lente.');
   await db.clear('muestras');
-  for (const m of data.muestras) await db.put('muestras', undefined, { clase: m.c, v: m.v });
+  for (const m of lista) await db.put('muestras', undefined, { clase: m.clase, v: Array.from(m.v) });
   await loadSamples();
-  return counts();
+  return data;
 }

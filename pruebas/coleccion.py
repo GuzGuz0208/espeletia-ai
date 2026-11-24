@@ -1,18 +1,25 @@
 """Prueba real de la colección completa: cada cromo se gana por la interfaz, como un visitante."""
-import json, time, shutil, os, sys
+import json, time, shutil, os, sys, hmac, hashlib
 from playwright.sync_api import sync_playwright
+APP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))  # raíz de la app
 URL = 'http://localhost:8765/'
 PERFIL = '/tmp/perfil-paramo'; shutil.rmtree(PERFIL, ignore_errors=True)
-S = '/home/claude/shots3'; shutil.rmtree(S, ignore_errors=True); os.makedirs(S)
-paq = json.load(open('/home/claude/app/paquete.json'))
+S = '/tmp/capturas-paramo'; shutil.rmtree(S, ignore_errors=True); os.makedirs(S)
+paq = json.load(open(os.path.join(APP, 'paquete.json')))
 EST = {e['id']: e for e in paq['estaciones']}
 logs, pasos = [], []
+CLAVE = paq['guia']['clave'].encode()
+def codigo_guia(accion):
+    # Mismo cálculo que js/guia.js: HMAC-SHA256("cod|accion|franja") -> 4 dígitos
+    f = int(time.time() * 1000) // (paq['guia']['franjaMin'] * 60000)
+    x = hmac.new(CLAVE, f'cod|{accion}|{f}'.encode(), hashlib.sha256).hexdigest()
+    return str(int(x[:8], 16) % 10000).zfill(4)
 def ok(msg): pasos.append(msg); print('OK', msg, flush=True)
 
 def sesion(p, video=None):
     args = ['--use-fake-ui-for-media-stream', '--use-fake-device-for-media-stream']
     if video: args.append(f'--use-file-for-fake-video-capture=/tmp/vid/{video}.y4m')
-    ctx = p.chromium.launch_persistent_context(PERFIL, executable_path='/usr/bin/google-chrome', headless=True, args=args,
+    ctx = p.chromium.launch_persistent_context(PERFIL, headless=True, args=args,
         viewport={'width': 390, 'height': 844}, device_scale_factor=2, locale='es-CO', accept_downloads=True,
         permissions=['camera', 'geolocation'], geolocation={'latitude': 4.96, 'longitude': -75.38, 'accuracy': 12})
     pg = ctx.pages[0] if ctx.pages else ctx.new_page()
@@ -81,15 +88,19 @@ with sync_playwright() as p:
     ok(f'GPS: 4 estaciones -> {pendientes(pg)} sobres esperando, sin interrumpir la caminata')
     pg.click('#btn-sobres'); n = abrir_todo(pg); assert n == 4 and pegados(pg) == 4, (n, pegados(pg)); ok('se abren y pegan los 4 sobres del GPS')
 
-    # Códigos del guía
+    # Códigos del guía: cambian cada 5 minutos (se calculan igual que el Modo guía)
     pg.click('.pestana:nth-child(4)'); pg.wait_for_timeout(800)
+    COD = '.como-accion > .codigo input'
     for c in [c for c in paq['cromos'] if c['tipo'] == 'guia']:
-        pg.click(f'.ranura[data-id="{c["id"]}"]'); pg.wait_for_selector('#codigo-in')
+        pg.click(f'.ranura[data-id="{c["id"]}"]'); pg.wait_for_selector(COD)
         if c['id'] == 'agua':
-            pg.fill('#codigo-in', '0000'); pg.click('.codigo button'); pg.wait_for_timeout(400)
-            assert pg.is_visible('#codigo-in'), 'código incorrecto no debe desbloquear'
-        pg.fill('#codigo-in', c['codigo']); pg.click('.codigo button'); assert abrir_todo(pg) == 1
-    assert pegados(pg) == 8; ok('4 códigos del guía (y rechaza el incorrecto)')
+            pg.fill(COD, '0000' if codigo_guia('h:agua') != '0000' else '1111'); pg.click('.como-accion > .codigo button'); pg.wait_for_timeout(400)
+            assert pg.is_visible(COD), 'código incorrecto no debe desbloquear'
+            # el código de OTRA historia tampoco sirve aquí
+            pg.fill(COD, codigo_guia('h:volcanes')); pg.click('.como-accion > .codigo button'); pg.wait_for_timeout(400)
+            assert pg.is_visible(COD), 'el código de otra historia no debe desbloquear'
+        pg.fill(COD, codigo_guia(f'h:{c["id"]}')); pg.click('.como-accion > .codigo button'); assert abrir_todo(pg) == 1
+    assert pegados(pg) == 8; ok('4 códigos del guía que cambian cada 5 min (rechaza el incorrecto y el de otra historia)')
 
     # Foto de grupo (ya hay más de 3)
     pg.click('.pestana:nth-child(1)'); pg.wait_for_timeout(800)
@@ -119,13 +130,20 @@ with sync_playwright() as p:
         ctx, pg = sesion(p, clase)
         equipo(pg); entrenar(pg, clase)
         veces = 2 if clase == 'frailejon' else 1
-        for _ in range(veces):
+        for vez in range(veces):
+            if vez == 1:
+                # El segundo frailejón tiene que ser otra planta: en el mismo sitio no se entrega…
+                pg.click('.muelle [data-vista="album"]'); ir_lente(pg); pg.wait_for_timeout(3500)
+                assert pg.is_hidden('#lente-abrir') and 'otro frailejón' in pg.inner_text('#lente-msg'), pg.inner_text('#lente-msg')
+                # …caminando unos 45 m sí
+                pg.click('.muelle [data-vista="album"]')
+                ctx.set_geolocation({'latitude': 4.9604, 'longitude': -75.38, 'accuracy': 10}); pg.wait_for_timeout(1200)
             ir_lente(pg)
             pg.wait_for_selector('#lente-abrir:not([hidden]):not([disabled])', timeout=25000)
             conf = pg.inner_text('#lente-chip')
             if clase == 'frailejon': pg.screenshot(path=f'{S}/04_lente_fija.png')
             pg.click('#lente-abrir'); assert abrir_todo(pg) == 1
-        ok(f'Lente: {clase} reconocido ({conf}) y pegado' + (' + «Abrir sobre» para el segundo frailejón' if veces == 2 else ''))
+        ok(f'Lente: {clase} reconocido ({conf}) y pegado' + (' + el segundo frailejón solo a 45 m del primero' if veces == 2 else ''))
         ctx.close()
 
     # ===== Imagen que no está entrenada: no debe dar cromo =====

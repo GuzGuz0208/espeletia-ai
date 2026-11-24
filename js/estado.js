@@ -14,15 +14,21 @@ export const E = {
   fijadas: {},    // estacionId -> { lat, lon, altura } fijadas en campo por el equipo
   ajustes: { tema: 'auto', voz: true, vibrar: true, demo: false },
   posicion: null, // { lat, lon, precision, altitud }
+  parque: {},     // models/parque.json: Lente y estaciones publicadas por el equipo para todos los teléfonos
+  aqui: 0,        // última vez que el guía confirmó que el grupo está en el parque
+  usados: [],     // códigos del guía ya usados en este teléfono (cada uno sirve una vez)
   portadaVista: false,
 };
 
 export async function cargar() {
   const res = await fetch('paquete.json');
   E.paquete = await res.json();
-  const [album, visitadas, fijadas, ajustes, nombre, lang, portada] = await Promise.all(
-    ['album', 'visitadas', 'fijadas', 'ajustes', 'nombre', 'lang', 'portada'].map((k) => db.get('kv', k))
+  E.parque = await fetch('models/parque.json').then((r) => (r.ok ? r.json() : {})).catch(() => ({}));
+  const [album, visitadas, fijadas, ajustes, nombre, lang, portada, aqui, usados] = await Promise.all(
+    ['album', 'visitadas', 'fijadas', 'ajustes', 'nombre', 'lang', 'portada', 'aqui', 'usados'].map((k) => db.get('kv', k))
   );
+  E.aqui = aqui || 0;
+  E.usados = usados || [];
   E.album = album || {};
   // Limpia registros de cromos que ya no existen en el paquete
   for (const id of Object.keys(E.album)) if (!cromo(id)) delete E.album[id];
@@ -41,7 +47,7 @@ export async function guardar() {
   await Promise.all([
     db.put('kv', 'album', E.album), db.put('kv', 'visitadas', E.visitadas), db.put('kv', 'fijadas', E.fijadas),
     db.put('kv', 'ajustes', E.ajustes), db.put('kv', 'nombre', E.nombre), db.put('kv', 'lang', E.lang),
-    db.put('kv', 'portada', E.portadaVista),
+    db.put('kv', 'portada', E.portadaVista), db.put('kv', 'aqui', E.aqui), db.put('kv', 'usados', E.usados.slice(-300)),
   ]);
   localStorage.setItem('voz', E.ajustes.voz ? '1' : '0');
   localStorage.setItem('vibrar', E.ajustes.vibrar ? '1' : '0');
@@ -61,8 +67,14 @@ export const pegados = () => E.paquete.cromos.filter((c) => abierto(c.id)).lengt
 export const pendientes = () => Object.entries(E.album).filter(([, r]) => !r.abierto).sort((a, b) => a[1].fecha - b[1].fecha).map(([id]) => id);
 export const capituloCompleto = (cap) => cromosDe(cap).every((c) => abierto(c.id));
 
+// Coordenadas: las del paquete, corregidas por las que publicó el equipo (parque.json) y, en el teléfono
+// del equipo, por las que fijó en campo y aún no ha publicado.
 export function estaciones() {
-  return E.paquete.estaciones.map((e) => ({ ...e, ...(E.fijadas[e.id] || {}), fijada: !!E.fijadas[e.id] }));
+  const pub = E.parque?.estaciones || {};
+  return E.paquete.estaciones.map((e) => {
+    const f = E.fijadas[e.id] || pub[e.id];
+    return { ...e, ...(f || {}), fijada: !!f, porConfirmar: f ? false : e.porConfirmar };
+  });
 }
 export const estacion = (id) => estaciones().find((e) => e.id === id);
 
@@ -73,17 +85,38 @@ export function estacionCercana(max = 400) {
   return dmin <= max ? mejor : null;
 }
 
+// ¿Está el visitante en el parque? Lo confirma el guía (QR o código), una estación visitada hoy
+// o el GPS cerca de una estación. Sin esto, la pausa y la foto de grupo no se pueden hacer desde la casa.
+export function enParque() {
+  if (E.ajustes.demo) return true;
+  const H = 3600e3, ahora = Date.now();
+  if (E.aqui && ahora - E.aqui < 2 * H) return true;
+  if (Object.values(E.visitadas).some((f) => ahora - f < 6 * H)) return true;
+  return !!(E.posicion && estacionCercana(600));
+}
+export async function marcarAqui() { E.aqui = Date.now(); await guardar(); emitir('cambio', {}); }
+
 // ¿Se puede conseguir ya este cromo? Devuelve null si sí, o el motivo si no.
-export function bloqueo(c) {
+// `guia: true` cuando lo confirma el guía: él ya verificó que es otra planta.
+export function bloqueo(c, { guia = false } = {}) {
   if (c.requiere && Object.keys(E.album).length < c.requiere) return { tipo: 'requiere', faltan: c.requiere - Object.keys(E.album).length };
   if (c.despuesDe && !tiene(c.despuesDe)) return { tipo: 'despuesDe', de: c.despuesDe };
+  if (c.lugar && !enParque()) return { tipo: 'lugar' };
+  if (c.otraPlanta && !guia && tiene(c.otraPlanta)) {
+    // Otra planta, no la misma: a 25 m o más de la primera (con GPS) o, sin GPS, 3 minutos después
+    const a = E.album[c.otraPlanta];
+    const lejos = a.pos && E.posicion ? distancia(a.pos, E.posicion) >= 25 : Date.now() - a.fecha >= 3 * 60e3;
+    if (!lejos) return { tipo: 'otraPlanta', de: c.otraPlanta };
+  }
   return null;
 }
 
-// El siguiente cromo de cámara pendiente para una clase (respeta "después de").
-export function pendienteDeClase(clase) {
-  return E.paquete.cromos.find((c) => c.tipo === 'camara' && c.clase === clase && !tiene(c.id) && !bloqueo(c));
+// El siguiente cromo de cámara pendiente para una clase (respeta las condiciones de arriba).
+export function pendienteDeClase(clase, opc) {
+  return E.paquete.cromos.find((c) => c.tipo === 'camara' && c.clase === clase && !tiene(c.id) && !bloqueo(c, opc));
 }
+// Un cromo de esa clase que existe pero aún no se puede (p. ej. "busca otra planta")
+export const bloqueadoDeClase = (clase) => E.paquete.cromos.find((c) => c.tipo === 'camara' && c.clase === clase && !tiene(c.id) && bloqueo(c));
 
 // ---------- Acciones ----------
 export async function ganar(id, { foto = null, estacionId = null } = {}) {
@@ -96,6 +129,7 @@ export async function ganar(id, { foto = null, estacionId = null } = {}) {
     altura: E.posicion?.altitud ?? est?.altura ?? null,
     foto: !!foto,
     abierto: false,
+    ...(E.posicion ? { pos: { lat: E.posicion.lat, lon: E.posicion.lon } } : {}),
   };
   if (foto) await guardarFoto(id, foto);
   await guardar();
@@ -164,7 +198,7 @@ export async function fijarEstacion(id, pos) {
 }
 
 export async function vaciar() {
-  E.album = {}; E.visitadas = {};
+  E.album = {}; E.visitadas = {}; E.aqui = 0; E.usados = [];
   for (const k of Object.keys(urls)) { URL.revokeObjectURL(urls[k]); delete urls[k]; }
   await db.clear('fotos');
   await guardar();

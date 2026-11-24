@@ -1,4 +1,4 @@
-# Álbum del Páramo: prueba de concepto v3 (opción B + chat sin internet)
+# Álbum del Páramo: prueba de concepto v3.3 (opción B + chat sin internet + Modo guía)
 
 App web instalable (PWA) para visitantes del PNN Los Nevados. Funciona **en modo avión** después de abrirla una vez con internet. Corre en Android (Chrome) y en iPhone (Safari) sin pasar por tiendas de apps. Está en español e inglés.
 
@@ -14,7 +14,7 @@ Es un álbum de cromos impreso de verdad, en risografía a dos tintas: verde fra
    | I. El sendero | 6 | GPS, pausa y foto de grupo |
    | II. Flora y paisaje | 8 | Lente (cámara) |
    | III. Fauna | 6 | QR |
-   | IV. Historias del guía | 4 | Códigos |
+   | IV. Historias del guía | 4 | QR o código del Modo guía |
 
 3. **Sobres.** Cada cromo ganado llega en un sobre:
    - el visitante lo rasga con un toque;
@@ -25,11 +25,11 @@ Es un álbum de cromos impreso de verdad, en risografía a dos tintas: verde fra
 5. **Detalle.** Al tocar un cromo pegado se ve en grande. Al tocarlo otra vez se voltea, y el dorso trae el dato oficial con su fuente, la estación, la fecha y el dueño. Desde ahí se puede guardar la imagen, pasarla al grupo, escucharla o cambiar la ilustración por una foto propia.
 6. **Lente.** La mira se cierra sobre lo que reconoce, y Fray, el Cóndor o Magma cuentan el dato. Si la Lente duda, dice «No estoy seguro, pregúntale a tu guía». Tiene modo QR y modo foto, con cambio a cámara frontal para la selfie de grupo.
 7. **Mapa.** Un pliego topográfico con las curvas de nivel del volcán, las estaciones y el punto «estás aquí». No descarga mapas: se dibuja solo.
-8. **Pausa de contemplación.** 2 minutos sin tocar la pantalla. Si alguien la toca, el tiempo vuelve a empezar.
+8. **Pausa de contemplación.** 2 minutos sin tocar la pantalla. Si alguien la toca, el tiempo vuelve a empezar. Igual que la foto de grupo, solo se puede hacer **en el parque** (ver abajo).
 9. **Final.** Al completar una página caen hojas de frailejón. Al llegar a 24/24 aparece un sello, y el álbum completo se descarga como una sola imagen.
 10. **Pregúntale a Fray (nuevo en la v3).** Es un chat que funciona sin internet y responde solo con fichas oficiales del parque, siempre con su fuente. Se ve más abajo.
 
-**Ajustes** (botón «⋯»): nombre, idioma, apariencia (Papel, Noche para ahorrar batería, o Automática), lectura en voz alta, vibración, descargar el álbum y estado «lista para usar sin señal».
+**Ajustes** (botón del menú inferior): nombre, idioma, apariencia (Papel, Noche para ahorrar batería, o Automática), lectura en voz alta, vibración, descargar el álbum y estado «lista para usar sin señal».
 
 ## Pregúntale a Fray: chat sin internet
 
@@ -94,14 +94,36 @@ Es un álbum de cromos impreso de verdad, en risografía a dos tintas: verde fra
 
 Para probar en un computador: dentro de la carpeta, corre `python3 -m http.server 8000` y abre `http://localhost:8000/?demo`. El modo demo permite simular la llegada a cada estación.
 
-## Enseñarle a la Lente (Modo equipo, PIN 2611)
+## Modo guía (PIN 4100): el guía como parte del juego
 
-Se entra por Ajustes («⋯») → «Modo equipo».
+El guía es obligatorio en todos los sectores del parque y acompaña al grupo todo el recorrido. Se entra por Ajustes → «Soy guía». Su teléfono muestra un **QR grande y un código de 4 dígitos que cambian cada 5 minutos**. El grupo escanea el QR con la Lente (Leer QR) o escribe el código. Todo funciona **sin señal**: el código es una firma HMAC-SHA256 de «qué se entrega + franja de tiempo», y el teléfono del visitante la verifica con su reloj.
 
-1. En «Enseñar a la Lente», toca **+ Foto** de 15 a 30 veces por clase. Si mantienes presionado el botón, toma una ráfaga: muévete un poco para variar el ángulo y la luz.
+| El guía elige | Lo que pasa en el teléfono del visitante |
+|---|---|
+| Una **historia** | Gana ese cromo del capítulo IV. Junto al QR, el guía ve el dato que debe contar. |
+| **Llegamos a…** una estación | Gana el cromo de esa estación cuando el GPS no lo ubica, y queda «en el parque». |
+| **Estamos en el parque** | Habilita por 2 horas la pausa y la foto de grupo. |
+| **Confirmo lo que ve la Lente** | Gana el cromo de esa clase cuando la Lente duda o no está entrenada. Después puede ponerle su propia foto. |
+
+Reglas: cada código sirve **una vez por teléfono**; un QR de hace más de ~10 minutos dice «vencido»; 5 códigos equivocados seguidos bloquean 1 minuto (luego 2, 4…). En el álbum, cada cromo de GPS y de cámara tiene plegado un «plan B» para escribir el código del guía.
+
+**Límite de la prueba de concepto:** la clave está en `paquete.json`, que es público; alguien con conocimientos podría generar códigos. En producción, cada guía recibiría su propia clave al registrarse (REPSE) y la app la verificaría con una firma de clave pública.
+
+## Cromos que se ganan en el parque
+
+- **Pausa y foto de grupo:** se habilitan si el visitante visitó una estación en las últimas 6 horas, si su GPS está a menos de 600 m de una estación o si el guía le dio el código «Estamos en el parque». Desde la casa no se pueden.
+- **Segundo frailejón («Abrigo de hojas»):** tiene que ser otra planta. Se entrega a 25 m o más del primero (con GPS) o, sin GPS, 3 minutos después. Si el guía lo confirma, se entrega de una vez.
+
+## Enseñarle a la Lente y publicar el Paquete del parque (Modo equipo, PIN 2611)
+
+Se entra por Ajustes → «Modo equipo».
+
+1. En «Enseñar a la Lente», toca **+ Foto** de 15 a 30 veces por clase (manteniendo presionado toma una ráfaga), o usa **Galería** para cargar muchas fotos a la vez desde el teléfono.
 2. Llena siempre **«Otra cosa»** con personas, carros, cielo y el piso del sendero. Así la Lente dice «no estoy seguro» en vez de adivinar.
 3. La Lente no ofrece cromos hasta tener al menos 2 clases con 5 fotos o más.
-4. **Exportar modelo** guarda un `.json` con las «huellas» de las fotos (no las fotos). Con **Importar modelo** se carga en los demás celulares.
+4. En **Paquete del parque**, «Descargar parque.json» guarda lo enseñado (las «huellas» de las fotos, no las fotos) y las estaciones fijadas en campo. Reemplaza `models/parque.json` en el repositorio y publica: **todos los teléfonos lo reciben** al abrir la app con señal, sin entrenar nada. Con «Importar» se carga un `parque.json` en otro teléfono del equipo.
+
+**Desde el computador:** con las fotos en carpetas (`fotos/frailejon/`, `fotos/pajonal/`, … `fotos/otro/`), corre `python3 herramientas/lente_base.py fotos`. Escribe `models/parque.json` y mide qué tan bien distingue cada clase dejando fuera cada foto (matriz de confusión). Da los mismos vectores que el teléfono (coseno 0,994 o más).
 
 **Calibración.** Con fotos reales, dos escenas distintas tienen una similitud de 0,34 a 0,56 y la misma escena, de 0,76 a 0,95. Por eso la confianza exige una similitud mínima de 0,50 a 0,68, además del voto de los vecinos y del umbral de 70 %. Esto corrige el error de la v1, en la que una sola clase entrenada hacía que todo pareciera esa clase. Los valores se ajustan en `paquete.json` → `camara`.
 
@@ -109,10 +131,11 @@ Para la demo del 26, se puede entrenar con fotos impresas o en pantalla.
 
 ## Antes de usarla con visitantes reales
 
-- **Coordenadas:** las de `paquete.json` son aproximadas. En campo, usa «Fijar aquí» en cada estación (exige una precisión de 30 m o mejor). Lo fijado queda guardado aparte y no se pierde cuando se actualiza el paquete.
+- **Coordenadas:** las de `paquete.json` son aproximadas. En campo, usa «Fijar aquí» en cada estación (exige una precisión de 30 m o mejor) y luego publica el Paquete del parque para que lleguen a todos los teléfonos.
 - **Estaciones 2 y 3:** los nombres están por confirmar con UTON.
 - **Textos (es/en):** son borradores con fuente. Persona 1 debe validarlos con el PNN. La traducción al inglés también necesita revisión.
-- **QR en la señalética:** requiere permiso del PNN. Los códigos para imprimir están en el Modo equipo.
+- **QR en la señalética:** requiere permiso del PNN. Los QR de fauna para imprimir están en el Modo equipo.
+- **Clave del Modo guía:** cambia `guia.clave` y `guia.pin` en `paquete.json` antes de usarla con público.
 
 ## Probado de punta a punta
 
@@ -122,16 +145,18 @@ La prueba está en `pruebas/coleccion.py`. Usa Playwright con Chrome, perfil per
 - El Modo equipo funciona con PIN y entrenamiento.
 - Con una sola clase entrenada, la Lente no inventa cromos.
 - **GPS:** se caminó por las 4 estaciones. Quedaron 4 sobres esperando sin interrumpir, y se abrieron y pegaron.
-- **Códigos:** 4 códigos del guía, y rechaza el incorrecto.
+- **Códigos del guía:** 4 historias con códigos que cambian cada 5 minutos; rechaza el incorrecto y el de otra historia.
 - **Fotos:** funcionan la foto de grupo y «Ponerle mi foto».
 - **Pausa:** 2 minutos reales; tocar la pantalla la reinicia.
-- **Lente:** 7 clases reconocidas, además del segundo frailejón. Una imagen no entrenada responde «No estoy seguro».
+- **Lente:** 7 clases reconocidas. El segundo frailejón no se entrega en el mismo sitio y sí a 45 m. Una imagen no entrenada responde «No estoy seguro».
 - **QR:** los 6 de fauna, leídos con la cámara.
 - **Final:** **24/24**, con celebración, descarga del álbum (1600×2246) y del cromo (1080×1620).
 - **Persistencia:** al reabrir, el álbum sigue completo.
 - **Modo avión:** cargan la app, el álbum y el modelo.
 - **Ajustes:** funcionan el cambio a inglés y el tema noche.
 - No hubo errores en la consola.
+
+`pruebas/guia_parque.py` prueba el Modo guía y el Paquete del parque con varios «teléfonos» (navegadores separados): el QR del guía escaneado por otro teléfono, el código «aquí», la confirmación de un frailejón sin Lente entrenada, QR falsos y vencidos, y un teléfono nuevo que reconoce con el `parque.json` publicado desde la galería.
 
 **Falta probar en celulares reales:** velocidad en gama baja (4 GB), la Lente con luz de páramo y la voz del sistema en cada marca.
 
@@ -151,7 +176,8 @@ js/motor.js       carga compartida de ONNX Runtime y de los modelos partidos, co
 js/ml.js          MobileNetV2 (ONNX) + k-NN con piso de similitud
 js/mapa.js        GPS, geocercas y pliego topográfico
 js/portada.js     portada y estado sin señal
-js/ajustes.js     ajustes, PIN y Modo equipo
+js/ajustes.js     ajustes, PIN, Modo equipo y Paquete del parque
+js/guia.js        Modo guía: QR y códigos firmados que cambian cada 5 min, y su verificación sin internet
 js/exportar.js    PNG de cromo y de álbum completo
 js/chat.js        motor del chat: embedding de la pregunta, búsqueda híbrida (significado + palabras), umbrales y reglas de seguridad
 js/chatui.js      pantalla «Pregúntale a Fray»
@@ -160,8 +186,8 @@ js/art.js         24 ilustraciones risográficas y los 3 personajes (originales)
 js/i18n.js        textos es/en
 js/celebrar.js    chispas y lluvia de hojas
 lib/              ONNX Runtime Web 1.31 (sus .mjs renombrados a .js), jsQR, qrcode-generator, @huggingface/tokenizers
-models/           partes/ (motor WASM, modelo de la Lente y del chat, en trozos de 8 MB) · partes.json · e5_tokenizer.json · chat_indice.json
-herramientas/     partir/unir modelos, poda del modelo, índice y calibración del chat, comparación JS vs Python
+models/           parque.json (Lente y estaciones publicadas por el equipo) · partes/ (motor WASM, modelo de la Lente y del chat, en trozos de 8 MB) · partes.json · e5_tokenizer.json · chat_indice.json
+herramientas/     lente_base.py (Lente desde carpetas de fotos), partir/unir modelos, poda del modelo, índice y calibración del chat, comparación JS vs Python
 fonts/            Bricolage Grotesque (variable) y Atkinson Hyperlegible, ambas con licencia OFL
 pruebas/          prueba de punta a punta con Playwright
 ```
