@@ -1,0 +1,11 @@
+{
+ "lon0": -75.42,
+ "lat1": 4.97,
+ "paso": 0.0005555555555555556,
+ "w": 270,
+ "h": 216,
+ "min": 2725,
+ "max": 5283,
+ "formato": "uint16 little-endian, metros, filas de norte a sur",
+ "atribucion": "Relieve: Copernicus DEM GLO-30 © DLR, Airbus DS, ESA"
+}

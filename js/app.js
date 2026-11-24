@@ -11,7 +11,7 @@ import { mostrarPortada, progresoOffline, estadoOffline } from './portada.js';
 import { iniciarAjustes, abrirAjustes, aplicarTema, entrarEquipo, salirEquipo, pintarEquipo } from './ajustes.js';
 import { lluvia } from './celebrar.js';
 import * as ml from './ml.js';
-import { iniciarChatUI, entrarChat, retraducirChat, abrirConTema, temaDeCromo } from './chatui.js';
+import { iniciarChatUI, entrarChat, retraducirChat, abrirConTema, temaDeCromo, conectarMapa, ofrecerLugar } from './chatui.js';
 import { iniciarGuia, entrarGuia, salirGuia } from './guia.js';
 
 let vista = null;
@@ -32,7 +32,7 @@ export async function irA(v, opciones = {}) {
   if (v === 'mapa') mapa.entrar();
   if (v === 'equipo') await entrarEquipo();
   if (v === 'album') pintarCabezote();
-  if (v === 'chat') entrarChat({ enfocar: !opciones.tema });
+  if (v === 'chat') entrarChat({ enfocar: !opciones.tema, conTema: !!opciones.tema });
   if (v === 'guia') await entrarGuia();
 }
 
@@ -146,7 +146,10 @@ async function iniciar() {
       await abrirConTema({ id: ficha, ficha, ...(temas[ficha] || { es: ficha, en: ficha }) });
     },
     abrirSobres: () => abrirSobres(),
+    // Al llegar a una estación, la próxima vez que se abra el chat ofrece hablar de ese lugar
+    alLlegar: (e, c) => { const tm = c && temaDeCromo(c.id); if (tm) ofrecerLugar(tm, t('chat.llegasteA', { est: e.nombre })); },
   });
+  conectarMapa(async (lugar) => { await irA('mapa'); await mapa.mostrar(lugar); });
   iniciarAjustes({ irA, alCambiar: () => { retraducir(); retraducirChat(); if (vista === 'mapa') mapa.pintar(); if (vista === 'equipo') pintarEquipo(); if (vista === 'guia') entrarGuia(); } });
   celebrar();
 

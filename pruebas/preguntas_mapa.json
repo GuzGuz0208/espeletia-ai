@@ -1,0 +1,29 @@
+{
+ "nota": "Preguntas sobre el recorrido propio (fichas dinámicas). Escritas ANTES de redactar las formas de preguntar de esas fichas. 'confusa' = se parece pero es sobre un lugar, no sobre mí.",
+ "preguntas": [
+  {"p": "cuánto me falta para llegar", "esperado": "mi_falta"},
+  {"p": "qué tan lejos queda la próxima estación", "esperado": "mi_falta"},
+  {"p": "cuánto falta para el valle de las tumbas", "esperado": "mi_falta"},
+  {"p": "ya casi llegamos?", "esperado": "mi_falta"},
+  {"p": "how far is the next stop", "esperado": "mi_falta"},
+  {"p": "a qué altura estoy", "esperado": "mi_altura"},
+  {"p": "qué tan alto estamos ahora", "esperado": "mi_altura"},
+  {"p": "a cuántos metros sobre el mar estoy", "esperado": "mi_altura"},
+  {"p": "what's my altitude", "esperado": "mi_altura"},
+  {"p": "dónde estoy", "esperado": "mi_donde"},
+  {"p": "en qué parte del recorrido vamos", "esperado": "mi_donde"},
+  {"p": "estoy cerca de alguna estación", "esperado": "mi_donde"},
+  {"p": "where am I", "esperado": "mi_donde"},
+  {"p": "cuánto hemos caminado", "esperado": "mi_recorrido"},
+  {"p": "cuántos kilómetros llevo", "esperado": "mi_recorrido"},
+  {"p": "cuánto tiempo llevamos caminando", "esperado": "mi_recorrido"},
+  {"p": "cuánto he subido hoy", "esperado": ["mi_recorrido", "mi_altura"]},
+  {"p": "how far have we walked", "esperado": "mi_recorrido"},
+  {"p": "a qué altura está Brisas", "esperado": "brisas", "confusa": true},
+  {"p": "qué tan alto es el valle de las tumbas", "esperado": "tumbas", "confusa": true},
+  {"p": "cuánto mide el nevado del ruiz", "esperado": ["volcanes", "glaciares", "cima"], "confusa": true},
+  {"p": "dónde queda la laguna del otún", "esperado": "otun", "confusa": true},
+  {"p": "cuánto dura el recorrido", "esperado": ["tumbas", "horario"], "confusa": true},
+  {"p": "me duele la cabeza por la altura", "esperado": "mal_altura", "confusa": true}
+ ]
+}

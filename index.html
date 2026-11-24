@@ -82,10 +82,15 @@
   <section id="v-mapa" class="vista vista-campo" aria-labelledby="mapa-titulo" hidden>
     <header class="campo-cab">
       <h2 id="mapa-titulo" data-t="mapa.titulo">El sendero</h2>
-      <span id="gps-chip" class="chip"></span>
+      <span class="mapa-cab-der">
+        <span id="mapa-modo" class="segmentos-mini" role="group" hidden><button type="button" data-m="plano" aria-pressed="true" data-t="mapa.plano">Plano</button><button type="button" data-m="3d" aria-pressed="false">3D</button></span>
+        <span id="gps-chip" class="chip"></span>
+      </span>
     </header>
     <div id="gps-ayuda" class="gps-ayuda" role="status" hidden></div>
-    <div class="pliego"><svg id="mapa" viewBox="0 0 360 440" role="img" data-t="mapa.alt" data-t-attr="aria-label" aria-label="Mapa del sendero"></svg></div>
+    <div class="pliego"><svg id="mapa" viewBox="0 0 360 440" role="img" data-t="mapa.alt" data-t-attr="aria-label" aria-label="Mapa del sendero"></svg>
+      <div id="vista3d" class="vista3d" hidden><canvas id="mapa3d" aria-hidden="true"></canvas><canvas id="mapa3d-capa" role="img" data-t="mapa.alt3d" data-t-attr="aria-label" aria-label="Relieve en 3D del sector"></canvas><p class="ayuda3d" data-t="mapa.ayuda3d"></p></div></div>
+    <p id="mapa-fuente" class="mapa-fuente"></p>
     <section id="bitacora" class="bitacora" aria-live="polite" hidden></section>
     <p class="ayuda" data-t="mapa.ayuda"></p>
     <ol id="estaciones" class="estaciones"></ol>

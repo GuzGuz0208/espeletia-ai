@@ -65,5 +65,11 @@ with sync_playwright() as p:
             elif any(x in r['alt'] for x in e): toque += 1
         n = sum(1 for q in qs if not q.get('propia'))
         print(f"\ntema {banco}: navegador = Python en {len(qs) - dif}/{len(qs)}; seguimiento: {directas}/{n} directas, {toque} más a un toque")
+    # 5) Preguntas sobre el recorrido (fichas dinámicas) y parecidas sobre un lugar
+    qs = json.load(open(os.path.join(APP, 'pruebas', 'preguntas_mapa.json')))['preguntas']
+    res = pg.evaluate("async (qs) => { const out=[]; for (const q of qs) { const r = await window.chat.preguntar(q.p); out.push(r.tipo === 'respuesta' ? r.ficha.id : null); } return out; }", qs)
+    dif = sum(1 for q, r in zip(qs, res) if (lambda py: (py if isinstance(py, str) else None))(tc.responder(q['p'], None, 'sin')) != r)
+    bien = sum(1 for q, r in zip(qs, res) if r in (q['esperado'] if isinstance(q['esperado'], list) else [q['esperado']]))
+    print(f"\nmapa preguntas_mapa.json: navegador = Python en {len(qs) - dif}/{len(qs)}; correctas en el navegador {bien}/{len(qs)}")
     print('\n'.join(set(logs)) or 'sin errores en consola')
     b.close()

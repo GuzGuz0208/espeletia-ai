@@ -1588,6 +1588,110 @@
    "en": "The park's climate is bimodal: two rainy and two dry periods a year, and temperature changes with the season and altitude. Always bring waterproof clothes."
   },
   {
+   "id": "mi_falta",
+   "tema": "recorrido",
+   "fuente": "app",
+   "dinamica": "falta",
+   "q": [
+    "cuánto falta",
+    "cuánto nos falta",
+    "cuánto queda para la siguiente estación",
+    "qué tan lejos está la siguiente parada",
+    "a cuánto estamos de la próxima estación",
+    "falta mucho",
+    "cuánto queda de camino",
+    "a qué distancia está la próxima estación",
+    "cuánto falta para terminar el recorrido",
+    "cuánto queda para llegar al final",
+    "ya casi llegamos",
+    "ya vamos a llegar",
+    "cuánto falta para llegar"
+   ],
+   "qen": [
+    "how much further",
+    "how far to the next station",
+    "are we there yet",
+    "how far is the end of the trail",
+    "are we almost there"
+   ],
+   "es": "Distancia desde tu posición actual hasta la siguiente estación del recorrido, según el GPS de este teléfono.",
+   "en": "Distance from your current position to the next station on the route, from this phone’s GPS."
+  },
+  {
+   "id": "mi_altura",
+   "tema": "recorrido",
+   "fuente": "app",
+   "dinamica": "altura",
+   "q": [
+    "a qué altura estamos",
+    "cuál es mi altura",
+    "en qué altura voy",
+    "cuántos metros de altura tengo ahora",
+    "a cuántos metros estamos",
+    "qué altura marca el GPS",
+    "qué altura llevamos",
+    "mi altura actual"
+   ],
+   "qen": [
+    "what altitude are we at",
+    "how high am I",
+    "current altitude",
+    "how many meters up are we"
+   ],
+   "es": "Tu altura actual según el GPS de este teléfono o el relieve, y la máxima que has alcanzado hoy.",
+   "en": "Your current altitude from this phone’s GPS or the terrain model, and the highest you have reached today."
+  },
+  {
+   "id": "mi_donde",
+   "tema": "recorrido",
+   "fuente": "app",
+   "dinamica": "donde",
+   "q": [
+    "dónde estamos",
+    "en qué estación estoy",
+    "por dónde vamos",
+    "cuál es la estación más cercana",
+    "en qué parte del sendero estoy",
+    "mi ubicación",
+    "estamos cerca de la estación",
+    "ya llegamos a la estación",
+    "muéstrame dónde estoy en el mapa"
+   ],
+   "qen": [
+    "where are we",
+    "which station am I at",
+    "show me where I am",
+    "nearest station"
+   ],
+   "es": "Tu posición en el recorrido: la estación más cercana y a qué distancia estás de ella.",
+   "en": "Your position on the route: the nearest station and how far you are from it."
+  },
+  {
+   "id": "mi_recorrido",
+   "tema": "recorrido",
+   "fuente": "app",
+   "dinamica": "recorrido",
+   "q": [
+    "cuánto llevo caminado",
+    "cuánta distancia he recorrido",
+    "cuánto tiempo llevo",
+    "cuántos metros he subido",
+    "cuánto hemos subido",
+    "resumen de mi caminata",
+    "cuánto llevamos de recorrido",
+    "qué distancia llevamos",
+    "cuánto tiempo hemos caminado"
+   ],
+   "qen": [
+    "how far have I walked",
+    "how long have we been walking",
+    "how much have we climbed",
+    "my hike summary"
+   ],
+   "es": "Resumen de tu caminata registrada en este teléfono: distancia, tiempo y cuánto has subido.",
+   "en": "Summary of your hike logged on this phone: distance, time and how much you have climbed."
+  },
+  {
    "id": "saludo",
    "tema": "app",
    "fuente": "app",

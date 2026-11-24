@@ -5,9 +5,23 @@ import { E, cromo as getCromo, cromos, nombreClase } from './estado.js';
 import { t } from './i18n.js';
 import { $, h, esc, animar, hablar, vibrar } from './util.js';
 import { personajes } from './art.js';
+import * as rec from './recorrido.js';
 
 let iniciado = false;
 let tema = null; // { id, ficha, es, en }: de qué se está hablando (Lente, cromo o foto)
+let verEnMapa = null;  // (lugar) => abre el mapa en ese lugar (lo conecta app.js)
+let pendiente = null;  // { tema, intro }: al llegar a una estación, se ofrece hablar de ella la próxima vez que se abra el chat
+const ofrecidos = new Set();
+
+// Fichas sobre lugares que están en el mapa
+const LUGAR = { brisas: 'e1', tumbas: 'e4', volcanes: 'volcan', glaciares: 'volcan', volcan_estado: 'volcan', cima: 'volcan' };
+const ES_EMERGENCIA = (f) => f.id === 'emergencia';
+
+export function conectarMapa(fn) { verEnMapa = fn; }
+export function ofrecerLugar(nuevo, intro) {
+  if (!nuevo || ofrecidos.has(nuevo.id)) return;
+  pendiente = { tema: nuevo, intro };
+}
 
 export function iniciarChatUI() {
   $('#chat-form').onsubmit = (e) => { e.preventDefault(); const v = $('#chat-in').value.trim(); if (v) { $('#chat-in').value = ''; enviar(v); } };
@@ -96,10 +110,15 @@ async function queEsEsto(archivo) {
   window.__ultimoChat = { foto: true, clase: r?.clase || null, tema: null };
 }
 
-export async function entrarChat({ enfocar = true } = {}) {
+export async function entrarChat({ enfocar = true, conTema = false } = {}) {
   if (!iniciado) {
     iniciado = true;
     bienvenida();
+  }
+  if (pendiente && !conTema) {
+    const p = pendiente; pendiente = null; ofrecidos.add(p.tema.id);
+    await abrirConTema(p.tema, { intro: p.intro });
+    enfocar = false;
   }
   if (!chat.listo()) {
     const estado = $('#chat-estado');
@@ -149,16 +168,40 @@ function preguntaCorta(f, lang) { return (lang === 'en' ? f.qen?.[0] : f.q[0]) |
 
 function tarjetaFicha(f, lang, { alternativas = [], urgente = false } = {}) {
   const fuente = chat.fuentes()[f.fuente];
-  const card = h(`<article class="msg fray ficha${urgente || f.urgente ? ' urgente' : ''}" lang="${lang}">
-      <p class="ficha-txt">${esc(textoFicha(f, lang))}</p>
+  const din = f.dinamica ? rec.responder(f.dinamica, lang) : null;
+  const txt = din ? din.texto : textoFicha(f, lang);
+  const card = h(`<article class="msg fray ficha${urgente || f.urgente ? ' urgente' : ''}${din ? ' dinamica' : ''}" lang="${lang}">
+      <p class="ficha-txt">${esc(txt)}</p>
+      ${din ? `<p class="ficha-fuente">${esc(t('rec.fuente', {}, lang))}</p>` : ''}
       ${fuente && f.fuente !== 'app' ? `<p class="ficha-fuente">${esc(t('det.fuente', { f: fuente.titulo }))}</p>` : ''}
       <div class="ficha-acc">
         <button class="btn-cuadro btn-linea btn-mini-cuadro" aria-label="${esc(t('det.escuchar'))}"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path class="onda" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/></svg></button>
       </div>
     </article>`);
-  card.querySelector('.ficha-acc button').onclick = () => hablar(textoFicha(f, lang), lang);
+  const acc = card.querySelector('.ficha-acc');
+  acc.querySelector('button').onclick = () => hablar(txt, lang);
+  // Emergencia: la ubicación y la altura actuales, para dárselas al guía o a quien ayude
+  if (urgente || ES_EMERGENCIA(f)) {
+    const u = rec.ubicacionTexto(lang);
+    if (u && (ES_EMERGENCIA(f) || urgente)) {
+      const box = h(`<div class="ficha-ubic"><span>${esc(t('rec.tuUbicacion', {}, lang))}</span><b>${esc(u)}</b></div>`);
+      const cp = h(`<button class="chip chip-mini" type="button">${esc(t('rec.copiar', {}, lang))}</button>`);
+      cp.onclick = async () => { try { await navigator.clipboard.writeText(u); cp.textContent = t('rec.copiado', {}, lang); } catch (e) { cp.textContent = t('rec.noCopia', {}, lang); } };
+      box.appendChild(cp);
+      card.insertBefore(box, acc);
+    }
+  }
+  const lugar = din ? din.mapa : LUGAR[f.id];
+  if (lugar && verEnMapa) {
+    const b = h(`<button class="chip chip-mini chip-mapa" type="button">${esc(t('rec.verMapa', {}, lang))}</button>`);
+    b.onclick = () => verEnMapa(lugar);
+    acc.appendChild(b);
+  }
+  if (din?.altura) {
+    const x = chat.fichaPorId('mal_altura');
+    if (x) { const b = h(`<button class="chip chip-mini" type="button">${esc(preguntaCorta(x, lang))}</button>`); b.onclick = () => mostrarFicha(x, lang, preguntaCorta(x, lang)); acc.appendChild(b); }
+  }
   if (alternativas.length) {
-    const acc = card.querySelector('.ficha-acc');
     acc.appendChild(h(`<span class="ficha-rel">${esc(t('chat.relacionado'))}</span>`));
     for (const a of alternativas) {
       const b = h(`<button class="chip chip-mini">${esc(preguntaCorta(a, lang))}</button>`);
@@ -203,8 +246,8 @@ async function enviar(texto) {
       card.querySelector('.chips').appendChild(b);
     }
   } else {
-    const msg = r.ficha ? textoFicha(r.ficha, lang) : t('chat.nose', {}, lang);
+    const msg = r.ficha ? (r.ficha.dinamica ? rec.responder(r.ficha.dinamica, lang).texto : textoFicha(r.ficha, lang)) : t('chat.nose', {}, lang);
     agregar(h(`<article class="msg fray nose"><p>${esc(msg)}</p></article>`));
   }
-  window.__ultimoChat = { texto, tipo: r.tipo, id: r.ficha?.id || null, alternativas: (r.alternativas || []).map((a) => a.id), porTema: !!r.porTema, sugiereTema: r.sugiereTema?.id || null, tema: tema?.id || null };
+  window.__ultimoChat = { texto, tipo: r.tipo, id: r.ficha?.id || null, dinamico: r.ficha?.dinamica ? rec.responder(r.ficha.dinamica, lang).texto : null, alternativas: (r.alternativas || []).map((a) => a.id), porTema: !!r.porTema, sugiereTema: r.sugiereTema?.id || null, tema: tema?.id || null };
 }

@@ -1,4 +1,4 @@
-# Álbum del Páramo: prueba de concepto v3.6 (opción B + chat sin internet + Modo guía + Lente unida al chat + bitácora del recorrido)
+# Álbum del Páramo: prueba de concepto v3.8 (opción B + chat sin internet + Modo guía + Lente unida al chat + bitácora + relieve real y 3D + chat unido al mapa)
 
 App web instalable (PWA) para visitantes del PNN Los Nevados. Funciona **en modo avión** después de abrirla una vez con internet. Corre en Android (Chrome) y en iPhone (Safari) sin pasar por tiendas de apps. Está en español e inglés.
 
@@ -24,7 +24,7 @@ Es un álbum de cromos impreso de verdad, en risografía a dos tintas: verde fra
 4. **Caminando no se interrumpe.** Al llegar a una estación, el celular solo vibra y guarda el sobre. Los sobres esperan en el álbum hasta que el grupo se detenga.
 5. **Detalle.** Al tocar un cromo pegado se ve en grande. Al tocarlo otra vez se voltea, y el dorso trae el dato oficial con su fuente, la estación, la fecha y el dueño. Desde ahí se puede guardar la imagen, pasarla al grupo, escucharla o cambiar la ilustración por una foto propia.
 6. **Lente.** La mira se cierra sobre lo que reconoce, y Fray, el Cóndor o Magma cuentan el dato. Si la Lente duda, dice «No estoy seguro, pregúntale a tu guía». Tiene modo QR y modo foto, con cambio a cámara frontal para la selfie de grupo.
-7. **Mapa.** Un pliego con las estaciones, el punto «estás aquí» con su margen de error, tu rastro, el volcán (o una flecha con su distancia si queda fuera), el **fin del recorrido autorizado**, escala y norte. No descarga mapas: se dibuja solo. Las curvas de nivel son decorativas, no el relieve real. Cada estación se toca para ver su cromo, preguntarle a Fray o usar el código del guía. Debajo, **Tu recorrido**: altura actual, máxima, cuánto subiste, distancia, tiempo y perfil de altura.
+7. **Mapa.** Un pliego con el **relieve real** del sector (tinte por altura, sombreado y curvas de nivel cada 100 m, del modelo de elevación Copernicus), las estaciones, el punto «estás aquí» con su margen de error, tu rastro, el volcán, el **fin del recorrido autorizado**, escala y norte. Con el botón **3D**, el mismo terreno en relieve con la ruta, las estaciones y el volcán: se gira con un dedo, se acerca con dos y al tocar una estación se abre su hoja. Todo funciona sin internet. Cada estación se toca para ver su cromo, preguntarle a Fray o usar el código del guía. Debajo, **Tu recorrido**: altura actual, máxima, cuánto subiste, distancia, tiempo y perfil de altura.
 8. **Pausa de contemplación.** 2 minutos sin tocar la pantalla. Si alguien la toca, el tiempo vuelve a empezar. Igual que la foto de grupo, solo se puede hacer **en el parque** (ver abajo).
 9. **Final.** Al completar una página caen hojas de frailejón. Al llegar a 24/24 aparece un sello, y el álbum completo se descarga como una sola imagen.
 10. **Pregúntale a Fray (nuevo en la v3).** Es un chat que funciona sin internet y responde solo con fichas oficiales del parque, siempre con su fuente. Se ve más abajo.
@@ -92,6 +92,24 @@ El chat muestra «Hablando sobre el frailejón» (con × para quitarlo), la fich
 - **Control de arrastre:** las 140 preguntas de los bancos 1 y 2, cada una con un tema ajeno al azar, no ganan ninguna respuesta equivocada. 6 preguntas de fuera del parque dicen «¿Preguntas por…?» en vez de «no sé», y 14 respuestas correctas llevan un botón extra con el tema.
 - El navegador da lo mismo que Python en las 97 preguntas con tema (`herramientas/paridad_chat.py`).
 
+### Chat y mapa unidos (v3.8)
+
+Fray responde preguntas sobre **tu propio recorrido** con lo que mide este teléfono (GPS y bitácora), sin internet:
+
+| Pregunta (ejemplos) | Responde con |
+|---|---|
+| «¿cuánto falta?», «¿ya casi llegamos?» | la siguiente estación sin visitar y su distancia **en línea recta** (avisa que el sendero es más largo) y cuántas llevas |
+| «¿a qué altura estamos?» | la altura actual y de dónde sale (GPS ± m o «estimada con el relieve»), lo más alto de hoy y un botón al mal de altura |
+| «¿dónde estamos?» | la estación más cercana y su distancia, o «estás en la estación N» |
+| «¿cuánto llevo caminado?» | distancia, tiempo, subida y altura máxima de la bitácora |
+
+- Sin posición, lo dice y ofrece abrir el mapa. Lejos del parque (más de 3 km), da la distancia hasta Brisas. No da indicaciones para llegar: eso lo hace el guía.
+- **«Ver en el mapa»** en las respuestas de lugares: Brisas y el Valle de las Tumbas abren su hoja; el volcán, los glaciares y la cima resaltan el volcán. La laguna del Otún queda fuera del área del mapa, así que no lleva botón.
+- **Tema automático:** al llegar a una estación, la próxima vez que se abre el chat Fray dice «Llegaste a Brisas. ¿Quieres saber algo de aquí?» con su ficha. Lo ofrece una sola vez por estación.
+- **Emergencia:** «me perdí» o «necesito ayuda» muestran, además de la ficha, las coordenadas, la altura y la estación más cercana, con un botón para copiarlas y dárselas a quien ayude.
+- **Medido** con `pruebas/preguntas_mapa.json` y `python3 herramientas/mapa_chat.py`: 17 de 18 preguntas sobre el recorrido van a la ficha correcta y 5 de 6 preguntas parecidas pero sobre un lugar («¿a qué altura está Brisas?») no se las roban las fichas nuevas. Lo honesto: el banco lo escribí antes de las paráfrasis, pero después lo usé para agregar tres. Fallan «¿cuánto falta para el Valle de las Tumbas?» (va a temperatura) y «¿cuánto dura el recorrido?» (va a actividades). Los bancos 1 y 2 y los de tema quedan igual que antes, y el navegador da lo mismo que Python en las 24.
+- `pruebas/chat_mapa.py` lo prueba en la interfaz: sin GPS, una caminata simulada, el tema al llegar (una vez), que las cifras del chat sean las de la bitácora, «Ver en el mapa», la emergencia con ubicación y una pregunta en inglés.
+
 ### Cambiar o validar fichas
 
 1. Edita `chat.json`: el texto oficial en `es` y `en`, las formas de preguntar en `q` y `qen`, y la `fuente`.
@@ -110,6 +128,12 @@ El chat muestra «Hablando sobre el frailejón» (con × para quitarlo), la fich
 - **GitHub Pages** o cualquier hosting estático con HTTPS también sirve. No necesita servidor.
 
 **Archivos grandes.** El motor WASM y los dos modelos van partidos en trozos de 8 MB en `models/partes/`, con su tamaño y huella SHA-256 en `models/partes.json`. El service worker (`sw.js`) los une y verifica una sola vez, al guardar la app para usar sin señal. Así ningún archivo pasa de 8 MB y lo aceptan Netlify Drop, GitHub (que advierte desde 50 MB) y GitHub Pages. Para cambiar un modelo: `python3 herramientas/partir.py nuevo.onnx models/mnv2_embed.onnx`. Para recuperar el original: `python3 herramientas/partir.py --unir models/e5_small_latino.onnx salida.onnx`.
+
+**Relieve real y 3D (v3.7).**
+- **Datos:** Copernicus DEM GLO-30 (ESA), recortado a lon −75,42 a −75,27 y lat 4,97 a 4,85 (Brisas, el Valle de las Tumbas y el cráter Arenas) y promediado a celdas de unos 60 m. `herramientas/relieve.py` genera `models/relieve.bin` (alturas, 117 KB), `models/relieve.json` (georreferencia) y `models/relieve.webp` (el pliego dibujado, 92 KB). Atribución obligatoria, visible bajo el mapa: «Copernicus DEM GLO-30 © DLR, Airbus DS, ESA». Es un modelo de superficie con error de unos metros: sirve para ver el terreno, no para medir.
+- **3D:** WebGL sin librerías, unos 58.000 vértices, exageración vertical 1,5× y bruma con la distancia. Solo dibuja al girar, acercar o recibir una posición nueva: quieto no gasta batería. La ruta, las estaciones y las etiquetas se dibujan encima, en 2D, y no se montan unas sobre otras. Si el teléfono no tiene WebGL, el botón 3D no aparece. Con la CPU frenada 4× y WebGL por software, preparar el 3D tarda 0,4 s; en un teléfono con GPU, cada cuadro debería ser mucho más rápido que en la prueba, pero falta medirlo en uno real.
+- **Altura sin GPS:** si el teléfono no da altura, la bitácora usa la altura del terreno en tu posición según el relieve («≈»), que es mejor que la de la estación más cercana.
+- **Lo que reveló el relieve:** las coordenadas de las estaciones 2, 3 y 4 no cuadran con sus alturas. En esos puntos el terreno está a 4.366, 4.496 y 4.650 m, frente a 4.200, 4.300 y 4.450 m anotados; Brisas sí cuadra (4.088 frente a 4.100). Hay que fijarlas en campo (Modo equipo → Fijar aquí) y publicar el Paquete del parque.
 
 **Mapa y bitácora (v3.6).**
 - **GPS:** solo funciona con la app abierta: con la pantalla apagada o la app en segundo plano el navegador no entrega posiciones. Por eso, al volver a la app se pide la posición de inmediato (y se revisa si llegaron a una estación), el GPS se pausa en segundo plano (ahorra batería) y, si falla por señal o tiempo, se reintenta solo cada 8 s (Chrome no lo hace por su cuenta). Si el permiso está bloqueado, el mapa explica cómo activarlo.
@@ -206,7 +230,9 @@ La prueba está en `pruebas/coleccion.py`. Usa Playwright con Chrome, perfil per
 - **Ajustes:** funcionan el cambio a inglés y el tema noche.
 - No hubo errores en la consola.
 
-`pruebas/mapa.py` simula una caminata Brisas → Valle de las Tumbas con altura del GPS y revisa la bitácora (máxima, subida, distancia, tiempo, perfil y rastro), la hoja de cada estación, el código del guía como plan B, el aviso de altura que abre el chat, un teléfono sin altura por GPS y el permiso negado. `pruebas/gps_reintento.py` comprueba que, tras un error del GPS, se reintenta solo y registra la llegada.
+`pruebas/mapa.py` (con WebGL por software para el 3D) simula una caminata Brisas → Valle de las Tumbas con altura del GPS y revisa la bitácora (máxima, subida, distancia, tiempo, perfil y rastro), la hoja de cada estación, el código del guía como plan B, el aviso de altura que abre el chat, un teléfono sin altura por GPS y el permiso negado. También el relieve real en el plano, el 3D (girar con un dedo, tocar una estación) y volver al plano. `pruebas/gps_reintento.py` comprueba que, tras un error del GPS, se reintenta solo y registra la llegada.
+
+`pruebas/chat_mapa.py` prueba la unión chat ↔ mapa (ver «Chat y mapa unidos»).
 
 `pruebas/union.py` prueba la unión Lente → chat: la Lente reconoce un frailejón y abre el chat con el tema, las sugerencias, cuatro preguntas de seguimiento (incluida la regla de seguridad), quitar el tema, una foto desde el chat (reconocida y no reconocida), «Pegar y preguntar a Fray» desde un sobre y «Preguntar a Fray» desde el detalle.
 
@@ -229,7 +255,10 @@ js/lente.js       cámara: reconocer, QR y foto
 js/motor.js       puente con el motor de IA (pedidos al worker), errores y tiempos de carga
 js/motor-worker.js  ONNX Runtime, modelos y tokenizador en segundo plano
 js/ml.js          MobileNetV2 (ONNX) + k-NN con piso de similitud
+js/recorrido.js   respuestas del chat sobre el recorrido (falta, altura, dónde, cuánto llevas) y ubicación para emergencias
 js/mapa.js        GPS (con reintento y pausa en segundo plano), geocercas, pliego, hoja de cada estación y panel «Tu recorrido»
+js/relieve.js     relieve real: carga y altura del terreno en un punto
+js/mapa3d.js      vista 3D (WebGL): malla, cámara con gestos, ruta, estaciones y etiquetas
 js/bitacora.js    registro del recorrido: altura suavizada, distancia, subida, tiempo y perfil
 js/portada.js     portada y estado sin señal
 js/ajustes.js     ajustes, PIN, Modo equipo y Paquete del parque
@@ -243,7 +272,7 @@ js/i18n.js        textos es/en
 js/celebrar.js    chispas y lluvia de hojas
 lib/              ONNX Runtime Web 1.31 (sus .mjs renombrados a .js), jsQR, qrcode-generator, @huggingface/tokenizers
 models/           parque.json (Lente y estaciones publicadas por el equipo) · partes/ (motor WASM, modelo de la Lente y del chat, en trozos de 8 MB) · partes.json · e5_tokenizer.json · chat_indice.json
-herramientas/     optimizar.py (pre-optimiza un modelo), tema_chat.py (mide el chat con tema), lente_base.py (Lente desde carpetas de fotos), partir/unir modelos, poda del modelo, índice y calibración del chat, comparación JS vs Python
+herramientas/     relieve.py (pliego y malla 3D desde Copernicus DEM), optimizar.py (pre-optimiza un modelo), tema_chat.py (mide el chat con tema), lente_base.py (Lente desde carpetas de fotos), partir/unir modelos, poda del modelo, índice y calibración del chat, comparación JS vs Python
 fonts/            Bricolage Grotesque (variable) y Atkinson Hyperlegible, ambas con licencia OFL
 pruebas/          prueba de punta a punta con Playwright
 ```

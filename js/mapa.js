@@ -4,14 +4,20 @@ import { t } from './i18n.js';
 import { $, $$, h, esc, distancia, fmtDist, vibrar, aviso, animar, atraparFoco } from './util.js';
 import * as bit from './bitacora.js';
 import { formCodigo } from './guia.js';
+import * as relieve from './relieve.js';
+import * as m3d from './mapa3d.js';
+let modo = 'plano';
+let resaltaVolcan = 0;
 
 let watch = null, reintento = null, quiere = false, negado = false;
 let ctx = { llegada: async () => {}, preguntar: () => {}, preguntarFicha: () => {}, abrirSobres: () => {} };
 
 export function iniciarMapa(c) {
   ctx = { ...ctx, ...c };
-  bus.addEventListener('posicion', () => { revisar(); if (!$('#v-mapa').hidden) pintar(); });
-  bus.addEventListener('cambio', () => { if (!$('#v-mapa').hidden) pintar(); });
+  bus.addEventListener('posicion', () => { revisar(); if (!$('#v-mapa').hidden) { pintar(); m3d.pedirDibujo(); } });
+  bus.addEventListener('cambio', () => { if (!$('#v-mapa').hidden) { pintar(); m3d.pedirDibujo(); } });
+  // Plano / 3D (el 3D solo si hay relieve real y el teléfono tiene WebGL)
+  $$('#mapa-modo [data-m]').forEach((b) => (b.onclick = () => ponerModo(b.dataset.m)));
   chip(t('mapa.gpsApagado'), false);
   // Tocar una estación (en el dibujo o en la lista) abre su hoja
   const abrirDe = (ev) => { const el = ev.target.closest('[data-est]'); if (el) abrirEstacion(el.dataset.est); };
@@ -26,6 +32,7 @@ export function iniciarMapa(c) {
     else { detener(); arrancar(); ahora(); }
   });
   bit.cargar();
+  relieve.cargar().then((d) => { $('#mapa-modo').hidden = !(d && m3d.soportado()); if (!$('#v-mapa').hidden) pintar(); });
 }
 
 // ---------- GPS ----------
@@ -93,7 +100,19 @@ export async function llegar(e, { simulado = false } = {}) {
   } else if (nueva) {
     aviso(t('mapa.llegaste', { est: e.nombre }));
   }
+  if (nueva) ctx.alLlegar?.(e, c || null); // el chat ofrecerá hablar de este lugar
   if (!$('#v-mapa').hidden) pintar();
+}
+
+// Desde el chat: «Ver en el mapa». Estación → su hoja; 'volcan' → resalta el volcán; '_' → solo el mapa.
+export async function mostrar(lugar) {
+  if (modo !== 'plano') await ponerModo('plano');
+  pintar();
+  if (estaciones().some((e) => e.id === lugar)) { abrirEstacion(lugar); return; }
+  if (lugar === 'volcan') {
+    resaltaVolcan = Date.now() + 4200; pintar(); // pintar() lo marca mientras dure, aunque se redibuje
+    setTimeout(() => { if (Date.now() >= resaltaVolcan) pintar(); }, 4300);
+  }
 }
 
 export function simular(e) {
@@ -156,9 +175,12 @@ export function pintar() {
   const pts = ests.map((e) => [e.lat, e.lon]);
   const cerca = E.posicion && Math.min(...ests.map((e) => distancia(E.posicion, e))) < 1500;
   if (cerca) pts.push([E.posicion.lat, E.posicion.lon]);
-  // Deja sitio, más allá del fin del recorrido, para el tramo vedado y la flecha del volcán
+  // Con relieve real, el volcán entra en el pliego (es lo que da el contexto). Sin relieve, solo se deja
+  // sitio más allá del fin del recorrido para el tramo vedado y la flecha del volcán.
+  const rel = relieve.listo();
   const fin = ests.find((e) => e.finAutorizado) || ests[ests.length - 1];
-  pts.push([fin.lat + (v.lat - fin.lat) * 0.35, fin.lon + (v.lon - fin.lon) * 0.35]);
+  if (rel) pts.push([v.lat - 0.004, v.lon]);
+  else pts.push([fin.lat + (v.lat - fin.lat) * 0.35, fin.lon + (v.lon - fin.lon) * 0.35]);
   const la = pts.map((p) => p[0]), lo = pts.map((p) => p[1]);
   const [minLa, maxLa, minLo, maxLo] = [Math.min(...la), Math.max(...la), Math.min(...lo), Math.max(...lo)];
   const esc2 = Math.min(190 / ((maxLo - minLo) || 1e-3), 300 / ((maxLa - minLa) || 1e-3));
@@ -168,7 +190,11 @@ export function pintar() {
   const [vx, vy] = xy(v.lat, v.lon);
   let s = `<rect class="pliego-fondo" width="${W}" height="${H}"/>`;
   const cx = Math.min(460, Math.max(-100, vx)), cy = Math.min(560, Math.max(-120, vy));
-  s += `<g class="curvas" aria-hidden="true">${curvas(cx, cy, 1)}</g>`;
+  if (rel) {
+    // Relieve real: tinte por altura, sombreado y curvas cada 100 m (Copernicus DEM, ver herramientas/relieve.py)
+    const m = rel.meta, [ix, iy] = xy(m.lat1, m.lon0), [jx, jy] = xy(m.lat1 - m.h * m.paso, m.lon0 + m.w * m.paso);
+    s += `<image class="relieve" href="${rel.imagen}" x="${ix.toFixed(1)}" y="${iy.toFixed(1)}" width="${(jx - ix).toFixed(1)}" height="${(jy - iy).toFixed(1)}" preserveAspectRatio="none"/>`;
+  } else s += `<g class="curvas" aria-hidden="true">${curvas(cx, cy, 1)}</g>`;
   s += `<g class="pliegues"><path d="M120 0 V${H} M240 0 V${H} M0 ${H / 2} H${W}"/></g>`;
   const camino = ests.map((e) => xy(e.lat, e.lon));
   s += `<path class="ruta-sombra" d="M${camino.map((p) => p.join(' ')).join(' L')}"/>`;
@@ -194,11 +220,11 @@ export function pintar() {
   const desde = cerca ? E.posicion : (iFin >= 0 ? ests[iFin] : ests[ests.length - 1]);
   const dV = distancia(desde, v);
   if (vx > M && vx < W - M && vy > M && vy < H - M) {
-    s += `<g class="volcan" transform="translate(${vx} ${vy})"><path d="M-14 8 L-4 -10 H4 L14 8Z"/><text y="22" text-anchor="middle">${esc(v.nombre)}</text></g>`;
+    s += `<g class="volcan${Date.now() < resaltaVolcan ? ' resaltado' : ''}" transform="translate(${vx} ${vy})"><path d="M-14 8 L-4 -10 H4 L14 8Z"/><text y="22" text-anchor="middle">${esc(v.nombre)}</text></g>`;
   } else {
     const [bx, by, ang] = alBorde(vx, vy);
     const derecha = bx > W / 2, abajo = by > H / 2;
-    s += `<g class="volcan volcan-borde"><g transform="translate(${bx} ${by}) rotate(${(ang * 180) / Math.PI})"><path d="M8 0 L-6 -7 L-3 0 L-6 7Z"/></g>
+    s += `<g class="volcan volcan-borde${Date.now() < resaltaVolcan ? ' resaltado' : ''}"><g transform="translate(${bx} ${by}) rotate(${(ang * 180) / Math.PI})"><path d="M8 0 L-6 -7 L-3 0 L-6 7Z"/></g>
       <text x="${bx + (derecha ? -12 : 12)}" y="${by + (abajo ? -10 : 18)}" text-anchor="${derecha ? 'end' : 'start'}">${esc(v.nombre)} · ${esc(fmtDist(dV, E.lang))}</text></g>`;
   }
 
@@ -225,6 +251,7 @@ export function pintar() {
   s += escalaBarra(esc2) + norte();
   $('#mapa').innerHTML = s;
 
+  $('#mapa-fuente').textContent = rel ? rel.meta.atribucion : '';
   pintarGpsAyuda();
   pintarBitacora();
   pintarLista(ests);
@@ -341,6 +368,19 @@ export function abrirEstacion(id) {
   document.addEventListener('keydown', esc_);
   $('[data-x]', hoja).onclick = cerrar;
   capa.onclick = (ev) => { if (ev.target === capa) cerrar(); };
+}
+
+async function ponerModo(m) {
+  modo = m;
+  $$('#mapa-modo [data-m]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.m === m)));
+  const v3 = $('#vista3d');
+  $('#mapa').style.visibility = m === '3d' ? 'hidden' : '';
+  v3.hidden = m !== '3d';
+  if (m === '3d') {
+    const ok = await m3d.iniciar($('#mapa3d'), $('#mapa3d-capa'), { onTocar: abrirEstacion }).catch((e) => { console.error(e); return false; });
+    if (!ok) { aviso(t('mapa.sin3d')); ponerModo('plano'); $('#mapa-modo').hidden = true; return; }
+    m3d.volar();
+  }
 }
 
 export function entrar() {

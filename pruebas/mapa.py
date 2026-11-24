@@ -45,7 +45,8 @@ def caminata(conAltura=True):
     return pts
 
 with sync_playwright() as pw:
-    b = pw.chromium.launch(headless=True)
+    # SwiftShader: WebGL por software, para poder probar el 3D sin tarjeta gráfica
+    b = pw.chromium.launch(headless=True, args=['--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'])
     # ===== 1) Lejos del parque: volcán, fin autorizado, escala y norte; nada se registra =====
     ctx, pg = nueva(b)
     pg.click('.muelle [data-vista="mapa"]'); pg.wait_for_timeout(2500)
@@ -107,7 +108,7 @@ with sync_playwright() as pw:
     for p in caminata(conAltura=False)[:12]: pg.evaluate("(p) => window.__paramo.mapa.procesar(p)", p)
     pg.wait_for_timeout(800)
     t = pg.inner_text('#bitacora'); assert '≈' in t and 'no da la altura' in t, t
-    ok('teléfono sin altura por GPS -> «≈ 4.100 m» (estación más cercana) y lo explica')
+    ok(f'teléfono sin altura por GPS -> «≈» con la altura del terreno según el relieve, y lo explica')
     ctx.close()
 
     # ===== 8) Permiso de GPS negado: ayuda con botón =====
@@ -116,6 +117,31 @@ with sync_playwright() as pw:
     assert pg.locator('#gps-ayuda button').count() == 1
     pg.screenshot(path=f'{S}/4_sin_permiso.png')
     ok(f'permiso negado -> «{pg.inner_text("#gps-ayuda p")[:60]}…» con «Intentar de nuevo»')
+    ctx.close()
+    # ===== 9) Relieve real y vista 3D =====
+    ctx, pg = nueva(b)
+    pg.click('.muelle [data-vista="mapa"]'); pg.wait_for_selector('#mapa-modo:not([hidden])', timeout=10000)
+    assert pg.locator('#mapa image.relieve').count() == 1 and 'Copernicus' in pg.inner_text('#mapa-fuente')
+    ok('mapa plano con relieve real (Copernicus DEM) y su atribución')
+    t0 = time.time(); pg.click('#mapa-modo [data-m="3d"]')
+    pg.wait_for_function("(async () => (await import('/js/mapa3d.js')).estado().estaciones === 4)()", timeout=20000)
+    pg.wait_for_timeout(1800)
+    pg.screenshot(path=f'{S}/5_3d.png')
+    box = pg.locator('#mapa3d-capa').bounding_box(); cx, cy = box['x'] + box['width'] / 2, box['y'] + box['height'] / 2
+    yaw0 = pg.evaluate("(async () => (await import('/js/mapa3d.js')).estado().cam.yaw)()")
+    pg.mouse.move(cx, cy); pg.mouse.down(); pg.mouse.move(cx - 120, cy + 20, steps=8); pg.mouse.up(); pg.wait_for_timeout(300)
+    yaw1 = pg.evaluate("(async () => (await import('/js/mapa3d.js')).estado().cam.yaw)()")
+    assert abs(yaw1 - yaw0) > 0.5, (yaw0, yaw1)
+    pg.screenshot(path=f'{S}/6_3d_girado.png')
+    # tocar una estación en 3D abre su hoja
+    pts = pg.evaluate("(async () => (await import('/js/mapa3d.js')).estado().pts)()")
+    e1 = next(p for p in pts if p['id'] == 'e1')
+    pg.mouse.click(box['x'] + e1['x'], box['y'] + e1['y']); pg.wait_for_selector('#capa-estacion:not([hidden]) .hoja-estacion', timeout=5000)
+    assert 'Brisas' in pg.inner_text('.hoja-estacion'); pg.click('.hoja-estacion [data-x]')
+    ok(f'3D listo en {time.time() - t0:.1f} s (con WebGL por software); un dedo lo gira ({yaw0:.2f} -> {yaw1:.2f}); tocar Brisas abre su hoja')
+    pg.click('#mapa-modo [data-m="plano"]'); pg.wait_for_timeout(300)
+    assert pg.is_hidden('#vista3d') and pg.locator('#mapa').is_visible()
+    ok('se vuelve al plano')
     ctx.close()
     b.close()
 print('\nerrores:', logs or 'ninguno')

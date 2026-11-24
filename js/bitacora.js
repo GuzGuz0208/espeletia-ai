@@ -7,11 +7,13 @@
 // - Saltos imposibles caminando (más de 3 m/s) no suman distancia.
 //
 // La altura: el GPS de muchos teléfonos la da (con su margen de error); se suaviza con la mediana de
-// las últimas lecturas para que no salte. Si el teléfono no la da, se estima con la altura de la
-// estación más cercana (si está a menos de 400 m) y se marca como «≈ estimada».
+// las últimas lecturas para que no salte. Si el teléfono no la da, se estima con la altura del terreno
+// en ese punto según el modelo de elevación (js/relieve.js) o, fuera de él, con la de la estación más
+// cercana (si está a menos de 400 m), y se marca como «≈ estimada».
 import * as db from './db.js';
 import { estaciones } from './estado.js';
 import { distancia } from './util.js';
+import * as relieve from './relieve.js';
 
 const MAX_PUNTOS = 3000;
 let puntos = [];      // { t, lat, lon, alt|null, est:boolean }
@@ -39,9 +41,13 @@ export async function registrar(p) {
   if (p.altitud != null && p.altitud > 2000 && p.altitud < 6000 && (p.altPrec == null || p.altPrec <= 60)) {
     alturas.push(p.altitud); if (alturas.length > 5) alturas.shift();
     actual = { alt: Math.round(mediana(alturas)), estimada: false, prec: p.altPrec ?? null };
-  } else if (e?.altura && d < 400) {
-    actual = { alt: e.altura, estimada: true, prec: null };
-  } else actual = null;
+  } else {
+    await relieve.cargar();
+    const zr = relieve.altura(p.lat, p.lon);
+    if (zr != null) actual = { alt: Math.round(zr), estimada: true, fuente: 'relieve', prec: null };
+    else if (e?.altura && d < 400) actual = { alt: e.altura, estimada: true, fuente: 'estacion', prec: null };
+    else actual = null;
+  }
 
   if (p.precision > 50 || d > 3000) return actual; // impreciso o fuera del parque: no se guarda
   const t = p.t || Date.now();

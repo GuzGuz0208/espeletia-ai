@@ -17,3 +17,5 @@
 `union.py` prueba la unión Lente → chat (unos 2 minutos). Usa el `parque.json` que deja `guia_parque.py` en `/tmp/parque_ui.json` y una foto `/tmp/galeria/desconocido.jpg` (un cuadro del video «desconocido»). Al terminar deja `models/parque.json` como estaba.
 
 Bancos del chat con tema: `preguntas_tema.json`, `preguntas_tema2.json` y `preguntas_tema3.json` (este último escrito al final y medido una sola vez). Se miden con `python3 herramientas/tema_chat.py`.
+
+`chat_mapa.py` prueba el chat unido al mapa (unos 40 segundos; no necesita videos): fichas dinámicas sin GPS y tras una caminata simulada, el tema al llegar a Brisas, «Ver en el mapa», la emergencia con ubicación y una pregunta en inglés. El banco `preguntas_mapa.json` se mide con `python3 herramientas/mapa_chat.py`.
