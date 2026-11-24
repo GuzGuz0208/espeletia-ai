@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/dsalazardev/espeletia-ai/docs/contratos/audios.schema.json",
+  "title": "Manifiesto de audios (audios/manifiesto.json), propuesto",
+  "description": "Cada audio lee exactamente un texto validado. 'huella' es el SHA-256 del texto (UTF-8, sin espacios al inicio ni al final) en el momento de grabarlo: si el texto cambia, el audio queda desactualizado. Ver la spec manifiesto-audios.",
+  "type": "object",
+  "required": ["version", "audios"],
+  "properties": {
+    "version": { "type": "integer", "minimum": 1 },
+    "audios": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["idioma", "id", "tipo", "archivo", "huella", "voz", "origen", "licencia", "revisado"],
+        "properties": {
+          "idioma": { "enum": ["es-CO", "es-ES", "en", "fr", "pt-BR", "de"] },
+          "id": { "type": "string", "pattern": "^[a-z0-9_]+$", "description": "id de la ficha, parada, cromo o frase" },
+          "tipo": { "enum": ["ficha", "parada", "cromo", "frase"] },
+          "archivo": { "type": "string", "pattern": "^audios/[A-Za-z-]+/[a-z0-9_]+\\.(mp3|m4a)$" },
+          "huella": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "voz": { "type": "string", "minLength": 1, "description": "nombre de la persona (con consentimiento) o del modelo y la voz" },
+          "origen": { "enum": ["humano", "sintetico"] },
+          "licencia": { "type": "string", "minLength": 1 },
+          "revisado": { "type": "boolean" },
+          "segundos": { "type": "number", "minimum": 0 }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

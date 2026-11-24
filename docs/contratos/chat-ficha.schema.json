@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/dsalazardev/espeletia-ai/docs/contratos/chat-ficha.schema.json",
+  "title": "Ficha oficial del chat (un elemento de chat.json → fichas)",
+  "description": "Cada ficha es un texto oficial con fuente que Fray muestra tal cual. validar_contratos.py además comprueba la estructura de chat.json (version, actualizado, estado, fuentes, fichas, fuera) y las referencias.",
+  "type": "object",
+  "required": ["id", "tema", "fuente", "q", "es", "en"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+    "tema": { "type": "string", "minLength": 1, "description": "agrupación (seguridad, flora, normas…)" },
+    "fuente": { "type": "string", "description": "clave de chat.json → fuentes" },
+    "q": { "type": "array", "minItems": 1, "items": { "type": "string", "minLength": 2 }, "description": "formas de preguntar en español" },
+    "qen": { "type": "array", "items": { "type": "string", "minLength": 2 }, "description": "formas de preguntar en inglés" },
+    "es": { "type": "string", "minLength": 1 },
+    "en": { "type": "string", "minLength": 1 },
+    "urgente": { "type": "boolean", "description": "ficha del carril crítico que se muestra destacada" },
+    "abstencion": { "type": "boolean", "description": "si la elige la búsqueda, se responde «no tengo esa información oficial»" },
+    "dinamica": { "enum": ["falta", "altura", "donde", "recorrido"], "description": "la respuesta se completa con datos de este teléfono (GPS/bitácora)" },
+    "estado": { "enum": ["borrador", "validado"], "description": "propuesto (spec paquete-validado): validación del PNN por ficha" },
+    "variantes": {
+      "description": "propuesto (spec capa-tono): variantes de tono escritas y aprobadas; nunca cambian el dato",
+      "type": "object",
+      "propertyNames": { "enum": ["corta", "larga", "ninos"] },
+      "additionalProperties": {
+        "type": "object",
+        "required": ["es", "en"],
+        "additionalProperties": { "type": "string", "minLength": 1 }
+      }
+    }
+  },
+  "patternProperties": {
+    "^(fr|de|pt-BR|es-ES)$": { "type": "string", "minLength": 1 }
+  },
+  "additionalProperties": false
+}

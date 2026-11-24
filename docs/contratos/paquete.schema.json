@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/dsalazardev/espeletia-ai/docs/contratos/paquete.schema.json",
+  "title": "Paquete Páramo (paquete.json)",
+  "description": "Estaciones, clases de la Lente, capítulos, cromos, fuentes y calibración. Cambiar la forma exige actualizar este esquema en el mismo PR.",
+  "type": "object",
+  "required": ["version", "actualizado", "estado", "camara", "guia", "fuentes", "estaciones", "volcan", "clases", "capitulos", "cromos"],
+  "properties": {
+    "version": { "type": "string", "minLength": 1 },
+    "actualizado": { "$ref": "#/$defs/fecha" },
+    "estado": { "$ref": "#/$defs/textoIdiomas" },
+    "camara": {
+      "type": "object",
+      "required": ["umbral", "simMin", "simOk", "minPorClase"],
+      "properties": {
+        "umbral": { "type": "number", "minimum": 0, "maximum": 1 },
+        "simMin": { "type": "number", "minimum": 0, "maximum": 1 },
+        "simOk": { "type": "number", "minimum": 0, "maximum": 1 },
+        "minPorClase": { "type": "integer", "minimum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "guia": {
+      "type": "object",
+      "description": "Modo guía. La clave y el PIN son de la prueba de concepto (ver la decisión secretos-poc-en-repo-publico); no se documentan sus valores.",
+      "required": ["pin", "franjaMin", "clave"],
+      "properties": {
+        "pin": { "type": "string", "pattern": "^[0-9]{4,8}$" },
+        "franjaMin": { "type": "integer", "minimum": 1, "maximum": 60 },
+        "clave": { "type": "string", "minLength": 16 },
+        "nota": { "$ref": "#/$defs/textoIdiomas" }
+      },
+      "additionalProperties": false
+    },
+    "fuentes": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": { "$ref": "#/$defs/fuente" }
+    },
+    "estaciones": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "nombre", "lat", "lon", "radio", "altura"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^e[0-9]+$" },
+          "nombre": { "type": "string", "minLength": 1 },
+          "lat": { "$ref": "#/$defs/lat" },
+          "lon": { "$ref": "#/$defs/lon" },
+          "radio": { "type": "number", "minimum": 10, "maximum": 1000 },
+          "altura": { "type": "number", "minimum": 0, "maximum": 6000 },
+          "porConfirmar": { "type": "boolean" },
+          "finAutorizado": { "type": "boolean" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "volcan": {
+      "type": "object",
+      "required": ["nombre", "lat", "lon"],
+      "properties": {
+        "nombre": { "type": "string" },
+        "lat": { "$ref": "#/$defs/lat" },
+        "lon": { "$ref": "#/$defs/lon" }
+      },
+      "additionalProperties": false
+    },
+    "clases": {
+      "type": "array",
+      "minItems": 2,
+      "items": {
+        "type": "object",
+        "required": ["id", "es", "en"],
+        "properties": {
+          "id": { "$ref": "#/$defs/slug" },
+          "es": { "type": "string", "minLength": 1 },
+          "en": { "type": "string", "minLength": 1 },
+          "ayuda": { "$ref": "#/$defs/textoIdiomas" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "capitulos": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "num", "es", "en"],
+        "properties": {
+          "id": { "$ref": "#/$defs/slug" },
+          "num": { "type": "string" },
+          "es": { "type": "string", "minLength": 1 },
+          "en": { "type": "string", "minLength": 1 }
+        },
+        "additionalProperties": false
+      }
+    },
+    "cromos": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/cromo" }
+    },
+    "paradas": {
+      "description": "Propuesto (spec guion-paradas): una parada narrada por estación o punto del guía.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "estacion", "titulo", "texto", "fuente"],
+        "properties": {
+          "id": { "$ref": "#/$defs/slug" },
+          "estacion": { "type": "string", "pattern": "^e[0-9]+$" },
+          "titulo": { "$ref": "#/$defs/textoIdiomas" },
+          "texto": { "$ref": "#/$defs/textoIdiomas" },
+          "fuente": { "type": "string" },
+          "estado": { "$ref": "#/$defs/estado" },
+          "cromo": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "frases": {
+      "description": "Propuesto (spec guion-paradas): libro de frases del guía, pre-traducido.",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "texto"],
+        "properties": {
+          "id": { "$ref": "#/$defs/slug" },
+          "texto": { "$ref": "#/$defs/textoIdiomas" },
+          "estado": { "$ref": "#/$defs/estado" }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "fecha": { "type": "string", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}$" },
+    "slug": { "type": "string", "pattern": "^[a-z0-9_]+$" },
+    "lat": { "type": "number", "minimum": -90, "maximum": 90 },
+    "lon": { "type": "number", "minimum": -180, "maximum": 180 },
+    "estado": { "enum": ["borrador", "validado"] },
+    "idioma": { "type": "string", "pattern": "^[a-z]{2}(-[A-Z]{2})?$" },
+    "textoIdiomas": {
+      "description": "Texto por idioma: es y en obligatorios; otros (fr, de, pt-BR, es-ES…) opcionales.",
+      "type": "object",
+      "required": ["es", "en"],
+      "propertyNames": { "$ref": "#/$defs/idioma" },
+      "additionalProperties": { "type": "string", "minLength": 1 }
+    },
+    "fuente": {
+      "type": "object",
+      "required": ["titulo", "url"],
+      "properties": {
+        "titulo": { "type": "string", "minLength": 1 },
+        "url": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "textoCromo": {
+      "type": "object",
+      "required": ["nombre", "dato"],
+      "properties": {
+        "nombre": { "type": "string", "minLength": 1 },
+        "dato": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "cromo": {
+      "type": "object",
+      "required": ["n", "id", "ficha", "tema", "capitulo", "tipo", "personaje", "fuente", "es", "en"],
+      "properties": {
+        "n": { "type": "integer", "minimum": 1 },
+        "id": { "$ref": "#/$defs/slug" },
+        "ficha": { "type": "string", "description": "id de una ficha de chat.json" },
+        "tema": { "$ref": "#/$defs/textoIdiomas" },
+        "capitulo": { "type": "string" },
+        "tipo": { "enum": ["gps", "contemplacion", "grupo", "camara", "qr", "guia", "aclimatacion", "parada"] },
+        "personaje": { "enum": ["fray", "condor", "magma"] },
+        "fuente": { "type": ["string", "null"], "description": "clave de paquete.fuentes, o null si el cromo no afirma un dato" },
+        "estacion": { "type": "string", "pattern": "^e[0-9]+$" },
+        "clase": { "type": "string" },
+        "codigo": { "type": "string", "pattern": "^PARAMO-QR-[0-9]+$" },
+        "segundos": { "type": "integer", "minimum": 10 },
+        "requiere": { "type": "integer", "minimum": 1 },
+        "lugar": { "type": "boolean" },
+        "brillante": { "type": "boolean" },
+        "despuesDe": { "type": "string" },
+        "otraPlanta": { "type": "string" },
+        "estado": { "$ref": "#/$defs/estado" },
+        "es": { "$ref": "#/$defs/textoCromo" },
+        "en": { "$ref": "#/$defs/textoCromo" }
+      },
+      "patternProperties": { "^(fr|de|pt-BR|es-ES)$": { "$ref": "#/$defs/textoCromo" } },
+      "additionalProperties": false
+    }
+  }
+}
