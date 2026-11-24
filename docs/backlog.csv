@@ -11,7 +11,7 @@ id,rol,prioridad,cuando,titulo,descripcion,spec
 10,R1,P1,mañana,"Fotos para la Lente y parque.json","Fotos por clase (incluida «otra cosa») con imágenes oficiales o impresas; publicar models/parque.json.",
 11,R1,P0,jueves,"Afinar con los expertos: estaciones, guion y especies","Usar la lista de preguntas de docs/investigacion/recorrido-pnn.md y congelar el contenido.",
 12,R1,P2,mañana,"Traducciones fr/de/pt-BR como borrador","Textos de cromos y fichas críticas marcados como borrador.",
-13,R2,P0,hoy,"Arreglos de iPhone","Sin vibración (alternativa visual), plan B de wake lock, QR que abra en Safari/Chrome, guía de instalación en iPhone.",docs/specs/2026-11-24-arreglos-iphone.md
+13,R2,P0,hoy,"Aviso de instalar al iniciar y arreglos de iPhone","Aviso en la portada antes de la descarga: en iPhone «Compartir → Agregar a inicio y ábrela desde el ícono»; en Android botón Instalar. Sin vibración (alternativa visual), plan B de wake lock, QR que abra en Safari/Chrome.",docs/specs/2026-11-24-arreglos-iphone.md
 14,R2,P0,mañana,"Álbum final en PDF + collage","PDF generado en el teléfono con portada de Manizales y el Nevado, cromos por capítulo, collage de fotos, recorrido sobre el relieve real, certificado y fuentes; collage como imagen.",docs/specs/2026-11-24-album-pdf-collage.md
 15,R2,P1,mañana,"Compañeros 2D en la cámara","Fray, Cóndor y Magma aparecen sobre la cámara en paradas o pausas, con paralaje; foto con el personaje para el collage.",docs/specs/2026-11-24-companeros-2d-camara.md
 16,R2,P1,mañana,"Paradas narradas y cromo del guía por parada","El QR de parada del guía abre la parada en el idioma del visitante y entrega el cromo al terminar la explicación.",docs/specs/2026-11-24-paradas-narradas.md
@@ -31,3 +31,5 @@ id,rol,prioridad,cuando,titulo,descripcion,spec
 30,R3,P1,mañana,"Versión del SW calculada en el despliegue","Huella de los archivos de APP en el despliegue; mientras tanto version_sw.py --check en CI.",docs/specs/2026-11-24-version-sw.md
 31,R3,P1,mañana,"Verificar licencias de modelos, voces y librería PDF","e5-small, MobileNetV2, Piper/Kokoro y voces, librería PDF; enlace a cada ficha oficial.",
 32,R3,P0,jueves,"Ensayo general y congelamiento","Ensayo con el guion en 3 teléfonos, congelamiento y etiqueta del commit de la demo.",
+33,R2,P1,mañana,"Avisos sin red","Con la app abierta: llegada a estación, altura, hora de regresar (del guía u horario oficial), pausa terminada, sobres esperando y batería baja (solo Android/Chrome).",docs/specs/2026-11-24-avisos-sin-red.md
+34,R3,P1,mañana,"Qué pasa al recuperar señal","Refrescar paquete y parque, buscar versión nueva, re-descargar archivos dañados y avisar «contenido actualizado»; nunca subir datos.",docs/specs/2026-11-24-al-recuperar-senal.md

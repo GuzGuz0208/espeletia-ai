@@ -15,5 +15,5 @@ tablero de GitHub. Después de crearlos, **el tablero manda**: este archivo no s
 | Rol | P0 | P1 | P2 |
 |---|---|---|---|
 | R1 · Contenido, campo y seguridad | UTON/PNN, banco de seguridad, fichas del anexo, guion por parada, fichas críticas, guion de demo, afinar con expertos | voces, textos del PDF, tono, fotos de la Lente | traducciones fr/de/pt-BR |
-| R2 · Producto y experiencia | arreglos de iPhone, álbum PDF + collage | compañeros 2D, paradas narradas, pausa de aclimatación, audio, degradación, tono, accesibilidad | traducción en vivo, Pro nativo |
-| R3 · Plataforma, arquitectura y calidad | harness, Netlify, 3 teléfonos, proteger main, ensayo | audios.py, prueba del PDF, versión del SW, licencias | — |
+| R2 · Producto y experiencia | aviso de instalar + arreglos de iPhone, álbum PDF + collage | compañeros 2D, paradas narradas, pausa de aclimatación, audio, degradación, tono, accesibilidad, avisos sin red | traducción en vivo, Pro nativo |
+| R3 · Plataforma, arquitectura y calidad | harness, Netlify, 3 teléfonos, proteger main, ensayo | audios.py, prueba del PDF, versión del SW, licencias, al recuperar señal | — |
