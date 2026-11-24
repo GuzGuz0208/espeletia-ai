@@ -13,3 +13,7 @@
 - el QR de una historia que muestra el teléfono del guía, escaneado por otro teléfono, entrega el cromo; reusarlo no da nada;
 - el guía confirma un frailejón por QR y el visitante gana el cromo sin Lente entrenada; un QR con firma falsa se rechaza y uno de hace 25 minutos dice «vencido»;
 - el equipo carga fotos desde la galería, descarga `parque.json` y un teléfono nuevo, sin entrenar, reconoce y gana el cromo.
+
+`union.py` prueba la unión Lente → chat (unos 2 minutos). Usa el `parque.json` que deja `guia_parque.py` en `/tmp/parque_ui.json` y una foto `/tmp/galeria/desconocido.jpg` (un cuadro del video «desconocido»). Al terminar deja `models/parque.json` como estaba.
+
+Bancos del chat con tema: `preguntas_tema.json`, `preguntas_tema2.json` y `preguntas_tema3.json` (este último escrito al final y medido una sola vez). Se miden con `python3 herramientas/tema_chat.py`.

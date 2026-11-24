@@ -1,14 +1,18 @@
 // Motor de IA compartido por la Lente (visión) y el chat (lenguaje).
-// - Carga ONNX Runtime Web una sola vez.
+// El trabajo pesado corre en un Web Worker (js/motor-worker.js) para que la pantalla no se congele:
+// cargar los modelos tarda segundos en un celular y reconocer con la cámara se repite cada ~0,7 s.
+// Aquí solo se mandan pedidos y se reciben respuestas.
 // - Los archivos grandes vienen partidos en trozos de 8 MB (models/partes.json) para que cualquier
-//   hosting los acepte (Netlify Drop, GitHub, GitHub Pages) y se vuelven a unir aquí, verificando el tamaño.
+//   hosting los acepte; el service worker los guarda unidos (ver sw.js).
 // - Las librerías usan extensión .js (no .mjs) porque algunos servidores sirven .mjs con un tipo MIME
 //   que el navegador rechaza para módulos.
-// - Cada fallo queda anotado con su causa en `errores` y se muestra en Ajustes → Diagnóstico.
-const R = (u) => new URL(u, import.meta.url).href;
+// - Cada fallo queda anotado con su causa en `errores`, y los tiempos de carga en `tiempos`;
+//   ambos se ven en Ajustes.
 export const errores = [];
-let ortP = null, manP = null;
-const binarios = new Map();
+export const tiempos = {}; // { vision: { total, sesion, leer, origen, … }, texto: { … } }
+let w = null, n = 0;
+const pend = new Map();
+const cargas = {};
 
 export function anotar(donde, e) {
   const m = `${donde}: ${e?.message || e}`;
@@ -17,59 +21,45 @@ export function anotar(donde, e) {
   return m;
 }
 
-const manifiesto = () => (manP ??= fetch(R('../models/partes.json')).then((r) => (r.ok ? r.json() : {})).catch(() => ({})));
-
-async function traer(ruta) {
-  let r;
-  try { r = await fetch(R('../' + ruta)); } catch (e) { throw new Error(`no se pudo descargar ${ruta} (${e.message})`); }
-  if (!r.ok) throw new Error(`${ruta} respondió ${r.status}: falta en el servidor`);
-  return new Uint8Array(await r.arrayBuffer());
+function worker() {
+  if (w) return w;
+  w = new Worker(new URL('./motor-worker.js', import.meta.url), { type: 'module', name: 'motor-ia' });
+  w.onmessage = (e) => {
+    const { id, res, error } = e.data;
+    const p = pend.get(id); if (!p) return;
+    pend.delete(id);
+    if (error) p.no(new Error(error)); else p.si(res);
+  };
+  w.onerror = (e) => {
+    // El worker no arrancó (navegador muy viejo o archivo que falta): se avisa a todos los pedidos
+    const err = new Error(`el motor de IA no pudo arrancar (${e.message || 'worker'})`);
+    for (const p of pend.values()) p.no(err);
+    pend.clear(); w = null;
+    for (const k of Object.keys(cargas)) delete cargas[k];
+  };
+  return w;
 }
 
-// Devuelve el archivo completo como Uint8Array (unido desde sus partes si está partido)
-export function binario(ruta, onP = () => {}) {
-  if (binarios.has(ruta)) return binarios.get(ruta);
-  const p = (async () => {
-    const m = (await manifiesto())[ruta];
-    if (!m) return traer(ruta);
-    const out = new Uint8Array(m.bytes);
-    let o = 0;
-    for (let i = 0; i < m.partes.length; i++) {
-      const b = await traer(m.partes[i]);
-      if (o + b.length > m.bytes) throw new Error(`${m.partes[i]} no coincide con el original`);
-      out.set(b, o); o += b.length;
-      onP((i + 1) / m.partes.length);
-    }
-    if (o !== m.bytes) throw new Error(`${ruta} quedó incompleto (${o} de ${m.bytes} bytes)`);
-    if (m.sha256 && crypto.subtle) {
-      const h = [...new Uint8Array(await crypto.subtle.digest('SHA-256', out))].map((x) => x.toString(16).padStart(2, '0')).join('');
-      if (h !== m.sha256) throw new Error(`${ruta} llegó dañado (la huella SHA-256 no coincide)`);
-    }
-    return out;
+function pedir(msg, transfer = []) {
+  return new Promise((si, no) => {
+    const id = ++n;
+    pend.set(id, { si, no });
+    try { worker().postMessage({ ...msg, id }, transfer); } catch (e) { pend.delete(id); no(e); }
+  });
+}
+
+// Carga un modelo ('vision' o 'texto') en el worker. Se puede llamar varias veces: carga una sola.
+export function cargarModelo(modelo) {
+  cargas[modelo] ??= (async () => {
+    const t0 = performance.now();
+    const t = await pedir({ tipo: 'cargar', modelo, sw: !!navigator.serviceWorker?.controller });
+    tiempos[modelo] = { ...(t?.ya ? {} : t), espera: Math.round(performance.now() - t0) };
   })();
-  binarios.set(ruta, p);
-  p.catch(() => binarios.delete(ruta));
-  return p;
+  cargas[modelo].catch(() => delete cargas[modelo]);
+  return cargas[modelo];
 }
 
-export function cargarOrt() {
-  ortP ??= (async () => {
-    if (typeof WebAssembly !== 'object') throw new Error('este navegador no soporta WebAssembly');
-    const ort = await import('../lib/ort.wasm.min.js');
-    ort.env.wasm.numThreads = 1; // sin aislamiento entre orígenes
-    ort.env.wasm.wasmPaths = { mjs: R('../lib/ort-wasm-simd-threaded.js') };
-    ort.env.wasm.wasmBinary = await binario('lib/ort-wasm-simd-threaded.wasm');
-    return ort;
-  })();
-  ortP.catch(() => (ortP = null));
-  return ortP;
-}
-
-// Crea una sesión de inferencia a partir de un modelo (ruta relativa a la raíz de la app)
-export async function sesion(ruta, onP) {
-  const ort = await cargarOrt();
-  const bytes = await binario(ruta, onP);
-  const s = await ort.InferenceSession.create(bytes, { executionProviders: ['wasm'], graphOptimizationLevel: 'all' });
-  binarios.delete(ruta); // liberar la copia: la sesión ya tiene el modelo
-  return { ort, s };
-}
+// Huella de una imagen ya preparada (Float32Array 3×224×224). El arreglo se transfiere al worker.
+export const embedImagen = (datos) => pedir({ tipo: 'vision', datos }, [datos.buffer]);
+// Huella de un texto para el chat (con el prefijo «query: » de e5).
+export const embedTexto = (texto) => pedir({ tipo: 'texto', texto });

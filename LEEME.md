@@ -1,4 +1,4 @@
-# Álbum del Páramo: prueba de concepto v3.3 (opción B + chat sin internet + Modo guía)
+# Álbum del Páramo: prueba de concepto v3.6 (opción B + chat sin internet + Modo guía + Lente unida al chat + bitácora del recorrido)
 
 App web instalable (PWA) para visitantes del PNN Los Nevados. Funciona **en modo avión** después de abrirla una vez con internet. Corre en Android (Chrome) y en iPhone (Safari) sin pasar por tiendas de apps. Está en español e inglés.
 
@@ -24,7 +24,7 @@ Es un álbum de cromos impreso de verdad, en risografía a dos tintas: verde fra
 4. **Caminando no se interrumpe.** Al llegar a una estación, el celular solo vibra y guarda el sobre. Los sobres esperan en el álbum hasta que el grupo se detenga.
 5. **Detalle.** Al tocar un cromo pegado se ve en grande. Al tocarlo otra vez se voltea, y el dorso trae el dato oficial con su fuente, la estación, la fecha y el dueño. Desde ahí se puede guardar la imagen, pasarla al grupo, escucharla o cambiar la ilustración por una foto propia.
 6. **Lente.** La mira se cierra sobre lo que reconoce, y Fray, el Cóndor o Magma cuentan el dato. Si la Lente duda, dice «No estoy seguro, pregúntale a tu guía». Tiene modo QR y modo foto, con cambio a cámara frontal para la selfie de grupo.
-7. **Mapa.** Un pliego topográfico con las curvas de nivel del volcán, las estaciones y el punto «estás aquí». No descarga mapas: se dibuja solo.
+7. **Mapa.** Un pliego con las estaciones, el punto «estás aquí» con su margen de error, tu rastro, el volcán (o una flecha con su distancia si queda fuera), el **fin del recorrido autorizado**, escala y norte. No descarga mapas: se dibuja solo. Las curvas de nivel son decorativas, no el relieve real. Cada estación se toca para ver su cromo, preguntarle a Fray o usar el código del guía. Debajo, **Tu recorrido**: altura actual, máxima, cuánto subiste, distancia, tiempo y perfil de altura.
 8. **Pausa de contemplación.** 2 minutos sin tocar la pantalla. Si alguien la toca, el tiempo vuelve a empezar. Igual que la foto de grupo, solo se puede hacer **en el parque** (ver abajo).
 9. **Final.** Al completar una página caen hojas de frailejón. Al llegar a 24/24 aparece un sello, y el álbum completo se descarga como una sola imagen.
 10. **Pregúntale a Fray (nuevo en la v3).** Es un chat que funciona sin internet y responde solo con fichas oficiales del parque, siempre con su fuente. Se ve más abajo.
@@ -42,7 +42,7 @@ Es un álbum de cromos impreso de verdad, en risografía a dos tintas: verde fra
 - Responde en unos **35 ms** por pregunta en un computador. En un celular de gama media debería tardar algo más, pero falta medirlo.
 
 **El contenido** está en `chat.json`:
-- 66 fichas en español e inglés, cada una con fuente: página oficial del PNN Los Nevados, reglamentación para visitantes, descripción del PNN 2019, WCS y Cenicafé.
+- 71 fichas en español e inglés, cada una con fuente: página oficial del PNN Los Nevados, reglamentación para visitantes, descripción del PNN 2019, WCS, Cenicafé, el decreto Ramsar de la Laguna del Otún, BirdLife, eBird y estudios de la Universidad Nacional y la Universidad de Caldas. Las 5 últimas (musgos, humedales, periquito, pato andino y águila de páramo) se agregaron para que cada cromo tenga su ficha.
 - Unas 900 formas de preguntar.
 - 48 ejemplos de preguntas fuera de tema.
 
@@ -65,6 +65,33 @@ Es un álbum de cromos impreso de verdad, en risografía a dos tintas: verde fra
 - **Las preguntas en inglés** se responden en inglés aunque la app esté en español.
 - **Cómo se evitó la trampa:** durante el trabajo detecté que algunas formas de preguntar que había escrito eran casi iguales a preguntas del banco de prueba. Las quité todas (20) antes de medir.
 
+### Lente y chat unidos: «Pregúntale a Fray sobre esto»
+
+Cada cromo de `paquete.json` apunta a su ficha (`ficha`) y dice cómo nombrarlo (`tema`: «el frailejón»). Se abre el chat **hablando de algo** desde:
+- **la Lente,** con el botón de pregunta cuando reconoce algo con seguridad (pasó el umbral de confianza);
+- **un sobre,** con «Pegar y preguntar a Fray»;
+- **el detalle de un cromo,** con «Preguntar a Fray»;
+- **el propio chat,** con el botón de cámara («¿Qué es esto?»): la foto pasa por la Lente y, si la reconoce, se vuelve el tema. Si no, responde «No estoy seguro de qué es».
+
+El chat muestra «Hablando sobre el frailejón» (con × para quitarlo), la ficha y sugerencias que llevan **directo** a una ficha, sin pasar por la búsqueda: dos formas de preguntar sobre el tema y, según el tipo, «¿Me lo puedo llevar?», «¿Se puede comer?» o «¿Le puedo dar comida o acercarme?».
+
+**Preguntas de seguimiento** («¿cuánto vive?», «¿lo puedo tocar?»). Probé varias estrategias con `herramientas/tema_chat.py` y quedó esta:
+- si la pregunta sola cae en «no sé» de servicios, se respeta;
+- si todas sus palabras aparecen en las fichas, se busca «pregunta (el frailejón)» y se usa, salvo que la pregunta sola fuera claramente mejor;
+- si trae palabras que no están en las fichas («¿de qué color es?», pero también «¿raíz cuadrada?»), no se puede saber si sigue el tema: **no se afirma nada**. Se pregunta «¿Preguntas por el frailejón?» o, si la pregunta sola tenía respuesta, se da esa y se ofrece «¿O preguntabas por el frailejón?».
+- Las reglas de seguridad van primero: «¿se come?» con el frailejón activo responde con la ficha de no probar plantas.
+
+| Banco (preguntas cortas con tema activo) | Sin tema | Con tema | Además, a un toque |
+|---|---|---|---|
+| Seguimiento 1: 42 (usado para elegir la estrategia) | 27 | **38** | 3 |
+| Seguimiento 2: 21 (escrito después; lo miré mientras ajustaba) | 13 | **15** | 5 |
+| **Seguimiento 3: 17 (escrito al final, medido una sola vez)** | 10 | **11** | **5** |
+| Preguntas con tema propio («¿hay pumas?» con el frailejón activo) | 17 de 17 | 16 de 17 | — |
+
+- **Lo honesto:** en preguntas nuevas, el tema sube poco las respuestas directas (de 10 a 11 de 17). La mayor ganancia es que la ficha correcta queda **a un toque** (16 de 17). Con palabras raras se prefiere preguntar antes que adivinar.
+- **Control de arrastre:** las 140 preguntas de los bancos 1 y 2, cada una con un tema ajeno al azar, no ganan ninguna respuesta equivocada. 6 preguntas de fuera del parque dicen «¿Preguntas por…?» en vez de «no sé», y 14 respuestas correctas llevan un botón extra con el tema.
+- El navegador da lo mismo que Python en las 97 preguntas con tema (`herramientas/paridad_chat.py`).
+
 ### Cambiar o validar fichas
 
 1. Edita `chat.json`: el texto oficial en `es` y `en`, las formas de preguntar en `q` y `qen`, y la `fuente`.
@@ -82,7 +109,30 @@ Es un álbum de cromos impreso de verdad, en risografía a dos tintas: verde fra
 - **Netlify Drop:** arrastra la **carpeta** (con `index.html` en la raíz, no una carpeta dentro de otra) a https://app.netlify.com/drop.
 - **GitHub Pages** o cualquier hosting estático con HTTPS también sirve. No necesita servidor.
 
-**Archivos grandes.** El motor WASM y los dos modelos van partidos en trozos de 8 MB en `models/partes/`, con su tamaño y huella SHA-256 en `models/partes.json`. La app (`js/motor.js`) los une y verifica al cargar. Así ningún archivo pasa de 8 MB y lo aceptan Netlify Drop, GitHub (que advierte desde 50 MB) y GitHub Pages. Para cambiar un modelo: `python3 herramientas/partir.py nuevo.onnx models/mnv2_embed.onnx`. Para recuperar el original: `python3 herramientas/partir.py --unir models/e5_small_latino.onnx salida.onnx`.
+**Archivos grandes.** El motor WASM y los dos modelos van partidos en trozos de 8 MB en `models/partes/`, con su tamaño y huella SHA-256 en `models/partes.json`. El service worker (`sw.js`) los une y verifica una sola vez, al guardar la app para usar sin señal. Así ningún archivo pasa de 8 MB y lo aceptan Netlify Drop, GitHub (que advierte desde 50 MB) y GitHub Pages. Para cambiar un modelo: `python3 herramientas/partir.py nuevo.onnx models/mnv2_embed.onnx`. Para recuperar el original: `python3 herramientas/partir.py --unir models/e5_small_latino.onnx salida.onnx`.
+
+**Mapa y bitácora (v3.6).**
+- **GPS:** solo funciona con la app abierta: con la pantalla apagada o la app en segundo plano el navegador no entrega posiciones. Por eso, al volver a la app se pide la posición de inmediato (y se revisa si llegaron a una estación), el GPS se pausa en segundo plano (ahorra batería) y, si falla por señal o tiempo, se reintenta solo cada 8 s (Chrome no lo hace por su cuenta). Si el permiso está bloqueado, el mapa explica cómo activarlo.
+- **Bitácora:** guarda en el teléfono un punto cada 15 m de avance o cada 2 minutos, solo **dentro del parque** (a menos de 3 km de una estación; el viaje en bus no se registra) y con precisión de 50 m o mejor. La altura viene del GPS, suavizada con la mediana de las últimas 5 lecturas. Si el teléfono no da altura, se usa la de la estación más cercana y se marca «≈». La subida suma solo cambios de 5 m o más, para no contar el ruido, y la distancia descarta saltos imposibles caminando. Se borra desde el mapa o con «Vaciar» del Modo equipo.
+- **Integración:** al pasar de 3.500 m aparece «Estás a 4.320 m: camina despacio», que abre el chat con la ficha del mal de altura. La hoja de cada estación lleva a Fray y al código del guía. El póster del álbum agrega «Recorrido: altura máxima · distancia · tiempo». La altura que queda en cada cromo es la del GPS suavizada.
+- **Limitación honesta:** la altura del GPS tiene un margen de 10 a 30 m, y los navegadores no dan acceso al barómetro.
+
+**Velocidad de carga (v3.5).** Medido en Chrome, con la app ya guardada:
+
+| | Antes (v3.4) | Ahora |
+|---|---|---|
+| Pantalla congelada al cargar el chat | 0,65 s (1,8 s con la CPU frenada 4×, como un celular) | **0 s** |
+| Lente con la cámara abierta: hilo principal ocupado | 31 % (con freno 4×) | **0 %** |
+| Cargar la Lente / el chat | 0,58 s / 1,34 s | **0,36 s / 0,86 s** |
+| Descarga al publicar una versión nueva sin cambiar los modelos | **95 MB** otra vez | **0 MB** (solo revalida) |
+
+Qué cambió:
+- **La IA corre en un worker** (`js/motor-worker.js`): ONNX Runtime, los dos modelos y el tokenizador. La pantalla ya no se congela al cargar ni mientras la Lente reconoce.
+- **El service worker guarda los modelos unidos y verificados** bajo su nombre normal. Antes se unían las 8 partes y se calculaba la huella SHA-256 en cada carga (unos 2 s en un celular).
+- **No se vuelve a descargar todo en cada versión:** los archivos grandes con la misma huella se copian de la caché anterior, y los pequeños se revalidan (304).
+- **Modelos pre-optimizados** con `herramientas/optimizar.py` (nivel «extended» de ONNX Runtime): el teléfono no repite esa optimización. Las salidas son idénticas (diferencia 0).
+- **Precarga sin competir:** en la primera visita se espera a que termine de guardarse antes de cargar los modelos, para no descargarlos dos veces a la vez. Después, la Lente y el chat se precargan en segundo plano (el chat, solo si el teléfono tiene 3 GB de memoria o más).
+- **Ajustes → «Tiempos de carga»** muestra cuánto tardó cada modelo en ese teléfono y de dónde lo leyó.
 
 **Si la IA no carga:** Ajustes muestra el estado de la Lente y del chat. Si alguno falla, «Ver la causa» dice exactamente qué archivo faltó o qué error dio, y hay un botón para reintentar.
 
@@ -156,6 +206,10 @@ La prueba está en `pruebas/coleccion.py`. Usa Playwright con Chrome, perfil per
 - **Ajustes:** funcionan el cambio a inglés y el tema noche.
 - No hubo errores en la consola.
 
+`pruebas/mapa.py` simula una caminata Brisas → Valle de las Tumbas con altura del GPS y revisa la bitácora (máxima, subida, distancia, tiempo, perfil y rastro), la hoja de cada estación, el código del guía como plan B, el aviso de altura que abre el chat, un teléfono sin altura por GPS y el permiso negado. `pruebas/gps_reintento.py` comprueba que, tras un error del GPS, se reintenta solo y registra la llegada.
+
+`pruebas/union.py` prueba la unión Lente → chat: la Lente reconoce un frailejón y abre el chat con el tema, las sugerencias, cuatro preguntas de seguimiento (incluida la regla de seguridad), quitar el tema, una foto desde el chat (reconocida y no reconocida), «Pegar y preguntar a Fray» desde un sobre y «Preguntar a Fray» desde el detalle.
+
 `pruebas/guia_parque.py` prueba el Modo guía y el Paquete del parque con varios «teléfonos» (navegadores separados): el QR del guía escaneado por otro teléfono, el código «aquí», la confirmación de un frailejón sin Lente entrenada, QR falsos y vencidos, y un teléfono nuevo que reconoce con el `parque.json` publicado desde la galería.
 
 **Falta probar en celulares reales:** velocidad en gama baja (4 GB), la Lente con luz de páramo y la voz del sistema en cada marca.
@@ -172,22 +226,24 @@ js/album.js       páginas, giro de hoja, espacios, detalle y códigos
 js/sobre.js       abrir sobres: rasgar, voltear, volar al espacio y estampar
 js/cromo.js       componente de cromo (frente, dorso y brillo holográfico)
 js/lente.js       cámara: reconocer, QR y foto
-js/motor.js       carga compartida de ONNX Runtime y de los modelos partidos, con diagnóstico de errores
+js/motor.js       puente con el motor de IA (pedidos al worker), errores y tiempos de carga
+js/motor-worker.js  ONNX Runtime, modelos y tokenizador en segundo plano
 js/ml.js          MobileNetV2 (ONNX) + k-NN con piso de similitud
-js/mapa.js        GPS, geocercas y pliego topográfico
+js/mapa.js        GPS (con reintento y pausa en segundo plano), geocercas, pliego, hoja de cada estación y panel «Tu recorrido»
+js/bitacora.js    registro del recorrido: altura suavizada, distancia, subida, tiempo y perfil
 js/portada.js     portada y estado sin señal
 js/ajustes.js     ajustes, PIN, Modo equipo y Paquete del parque
 js/guia.js        Modo guía: QR y códigos firmados que cambian cada 5 min, y su verificación sin internet
 js/exportar.js    PNG de cromo y de álbum completo
 js/chat.js        motor del chat: embedding de la pregunta, búsqueda híbrida (significado + palabras), umbrales y reglas de seguridad
-js/chatui.js      pantalla «Pregúntale a Fray»
-chat.json         66 fichas oficiales es/en con fuentes, formas de preguntar y ejemplos fuera de tema
+js/chatui.js      pantalla «Pregúntale a Fray», tema activo, sugerencias del tema y «¿Qué es esto?» con foto
+chat.json         71 fichas oficiales es/en con fuentes, formas de preguntar y ejemplos fuera de tema
 js/art.js         24 ilustraciones risográficas y los 3 personajes (originales)
 js/i18n.js        textos es/en
 js/celebrar.js    chispas y lluvia de hojas
 lib/              ONNX Runtime Web 1.31 (sus .mjs renombrados a .js), jsQR, qrcode-generator, @huggingface/tokenizers
 models/           parque.json (Lente y estaciones publicadas por el equipo) · partes/ (motor WASM, modelo de la Lente y del chat, en trozos de 8 MB) · partes.json · e5_tokenizer.json · chat_indice.json
-herramientas/     lente_base.py (Lente desde carpetas de fotos), partir/unir modelos, poda del modelo, índice y calibración del chat, comparación JS vs Python
+herramientas/     optimizar.py (pre-optimiza un modelo), tema_chat.py (mide el chat con tema), lente_base.py (Lente desde carpetas de fotos), partir/unir modelos, poda del modelo, índice y calibración del chat, comparación JS vs Python
 fonts/            Bricolage Grotesque (variable) y Atkinson Hyperlegible, ambas con licencia OFL
 pruebas/          prueba de punta a punta con Playwright
 ```

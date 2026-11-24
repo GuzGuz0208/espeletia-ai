@@ -197,12 +197,15 @@ export async function abrirDetalle(id) {
       <button class="btn btn-flor" data-a="guardar">${esc(t('det.guardar'))}</button>
       <button class="btn btn-linea" data-a="compartir">${esc(t('det.compartir'))}</button>
       <button class="btn btn-linea" data-a="escuchar">${esc(t('det.escuchar'))}</button>
+      ${c.ficha ? `<button class="btn btn-linea" data-a="preguntar">${esc(t('det.preguntar'))}</button>` : ''}
       ${['gps', 'qr', 'guia', 'contemplacion', 'camara'].includes(c.tipo) ? `<button class="btn btn-linea" data-a="foto">${esc(t('det.foto'))}</button>` : ''}
     </div>`);
     caja.appendChild(acc);
     acc.querySelector('[data-a="guardar"]').onclick = async () => { descargar(await cromoPNG(id), `cromo-${num(c.n)}-${id}.png`); aviso(t('det.guardado')); };
     acc.querySelector('[data-a="compartir"]').onclick = () => compartir(id);
     acc.querySelector('[data-a="escuchar"]').onclick = () => hablar(`${tx.nombre}. ${tx.dato}`, E.lang);
+    const pr = acc.querySelector('[data-a="preguntar"]');
+    if (pr) pr.onclick = () => { cerrarDetalle(); accionesExtra.preguntar(id); };
     const bf = acc.querySelector('[data-a="foto"]');
     if (bf) bf.onclick = () => { cerrarDetalle(); accionesExtra.pedirFoto(id, t('lente.fotoCromo', { nombre: tx.nombre })); };
     capa._quitar = quitar;

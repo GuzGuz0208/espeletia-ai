@@ -3,9 +3,8 @@
 // Modelo: multilingual-e5-small (MIT), cuantizado int8 y podado a vocabulario latino (~66 MB).
 // La lógica es copia fiel de tools/indice_chat.py (donde se calibró). Si cambias una, cambia la otra.
 
-import { sesion, anotar } from './motor.js';
+import { cargarModelo, embedTexto, anotar } from './motor.js';
 
-let ort = null, ses = null, tok = null;
 let base = null;      // chat.json
 let idx = null;       // índice: items, vectores normalizados, idf, docs
 let cargando = null;
@@ -38,10 +37,7 @@ export function cargar(onEstado = () => {}) {
     idx = { dim, n, items: i.items, vec, idf: i.idf, docs: i.docs.map((d) => new Set(d)), stop: new Set(i.stop), P: i.params };
     onEstado('modelo');
     try {
-      const { Tokenizer } = await import('../lib/tokenizers.min.js');
-      const [tj, tc] = await Promise.all([fetch(RAIZ('../models/e5_tokenizer.json')).then((r) => r.json()), fetch(RAIZ('../models/e5_tokenizer_config.json')).then((r) => r.json())]);
-      tok = new Tokenizer(tj, tc);
-      ({ ort, s: ses } = await sesion('models/e5_small_latino.onnx'));
+      await cargarModelo('texto'); // el tokenizador y el modelo viven en el worker
     } catch (e) {
       // Sin memoria suficiente o sin WASM: el chat sigue funcionando solo con palabras clave.
       anotar('Chat (modelo de lenguaje)', e);
@@ -66,17 +62,7 @@ export const fuentes = () => base?.fuentes || {};
 
 // ---------- Embedding de la pregunta ----------
 export async function embed(texto) {
-  const enc = tok.encode('query: ' + texto);
-  let ids = enc.ids.slice(0, 128);
-  const L = ids.length;
-  const t = (arr) => new ort.Tensor('int64', BigInt64Array.from(arr.map((x) => BigInt(x))), [1, L]);
-  const out = await ses.run({ input_ids: t(ids), attention_mask: t(new Array(L).fill(1)), token_type_ids: t(new Array(L).fill(0)) });
-  const h = out.last_hidden_state.data; // [1, L, 384]
-  const dim = 384, v = new Float32Array(dim);
-  for (let p = 0; p < L; p++) for (let d = 0; d < dim; d++) v[d] += h[p * dim + d];
-  let s = 0; for (let d = 0; d < dim; d++) { v[d] /= L; s += v[d] * v[d]; }
-  s = Math.sqrt(s); for (let d = 0; d < dim; d++) v[d] /= s;
-  return v;
+  return embedTexto(texto); // «query: » + tokenizar + modelo + promedio + normalizar, en el worker
 }
 
 // ---------- Léxico (igual que en Python) ----------
@@ -102,9 +88,8 @@ const COMER = /\b(comestible|se come|se puede comer|comer(me|se|lo|la)?|venenos[
 const URGENTE = /\b(auxilio|socorro|emergencia|accidente|herid[oa]|desmay|me perd|perdid[oa]|no respira|ayuda urgente|help|emergency|injur|faint|unconscious|lost)\b/i;
 
 // ---------- Búsqueda ----------
-// Devuelve { tipo: 'respuesta'|'duda'|'nose', ficha, alternativas[], urgente, puntajes }
-export async function preguntar(texto) {
-  await cargar();
+// Puntúa todas las fichas para un texto. Devuelve la mejor, si alcanza el umbral, y los vectores de puntaje.
+async function puntuar(texto) {
   const F = base.fichas, P = idx.P, nF = F.length;
   const sem = new Float64Array(nF).fill(-1);
   let neg = -1;
@@ -130,10 +115,43 @@ export async function preguntar(texto) {
   const score = new Float64Array(nF);
   for (let i = 0; i < nF; i++) score[i] = soloLexico ? lex[i] : sem[i] + P.w * lex[i];
   const orden = [...score.keys()].sort((a, b) => score[b] - score[a]);
-  const b = orden[0], b2 = orden[1];
-  let responde = soloLexico ? lex[b] >= 0.5 : (sem[b] >= P.T && score[b] - neg >= P.M);
+  const b = orden[0];
+  const responde = soloLexico ? lex[b] >= 0.5 : (sem[b] >= P.T && score[b] - neg >= P.M);
+  return { b, responde, abst: responde && !!F[b].abstencion, score, sem, lex, neg, orden };
+}
+
+// Tema activo: lo que la Lente reconoció o el cromo desde el que se abrió el chat.
+// La estrategia se eligió midiendo (herramientas/tema_chat.py, bancos pruebas/preguntas_tema*.json):
+//  - si la pregunta sola cae en «no sé» de servicios, se respeta;
+//  - si todas sus palabras existen en las fichas («¿cuánto vive?», «¿lo puedo tocar?»), se busca
+//    «pregunta (tema)» y se usa salvo que la pregunta sola fuera claramente mejor (DELTA);
+//  - si trae palabras desconocidas («¿de qué color es?», «¿raíz cuadrada?») no se puede saber si es
+//    seguimiento o algo de fuera: no se afirma; se ofrece el tema como «¿te refieres a…?» o «relacionado».
+const DELTA_TEMA = -0.04;
+
+// Devuelve { tipo: 'respuesta'|'duda'|'nose', ficha, alternativas[], urgente, puntajes, porTema, sugiereTema }
+export async function preguntar(texto, { tema = null } = {}) {
+  await cargar();
+  const F = base.fichas;
+  const r0 = await puntuar(texto);
+  let el = r0, porTema = false, sugiereTema = null;
+  const tf = tema ? F.findIndex((f) => f.id === tema.ficha) : -1;
+  if (tema && tf >= 0 && !soloLexico && !r0.abst) {
+    const nombre = tema[idiomaDe(texto) || 'es'] || tema.es;
+    const r1 = await puntuar(`${texto} (${nombre})`);
+    const r1ok = r1.responde && !r1.abst;
+    const conocidas = lexTokens(texto).every((w) => w in idx.idf);
+    if (conocidas) {
+      if (r1ok && (!r0.responde || r1.score[r1.b] >= r0.score[r0.b] + DELTA_TEMA)) { el = r1; porTema = r1.b !== r0.b || !r0.responde; }
+    } else if (r1ok && r1.b === tf && (r0.b !== tf || !r0.responde)) {
+      if (r0.responde) sugiereTema = F[tf];
+      else if (!URGENTE.test(texto) && !COMER.test(texto)) return { tipo: 'duda', ficha: null, alternativas: [F[tf]], urgente: false, puntajes: {}, porTema: true };
+    }
+  }
+  const { b, responde, score, sem, neg, lex, orden } = el;
+  const b2 = orden[1];
   const urgente = URGENTE.test(texto);
-  const res = { urgente, puntajes: { sem: sem[b], neg, lex: lex[b], score: score[b] }, alternativas: [] };
+  const res = { urgente, puntajes: { sem: sem[b], neg, lex: lex[b], score: score[b] }, alternativas: [], porTema };
   const fUrg = F.findIndex((f) => f.id === 'emergencia');
   if (urgente && F[b].id !== 'emergencia' && F[b].id !== 'mal_altura') {
     // Seguridad primero: ante palabras de emergencia, la ficha de emergencia siempre aparece.
@@ -147,10 +165,12 @@ export async function preguntar(texto) {
   if (responde && F[b].abstencion) return { ...res, tipo: 'nose', ficha: F[b], alternativas: [] };
   if (responde) {
     const cerca = !soloLexico && score[b] - score[b2] < 0.012 && !F[b2].abstencion;
-    return { ...res, tipo: 'respuesta', ficha: F[b], alternativas: cerca ? [F[b2]] : [] };
+    const alt = cerca ? [F[b2]] : [];
+    if (sugiereTema && !alt.includes(sugiereTema) && sugiereTema !== F[b]) alt.unshift(sugiereTema);
+    return { ...res, tipo: 'respuesta', ficha: F[b], alternativas: alt, sugiereTema: sugiereTema && sugiereTema !== F[b] ? sugiereTema : null };
   }
   // No llega al umbral: si hay candidatas razonables, ofrecerlas como "¿Te refieres a…?"
-  const candidatas = soloLexico ? orden.filter((i) => lex[i] >= 0.25).slice(0, 2) : orden.filter((i) => sem[i] >= P.T - 0.03 && score[i] - neg >= -0.01 && !F[i].abstencion).slice(0, 2);
+  const candidatas = soloLexico ? orden.filter((i) => lex[i] >= 0.25).slice(0, 2) : orden.filter((i) => sem[i] >= idx.P.T - 0.03 && score[i] - neg >= -0.01 && !F[i].abstencion).slice(0, 2);
   if (candidatas.length) return { ...res, tipo: 'duda', ficha: null, alternativas: candidatas.map((i) => F[i]) };
   return { ...res, tipo: 'nose', ficha: null, alternativas: [] };
 }

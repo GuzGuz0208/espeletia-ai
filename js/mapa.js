@@ -1,28 +1,75 @@
-// Mapa del sendero (dibujado como un pliego topográfico) y geocercas por GPS.
+// Mapa del sendero (dibujado como un pliego topográfico), geocercas por GPS y bitácora del recorrido.
 import { E, bus, estaciones, cromos, tiene, ganar, visitar, ponerPosicion, texto } from './estado.js';
 import { t } from './i18n.js';
-import { $, h, esc, distancia, fmtDist, vibrar, aviso, animar } from './util.js';
+import { $, $$, h, esc, distancia, fmtDist, vibrar, aviso, animar, atraparFoco } from './util.js';
+import * as bit from './bitacora.js';
+import { formCodigo } from './guia.js';
 
-let watch = null;
-let onLlegada = async () => {};
+let watch = null, reintento = null, quiere = false, negado = false;
+let ctx = { llegada: async () => {}, preguntar: () => {}, preguntarFicha: () => {}, abrirSobres: () => {} };
 
-export function iniciarMapa({ llegada }) {
-  onLlegada = llegada;
+export function iniciarMapa(c) {
+  ctx = { ...ctx, ...c };
   bus.addEventListener('posicion', () => { revisar(); if (!$('#v-mapa').hidden) pintar(); });
   bus.addEventListener('cambio', () => { if (!$('#v-mapa').hidden) pintar(); });
   chip(t('mapa.gpsApagado'), false);
+  // Tocar una estación (en el dibujo o en la lista) abre su hoja
+  const abrirDe = (ev) => { const el = ev.target.closest('[data-est]'); if (el) abrirEstacion(el.dataset.est); };
+  $('#mapa').addEventListener('click', abrirDe);
+  $('#estaciones').addEventListener('click', abrirDe);
+  $('#estaciones').addEventListener('keydown', (ev) => { if ((ev.key === 'Enter' || ev.key === ' ') && ev.target.dataset.est) { ev.preventDefault(); abrirEstacion(ev.target.dataset.est); } });
+  // El navegador no entrega posiciones con la app en segundo plano: se pausa el GPS (ahorra batería)
+  // y, al volver, se pide la posición de inmediato para revisar si llegaron a una estación.
+  document.addEventListener('visibilitychange', () => {
+    if (!quiere) return;
+    if (document.hidden) detener();
+    else { detener(); arrancar(); ahora(); }
+  });
+  bit.cargar();
 }
 
+// ---------- GPS ----------
 export function iniciarGPS() {
+  quiere = true;
+  arrancar();
+}
+
+function arrancar() {
   if (!('geolocation' in navigator)) { chip(t('mapa.gpsSin'), false); return; }
-  if (watch !== null) return;
+  if (watch !== null || document.hidden) return;
+  clearTimeout(reintento);
   chip(t('mapa.gpsBuscando'), false);
-  watch = navigator.geolocation.watchPosition((p) => {
-    ponerPosicion({ lat: p.coords.latitude, lon: p.coords.longitude, precision: p.coords.accuracy, altitud: p.coords.altitude });
-    chip(t('mapa.gpsOk', { m: Math.round(p.coords.accuracy) }), p.coords.accuracy < 50);
-  }, (err) => {
-    chip(err.code === 1 ? t('mapa.gpsSinPermiso') : t('mapa.gpsSin'), false);
-  }, { enableHighAccuracy: true, maximumAge: 5000, timeout: 60000 });
+  watch = navigator.geolocation.watchPosition(recibir, fallo, { enableHighAccuracy: true, maximumAge: 5000, timeout: 30000 });
+}
+
+function detener() {
+  if (watch !== null) navigator.geolocation.clearWatch(watch);
+  watch = null;
+}
+
+function ahora() {
+  navigator.geolocation?.getCurrentPosition(recibir, () => {}, { enableHighAccuracy: true, maximumAge: 0, timeout: 20000 });
+}
+
+function recibir(p) {
+  negado = false;
+  procesar({ lat: p.coords.latitude, lon: p.coords.longitude, precision: p.coords.accuracy, altitud: p.coords.altitude, altPrec: p.coords.altitudeAccuracy, t: p.timestamp });
+}
+
+function fallo(err) {
+  detener();
+  if (err.code === 1) { negado = true; chip(t('mapa.gpsSinPermiso'), false); if (!$('#v-mapa').hidden) pintar(); return; }
+  // Sin señal o tiempo agotado: Chrome no reintenta solo, así que se reintenta aquí
+  chip(t('mapa.gpsSin'), false);
+  clearTimeout(reintento);
+  reintento = setTimeout(arrancar, 8000);
+}
+
+// Punto de entrada de cada posición (también lo usan las pruebas y la simulación)
+export async function procesar(pos) {
+  const alt = await bit.registrar(pos);
+  ponerPosicion({ lat: pos.lat, lon: pos.lon, precision: pos.precision, altitud: alt && !alt.estimada ? alt.alt : null, altura: alt });
+  chip(t('mapa.gpsOk', { m: Math.round(pos.precision) }), pos.precision < 50);
 }
 
 function chip(txt, ok) { const c = $('#gps-chip'); c.textContent = txt; c.classList.toggle('ok', ok); }
@@ -40,9 +87,9 @@ export async function llegar(e, { simulado = false } = {}) {
   const c = cromos().find((k) => k.tipo === 'gps' && k.estacion === e.id);
   if (c && !tiene(c.id)) {
     await ganar(c.id, { estacionId: e.id });
-    vibrar([200, 120, 200]); // caminando: solo vibra; el sobre espera en el álbum
+    vibrar([200, 120, 200]); // el sobre espera en el álbum, para no interrumpir la caminata
     aviso(t('sobre.caminando', { nombre: texto(c).nombre }), 4500);
-    await onLlegada(c.id, { simulado });
+    await ctx.llegada(c.id, { simulado });
   } else if (nueva) {
     aviso(t('mapa.llegaste', { est: e.nombre }));
   }
@@ -50,11 +97,12 @@ export async function llegar(e, { simulado = false } = {}) {
 }
 
 export function simular(e) {
-  ponerPosicion({ lat: e.lat, lon: e.lon, precision: 8, altitud: e.altura });
-  return llegar(e, { simulado: true });
+  return procesar({ lat: e.lat, lon: e.lon, precision: 8, altitud: e.altura, altPrec: 10, t: Date.now() }).then(() => llegar(e, { simulado: true }));
 }
 
-// Curvas de nivel generadas alrededor del volcán: dan textura de mapa sin descargar teselas.
+// ---------- Dibujo ----------
+// Curvas decorativas alrededor del volcán: dan textura de pliego sin descargar mapas.
+// No son el relieve real (eso necesitaría un modelo de elevación del terreno; ver LEEME).
 function curvas(cx, cy, escala) {
   let s = '';
   for (let k = 1; k <= 22; k++) {
@@ -71,58 +119,228 @@ function curvas(cx, cy, escala) {
   return s;
 }
 
+const W = 360, H = 440, M = 26; // tamaño del pliego y margen interior
+const M_POR_GRADO = 111320;
+const fmtAlt = (m) => `${Math.round(m).toLocaleString(E.lang === 'es' ? 'es-CO' : 'en-US')} m`;
+function fmtDur(ms) {
+  const min = Math.round(ms / 60000);
+  return min < 60 ? `${min} min` : `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, '0')} min`;
+}
+
+function escalaBarra(esc2) {
+  // metros por píxel → la longitud «redonda» que ocupe entre 50 y 110 px
+  const mpp = M_POR_GRADO / esc2;
+  const opciones = [50, 100, 200, 250, 500, 1000, 2000];
+  const m = opciones.find((x) => x / mpp >= 50) || 2000;
+  const px = m / mpp;
+  const x = 16, y = H - 18;
+  return `<g class="escala"><path d="M${x} ${y - 5} V${y} H${x + px} V${y - 5}"/><text x="${x + px / 2}" y="${y - 8}" text-anchor="middle">${m >= 1000 ? `${m / 1000} km` : `${m} m`}</text></g>`;
+}
+
+function norte() {
+  return `<g class="norte" transform="translate(${W - 24} 30)"><path d="M0 -14 L6 6 L0 2 L-6 6Z"/><text y="20" text-anchor="middle">N</text></g>`;
+}
+
+// Punto donde el segmento centro→(x,y) corta el borde interior del pliego
+function alBorde(x, y) {
+  const cx = W / 2, cy = H / 2, dx = x - cx, dy = y - cy;
+  const kx = dx ? ((dx > 0 ? W - M : M) - cx) / dx : Infinity;
+  const ky = dy ? ((dy > 0 ? H - M : M) - cy) / dy : Infinity;
+  const k = Math.min(kx, ky);
+  return [cx + dx * k, cy + dy * k, Math.atan2(dy, dx)];
+}
+
 export function pintar() {
   const ests = estaciones();
   const v = E.paquete.volcan;
   const pts = ests.map((e) => [e.lat, e.lon]);
   const cerca = E.posicion && Math.min(...ests.map((e) => distancia(E.posicion, e))) < 1500;
   if (cerca) pts.push([E.posicion.lat, E.posicion.lon]);
+  // Deja sitio, más allá del fin del recorrido, para el tramo vedado y la flecha del volcán
+  const fin = ests.find((e) => e.finAutorizado) || ests[ests.length - 1];
+  pts.push([fin.lat + (v.lat - fin.lat) * 0.35, fin.lon + (v.lon - fin.lon) * 0.35]);
   const la = pts.map((p) => p[0]), lo = pts.map((p) => p[1]);
   const [minLa, maxLa, minLo, maxLo] = [Math.min(...la), Math.max(...la), Math.min(...lo), Math.max(...lo)];
-  const esc2 = Math.min(200 / ((maxLo - minLo) || 1e-3), 320 / ((maxLa - minLa) || 1e-3));
-  const xy = (a, o) => [80 + (o - minLo) * esc2, 60 + (maxLa - a) * esc2];
+  const esc2 = Math.min(190 / ((maxLo - minLo) || 1e-3), 300 / ((maxLa - minLa) || 1e-3));
+  // Centrado en el pliego
+  const ox = (W - (maxLo - minLo) * esc2) / 2, oy = 54 + (300 - (maxLa - minLa) * esc2) / 2;
+  const xy = (a, o) => [ox + (o - minLo) * esc2, oy + (maxLa - a) * esc2];
   const [vx, vy] = xy(v.lat, v.lon);
-  const mPorGrado = 111320;
-  let s = `<rect class="pliego-fondo" width="360" height="440"/>`;
-  // El centro de las curvas se acerca al pliego para que el relieve cubra todo el mapa.
+  let s = `<rect class="pliego-fondo" width="${W}" height="${H}"/>`;
   const cx = Math.min(460, Math.max(-100, vx)), cy = Math.min(560, Math.max(-120, vy));
-  s += `<g class="curvas">${curvas(cx, cy, 1)}</g>`;
-  s += `<g class="pliegues"><path d="M120 0 V440 M240 0 V440 M0 220 H360"/></g>`;
+  s += `<g class="curvas" aria-hidden="true">${curvas(cx, cy, 1)}</g>`;
+  s += `<g class="pliegues"><path d="M120 0 V${H} M240 0 V${H} M0 ${H / 2} H${W}"/></g>`;
   const camino = ests.map((e) => xy(e.lat, e.lon));
   s += `<path class="ruta-sombra" d="M${camino.map((p) => p.join(' ')).join(' L')}"/>`;
   s += `<path class="ruta" d="M${camino.map((p) => p.join(' ')).join(' L')}"/>`;
-  if (vx > -40 && vx < 400 && vy > -40 && vy < 480) s += `<g class="volcan" transform="translate(${Math.min(330, Math.max(30, vx))} ${Math.min(420, Math.max(20, vy))})"><path d="M-14 8 L-4 -10 H4 L14 8Z"/><text y="22" text-anchor="middle">${esc(v.nombre)}</text></g>`;
+
+  // Fin del recorrido autorizado: un tramo vedado hacia el volcán y una barrera
+  const iFin = ests.findIndex((e) => e.finAutorizado);
+  if (iFin >= 0) {
+    const [fx, fy] = camino[iFin];
+    const ang = Math.atan2(vy - fy, vx - fx), L = 46;
+    const bx = fx + Math.cos(ang) * L, by = fy + Math.sin(ang) * L;
+    // Etiqueta en dos líneas, junto al tramo vedado y del lado donde quepa (unos 105 px de ancho)
+    const mx = fx + Math.cos(ang) * L * 0.5, my = fy + Math.sin(ang) * L * 0.5;
+    const derechaCabe = mx + 14 + 105 < W - 6;
+    const tx = derechaCabe ? mx + 14 : mx - 14, anchor = derechaCabe ? 'start' : 'end';
+    const [l1, l2] = t('mapa.finAutorizado2').split('|');
+    s += `<g class="vedado"><path class="vedado-linea" d="M${fx} ${fy} L${bx} ${by}"/>
+      <g transform="translate(${bx} ${by}) rotate(${(ang * 180) / Math.PI + 90})"><rect x="-11" y="-3" width="22" height="6" rx="1.5"/><path d="M-7 -3 l4 6 M0 -3 l4 6" class="vedado-rayas"/></g>
+      <text class="vedado-txt" x="${tx.toFixed(1)}" y="${(my + 6).toFixed(1)}" text-anchor="${anchor}"><tspan>${esc(l1)}</tspan><tspan x="${tx.toFixed(1)}" dy="12">${esc(l2 || '')}</tspan></text></g>`;
+  }
+
+  // Volcán: en el pliego si cabe; si no, una flecha en el borde con su distancia
+  const desde = cerca ? E.posicion : (iFin >= 0 ? ests[iFin] : ests[ests.length - 1]);
+  const dV = distancia(desde, v);
+  if (vx > M && vx < W - M && vy > M && vy < H - M) {
+    s += `<g class="volcan" transform="translate(${vx} ${vy})"><path d="M-14 8 L-4 -10 H4 L14 8Z"/><text y="22" text-anchor="middle">${esc(v.nombre)}</text></g>`;
+  } else {
+    const [bx, by, ang] = alBorde(vx, vy);
+    const derecha = bx > W / 2, abajo = by > H / 2;
+    s += `<g class="volcan volcan-borde"><g transform="translate(${bx} ${by}) rotate(${(ang * 180) / Math.PI})"><path d="M8 0 L-6 -7 L-3 0 L-6 7Z"/></g>
+      <text x="${bx + (derecha ? -12 : 12)}" y="${by + (abajo ? -10 : 18)}" text-anchor="${derecha ? 'end' : 'start'}">${esc(v.nombre)} · ${esc(fmtDist(dV, E.lang))}</text></g>`;
+  }
+
+  // Rastro del recorrido (solo si estás cerca: es tu caminata dentro del parque)
+  if (cerca) {
+    const r = bit.lista().filter((p) => distancia(p, E.posicion) < 4000).map((p) => xy(p.lat, p.lon));
+    if (r.length > 1) s += `<path class="rastro" d="M${r.map((p) => `${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join(' L')}"/>`;
+  }
+
   ests.forEach((e, i) => {
     const [x, y] = camino[i];
-    const r = Math.max(10, (e.radio / mPorGrado) * esc2);
+    const r = Math.max(10, (e.radio / M_POR_GRADO) * esc2);
     const hecha = E.visitadas[e.id];
     const izq = x > 210;
     s += `<circle class="geo" cx="${x}" cy="${y}" r="${r}"/>`;
-    s += `<g class="pin${hecha ? ' hecha' : ''}" transform="translate(${x} ${y})"><circle r="12"/><text y="4.5" text-anchor="middle">${i + 1}</text></g>`;
+    s += `<g class="pin${hecha ? ' hecha' : ''}" data-est="${e.id}" transform="translate(${x} ${y})"><title>${esc(e.nombre)}</title><circle class="toque" r="22"/><circle r="12"/><text y="4.5" text-anchor="middle">${i + 1}</text></g>`;
     s += `<text class="pin-nombre" x="${izq ? x - 18 : x + 18}" y="${y + 4}" text-anchor="${izq ? 'end' : 'start'}">${esc(e.nombre)}</text>`;
   });
-  if (cerca) { const [x, y] = xy(E.posicion.lat, E.posicion.lon); s += `<g class="yo" transform="translate(${x} ${y})"><circle class="yo-onda" r="10"/><circle r="7"/><title>${esc(t('mapa.aqui'))}</title></g>`; }
-  else if (E.posicion) s += `<text class="nota-mapa" x="180" y="425" text-anchor="middle">${esc(t('mapa.lejos'))}</text>`;
+  if (cerca) {
+    const [x, y] = xy(E.posicion.lat, E.posicion.lon);
+    const halo = Math.min(60, Math.max(8, (E.posicion.precision / M_POR_GRADO) * esc2));
+    s += `<g class="yo" transform="translate(${x} ${y})"><circle class="yo-halo" r="${halo.toFixed(1)}"/><circle class="yo-onda" r="9"/><circle class="yo-punto" r="6"/><title>${esc(t('mapa.aqui'))}</title></g>`;
+  } else if (E.posicion) s += `<text class="nota-mapa" x="${(W - 44) / 2}" y="28" text-anchor="middle">${esc(t('mapa.lejos'))}</text>`;
+  s += escalaBarra(esc2) + norte();
   $('#mapa').innerHTML = s;
 
+  pintarGpsAyuda();
+  pintarBitacora();
+  pintarLista(ests);
+}
+
+function pintarGpsAyuda() {
+  const box = $('#gps-ayuda');
+  box.hidden = !negado;
+  if (!negado) return;
+  box.innerHTML = `<p>${esc(t('mapa.permisoAyuda'))}</p><button class="btn btn-linea btn-mini" type="button">${esc(t('mapa.reintentar'))}</button>`;
+  $('button', box).onclick = () => { negado = false; quiere = true; detener(); arrancar(); pintarGpsAyuda(); };
+}
+
+function pintarLista(ests) {
   const ol = $('#estaciones');
   ol.innerHTML = '';
   ests.forEach((e, i) => {
     const c = cromos().find((k) => k.tipo === 'gps' && k.estacion === e.id);
     const hecha = E.visitadas[e.id] || (c && tiene(c.id));
     const d = E.posicion ? fmtDist(distancia(E.posicion, e), E.lang) : '—';
-    const li = h(`<li class="${hecha ? 'hecha' : ''}">
+    const li = h(`<li class="${hecha ? 'hecha' : ''}" data-est="${e.id}" tabindex="0" role="button" aria-label="${esc(e.nombre)}">
         <span class="est-num">${i + 1}</span>
-        <span class="est-txt"><b>${esc(e.nombre)}</b>${e.porConfirmar ? `<small>${esc(t('mapa.porConfirmar'))}</small>` : ''}<small>${e.altura ? `${e.altura.toLocaleString(E.lang === 'es' ? 'es-CO' : 'en-US')} m` : ''}</small></span>
+        <span class="est-txt"><b>${esc(e.nombre)}</b>${e.porConfirmar ? `<small>${esc(t('mapa.porConfirmar'))}</small>` : ''}<small>${e.altura ? fmtAlt(e.altura) : ''}${e.finAutorizado ? ` · ${esc(t('mapa.finCorto'))}` : ''}</small></span>
         <span class="est-dist">${hecha ? esc(t('mapa.visitada')) : esc(d)}</span>
       </li>`);
-    if (E.ajustes.demo && !hecha) {
-      const b = h(`<button class="btn btn-linea btn-mini">${esc(t('mapa.simular'))}</button>`);
-      b.onclick = () => simular(e);
-      li.appendChild(b);
-    }
     ol.appendChild(li);
   });
+  const nota = $('#estaciones-nota');
+  nota.textContent = E.posicion ? t('mapa.lineaRecta') : '';
+}
+
+// ---------- Bitácora ----------
+function pintarBitacora() {
+  const box = $('#bitacora');
+  const r = bit.resumen(), a = E.posicion?.altura || bit.alturaActual();
+  if (!r && !a) { box.hidden = true; return; }
+  box.hidden = false;
+  const perf = bit.perfil();
+  let spark = '';
+  if (perf.length > 1) {
+    const w = 300, hh = 54, xs = perf.map((p) => p.x), ys = perf.map((p) => p.y);
+    const [x0, x1, y0, y1] = [Math.min(...xs), Math.max(...xs) || 1, Math.min(...ys), Math.max(...ys)];
+    const X = (x) => 4 + ((x - x0) / ((x1 - x0) || 1)) * (w - 8), Y = (y) => hh - 6 - ((y - y0) / ((y1 - y0) || 1)) * (hh - 16);
+    const d = perf.map((p, i) => `${i ? 'L' : 'M'}${X(p.x).toFixed(1)} ${Y(p.y).toFixed(1)}`).join(' ');
+    spark = `<svg class="perfil" viewBox="0 0 ${w} ${hh}" role="img" aria-label="${esc(t('bit.perfil', { min: fmtAlt(y0), max: fmtAlt(y1) }))}"><path class="perfil-area" d="${d} L${X(perf[perf.length - 1].x)} ${hh} L${X(perf[0].x)} ${hh}Z"/><path class="perfil-linea" d="${d}"/><text x="4" y="10">${fmtAlt(y1)}</text><text x="4" y="${hh - 1}">${fmtAlt(y0)}</text></svg>`;
+  }
+  const dato = (k, v, extra = '') => `<div class="bit-dato${extra}"><span>${esc(t(k))}</span><b>${v}</b></div>`;
+  const altTxt = a ? `${a.estimada ? '≈ ' : ''}${fmtAlt(a.alt)}` : '—';
+  box.innerHTML = `<header><h3>${esc(t('bit.titulo'))}</h3><button class="link" type="button" id="bit-borrar">${esc(t('bit.borrar'))}</button></header>
+    <div class="bit-datos">
+      ${dato('bit.alturaAhora', altTxt, ' grande')}
+      ${r?.altMax != null ? dato('bit.altMax', `${r.alturaGps ? '' : '≈ '}${fmtAlt(r.altMax)}`) : ''}
+      ${r?.subida ? dato('bit.subida', `+${fmtAlt(r.subida)}`) : ''}
+      ${r ? dato('bit.distancia', esc(fmtDist(r.distancia, E.lang))) : ''}
+      ${r && r.duracion > 60000 ? dato('bit.tiempo', esc(fmtDur(r.duracion))) : ''}
+    </div>
+    ${spark}
+    ${a && a.alt >= 3500 ? `<button class="chip chip-altura" type="button" id="bit-altura">${esc(t('bit.altura', { alt: fmtAlt(a.alt) }))}</button>` : ''}
+    <p class="bit-nota">${esc(t(a?.estimada ? 'bit.notaEstimada' : 'bit.nota'))}</p>`;
+  $('#bit-borrar', box).onclick = async () => { if (confirm(t('bit.borrarSeguro'))) { await bit.borrar(); pintar(); } };
+  const ch = $('#bit-altura', box);
+  if (ch) ch.onclick = () => ctx.preguntarFicha('mal_altura');
+}
+
+// ---------- Hoja de una estación ----------
+export function abrirEstacion(id) {
+  const ests = estaciones();
+  const i = ests.findIndex((e) => e.id === id);
+  const e = ests[i];
+  if (!e) return;
+  const c = cromos().find((k) => k.tipo === 'gps' && k.estacion === e.id);
+  const hecha = E.visitadas[e.id] || (c && tiene(c.id));
+  const capa = $('#capa-estacion');
+  const tx = c ? texto(c) : null;
+  const d = E.posicion ? fmtDist(distancia(E.posicion, e), E.lang) : null;
+  const hora = E.visitadas[e.id] ? new Date(E.visitadas[e.id]).toLocaleTimeString(E.lang === 'es' ? 'es-CO' : 'en-US', { hour: 'numeric', minute: '2-digit' }) : null;
+  capa.innerHTML = '';
+  const hoja = h(`<div class="hoja hoja-estacion">
+      <div class="hoja-asa" aria-hidden="true"></div>
+      <p class="est-hoja-num">${esc(t('mapa.estacionN', { n: i + 1 }))}${e.altura ? ` · ${fmtAlt(e.altura)}` : ''}</p>
+      <h2>${esc(e.nombre)}</h2>
+      ${e.porConfirmar ? `<p class="sub">${esc(t('mapa.porConfirmar'))}</p>` : ''}
+      <p class="est-hoja-estado">${hecha ? esc(hora ? t('mapa.visitadaA', { h: hora }) : t('mapa.visitada')) : esc(d ? t('mapa.aDist', { d }) : t('mapa.sinPosicion'))}</p>
+      ${tx ? `<div class="est-hoja-cromo"><p class="est-hoja-et">${esc(hecha ? t('mapa.tuCromo') : t('mapa.cromoAqui'))}</p><p><b>${esc(tx.nombre)}</b>${hecha ? `<br>${esc(tx.dato)}` : ''}</p></div>` : ''}
+      ${e.finAutorizado ? `<p class="est-hoja-aviso">${esc(t('mapa.finAviso'))}</p>` : ''}
+      <div class="est-hoja-acc"></div>
+      <button class="btn btn-flor btn-ancho" data-x>${esc(t('cerrar'))}</button>
+    </div>`);
+  const acc = $('.est-hoja-acc', hoja);
+  if (c?.ficha) {
+    const b = h(`<button class="btn btn-linea">${esc(t('det.preguntar'))}</button>`);
+    b.onclick = () => { cerrar(); ctx.preguntar(c.id); };
+    acc.appendChild(b);
+  }
+  if (E.ajustes.demo && !hecha) {
+    const b = h(`<button class="btn btn-linea">${esc(t('mapa.simular'))}</button>`);
+    b.onclick = () => { cerrar(); simular(e); };
+    acc.appendChild(b);
+  }
+  if (!hecha) {
+    const det = h(`<details class="plan-b"><summary>${esc(t('planb.gps'))}</summary></details>`);
+    det.appendChild(formCodigo(`e:${e.id}`, async (r) => {
+      if (r.ganado) { cerrar(); ctx.abrirSobres(); return; }
+      aviso(t(r.msg, r.vars), 3500); cerrar(); pintar();
+    }));
+    acc.appendChild(det);
+  }
+  capa.appendChild(hoja);
+  capa.hidden = false;
+  const soltar = atraparFoco(capa);
+  animar(hoja, [{ transform: 'translateY(100%)' }, { transform: 'translateY(0)' }], { duration: 300, easing: 'cubic-bezier(.2,.9,.3,1)' });
+  function cerrar() { capa.hidden = true; capa.innerHTML = ''; soltar(); document.removeEventListener('keydown', esc_); }
+  function esc_(ev) { if (ev.key === 'Escape') cerrar(); }
+  document.addEventListener('keydown', esc_);
+  $('[data-x]', hoja).onclick = cerrar;
+  capa.onclick = (ev) => { if (ev.target === capa) cerrar(); };
 }
 
 export function entrar() {

@@ -70,6 +70,7 @@
         <p id="lente-msg" aria-live="polite"></p>
         <div class="acciones">
           <button id="lente-abrir" class="btn btn-flor" hidden data-t="lente.abrirSobre">Abrir sobre</button>
+          <button id="lente-preguntar" class="btn btn-linea btn-cuadro" hidden data-t="lente.preguntar" data-t-attr="aria-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v11H9l-4 4v-4H4z"/><path d="M10 9.2a2 2 0 1 1 2.6 1.9c-.4.2-.6.5-.6 1V12.5"/><circle cx="12" cy="14.6" r=".4"/></svg></button>
           <button id="lente-escuchar" class="btn btn-linea btn-cuadro" hidden data-t="det.escuchar" data-t-attr="aria-label"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9v6h4l5 4V5L8 9z"/><path class="onda" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/></svg></button>
         </div>
       </div>
@@ -83,9 +84,12 @@
       <h2 id="mapa-titulo" data-t="mapa.titulo">El sendero</h2>
       <span id="gps-chip" class="chip"></span>
     </header>
-    <div class="pliego"><svg id="mapa" viewBox="0 0 360 440" role="img" aria-label="Mapa"></svg></div>
+    <div id="gps-ayuda" class="gps-ayuda" role="status" hidden></div>
+    <div class="pliego"><svg id="mapa" viewBox="0 0 360 440" role="img" data-t="mapa.alt" data-t-attr="aria-label" aria-label="Mapa del sendero"></svg></div>
+    <section id="bitacora" class="bitacora" aria-live="polite" hidden></section>
     <p class="ayuda" data-t="mapa.ayuda"></p>
     <ol id="estaciones" class="estaciones"></ol>
+    <p id="estaciones-nota" class="estaciones-nota"></p>
   </section>
 
 
@@ -102,6 +106,11 @@
     <div id="chat-log" class="chat-log" aria-live="polite"></div>
     <div id="chat-sug" class="chat-sug"></div>
     <form id="chat-form" class="chat-form" autocomplete="off">
+      <div id="chat-tema" class="chat-tema" hidden><span class="chat-tema-txt"></span><button type="button" id="chat-tema-x" class="chat-tema-x" data-t="chat.quitarTema" data-t-attr="aria-label" aria-label="Quitar tema">×</button></div>
+      <label class="chat-foto btn-cuadro btn-linea" data-t="chat.foto" data-t-attr="aria-label" aria-label="¿Qué es esto? Toma una foto">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.6"/></svg>
+        <input id="chat-foto-in" type="file" accept="image/*" capture="environment" hidden>
+      </label>
       <input id="chat-in" enterkeyhint="send" maxlength="200" data-t="chat.placeholder" data-t-attr="placeholder" aria-labelledby="chat-titulo">
       <button class="btn btn-flor" data-t="chat.enviar">Enviar</button>
     </form>
@@ -124,6 +133,7 @@
   <div id="capa-detalle" class="capa" hidden role="dialog" aria-modal="true"></div>
   <div id="capa-sobre" class="capa capa-sobre" hidden role="dialog" aria-modal="true"></div>
   <div id="capa-ajustes" class="capa capa-hoja" hidden role="dialog" aria-modal="true"></div>
+  <div id="capa-estacion" class="capa capa-hoja" hidden role="dialog" aria-modal="true"></div>
   <div id="capa-pausa" class="capa capa-pausa" hidden role="dialog" aria-modal="true">
     <p class="pausa-tit" data-t="pausa.titulo"></p>
     <svg viewBox="0 0 120 120" class="anillo" aria-hidden="true"><circle cx="60" cy="60" r="52" class="pista-anillo"/><circle cx="60" cy="60" r="52" class="avance" id="pausa-avance"/></svg>

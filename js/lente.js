@@ -10,10 +10,11 @@ const MAX_MS = 3 * 60 * 1000; // la cámara se apaga sola para cuidar la baterí
 let stream = null, bucle = null, apagado = null, ocupado = false, frente = false;
 let modo = 'reconocer', objetivo = null, ultimoId = null, qr = null, activa = false;
 let alGanar = async () => {};
+let alPreguntar = () => {};
 let ultimoQR = null; // para no procesar dos veces el mismo QR del guía mientras sigue en el visor
 
-export function iniciarLente({ onGanar }) {
-  alGanar = onGanar;
+export function iniciarLente({ onGanar, onPreguntar }) {
+  alGanar = onGanar; alPreguntar = onPreguntar || alPreguntar;
   $$('.lente-modo button').forEach((b) => (b.onclick = () => ponerModo(b.dataset.modo)));
   $('#lente-encender').onclick = () => encender();
   $('#disparar').onclick = disparar;
@@ -59,7 +60,7 @@ export function ponerModo(m) {
   $('#lente-foto-barra').hidden = !enFoto;
   $('#disparar').hidden = !enFoto;
   $('#v-lente').dataset.modo = modo;
-  $('#lente-abrir').hidden = true; $('#lente-escuchar').hidden = true;
+  $('#lente-abrir').hidden = true; $('#lente-escuchar').hidden = true; $('#lente-preguntar').hidden = true;
   $('#lente-chip').hidden = true;
   fijar(false);
   ultimoId = null; ultimoQR = null;
@@ -121,7 +122,7 @@ async function pasoReconocer() {
       decir(t('lente.duda'));
       if (r && r.clase !== 'otro' && r.confianza > 0.3) { chip.hidden = false; chip.textContent = t('lente.quiza', { cosa: nombreClase(r.clase).toLowerCase() }); }
       else chip.hidden = true;
-      $('#lente-abrir').hidden = true; $('#lente-escuchar').hidden = true; ultimoId = null;
+      $('#lente-abrir').hidden = true; $('#lente-escuchar').hidden = true; $('#lente-preguntar').hidden = true; ultimoId = null;
       return;
     }
     const pendiente = pendienteDeClase(r.clase);
@@ -133,6 +134,9 @@ async function pasoReconocer() {
     decir(tx.dato);
     const esc = $('#lente-escuchar');
     esc.hidden = false; esc.onclick = () => hablar(`${tx.nombre}. ${tx.dato}`, E.lang);
+    // Unión con el chat: solo cuando la Lente está segura (ya pasó el umbral de confianza)
+    const pr = $('#lente-preguntar');
+    pr.hidden = !c.ficha; pr.onclick = () => alPreguntar(c.id, { clase: r.clase, confianza: r.confianza });
     const ab = $('#lente-abrir');
     if (pendiente) {
       ab.hidden = false; ab.disabled = false; ab.textContent = t('lente.abrirSobre');

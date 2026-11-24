@@ -1,0 +1,30 @@
+{
+ "nota": "Banco NUEVO de seguimiento, escrito después de elegir la estrategia y nunca usado para ajustarla.",
+ "preguntas": [
+  {"tema": "frailejon", "p": "¿y cuántos años puede tener?", "esperado": "frailejon"},
+  {"tema": "frailejon", "p": "¿por qué no se le caen las hojas?", "esperado": "frailejon_hojas"},
+  {"tema": "frailejon", "p": "¿lo puedo arrancar?", "esperado": "recoger"},
+  {"tema": "frailejon", "p": "¿cuántos metros mide?", "esperado": "frailejon"},
+  {"tema": "sietecueros", "p": "¿qué lo amenaza?", "esperado": "siete_cueros"},
+  {"tema": "pajonal", "p": "¿qué tipo de planta es?", "esperado": "pajonal"},
+  {"tema": "laguna", "p": "¿qué aves hay ahí?", "esperado": ["pato_andino", "aves"]},
+  {"tema": "laguna", "p": "¿qué la protege?", "esperado": ["humedales", "otun"]},
+  {"tema": "nevado", "p": "¿hay peligro de erupción?", "esperado": "volcan_estado"},
+  {"tema": "nevado", "p": "¿cuánto hielo le queda?", "esperado": "glaciares"},
+  {"tema": "nevado", "p": "¿se puede llegar al cráter?", "esperado": "cima"},
+  {"tema": "roca", "p": "¿por qué parece la luna?", "esperado": "superparamo"},
+  {"tema": "musgo", "p": "¿qué es una turbera?", "esperado": "musgos"},
+  {"tema": "condor", "p": "¿lo puedo perseguir para la foto?", "esperado": ["fauna_trato", "condor"]},
+  {"tema": "oso", "p": "¿qué significa eso de sombrilla?", "esperado": "oso"},
+  {"tema": "danta", "p": "¿la han visto aquí?", "esperado": "danta"},
+  {"tema": "periquito", "p": "¿por qué está amenazado?", "esperado": "periquito"},
+  {"tema": "periquito", "p": "¿a qué altura vive?", "esperado": "periquito"},
+  {"tema": "pato", "p": "¿está desapareciendo?", "esperado": "pato_andino"},
+  {"tema": "aguila", "p": "¿de qué color es?", "esperado": "aguila"},
+  {"tema": "aguila", "p": "¿la puedo llamar con cantos?", "esperado": "fauna_trato"},
+  {"tema": "frailejon", "p": "¿hay osos?", "esperado": ["mamiferos", "oso"], "propia": true},
+  {"tema": "condor", "p": "¿necesito guía?", "esperado": "guia", "propia": true},
+  {"tema": "nevado", "p": "¿dónde compro un café?", "esperado": null, "propia": true},
+  {"tema": "laguna", "p": "¿qué temperatura hace?", "esperado": "temperatura", "propia": true}
+ ]
+}

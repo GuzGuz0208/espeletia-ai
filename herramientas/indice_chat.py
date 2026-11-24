@@ -107,7 +107,11 @@ if __name__ == '__main__':
     dev = [p for i, p in enumerate(ev) if i % 2 == 1]; test = [p for i, p in enumerate(ev) if i % 2 == 0]
     QVd = np.array([q for i, q in enumerate(QV) if i % 2 == 1]); QVt = np.array([q for i, q in enumerate(QV) if i % 2 == 0])
     mejor = None
-    for T, Mg, w, da in itertools.product(np.arange(0.80, 0.905, 0.005), [0.0, 0.01, 0.02, 0.03, 0.04], [0, 0.05, 0.1, 0.15, 0.2], [0.0, 0.02, 0.04]):
+    if '--fijos' in sys.argv:
+        # Mantener los umbrales ya calibrados (p. ej. al agregar fichas) y solo reconstruir el índice
+        P = json.load(open(APP + 'models/chat_indice.json'))['params']
+        mejor = (None, P, evaluar(dev, (items, Vq, docs, idf, QVd), P)[0])
+    for T, Mg, w, da in ([] if mejor else  itertools.product(np.arange(0.80, 0.905, 0.005), [0.0, 0.01, 0.02, 0.03, 0.04], [0, 0.05, 0.1, 0.15, 0.2], [0.0, 0.02, 0.04])):
         P = dict(T=float(T), M=Mg, w=w, da=da)
         r, _ = evaluar(dev, (items, Vq, docs, idf, QVd), P)
         obj = r['ok'] + r['calla_ok'] - 3 * (r['mal'] + r['habla_out']) - 0.5 * r['calla_in']

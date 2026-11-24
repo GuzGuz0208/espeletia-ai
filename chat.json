@@ -41,6 +41,26 @@
   "app": {
    "titulo": "Álbum del Páramo (esta app)",
    "url": ""
+  },
+  "unal_turberas": {
+   "titulo": "Turberas de páramo: reserva de carbono y agua (Caldasia, Universidad Nacional)",
+   "url": "https://revistas.unal.edu.co/index.php/cal/article/view/64327"
+  },
+  "ramsar_otun": {
+   "titulo": "Decreto 2881 de 2007: Complejo de Humedales Laguna del Otún, sitio Ramsar 1781",
+   "url": "https://rsis.ramsar.org/ris/1781"
+  },
+  "birdlife_periquito": {
+   "titulo": "Rufous-fronted Parakeet, Bolborhynchus ferrugineifrons (BirdLife International)",
+   "url": "https://datazone.birdlife.org/species/factsheet/rufous-fronted-parakeet-bolborhynchus-ferrugineifrons/text"
+  },
+  "caldas_otun_aves": {
+   "titulo": "Tendencias poblacionales de aves acuáticas en la Laguna del Otún, 1998–2007 (Boletín Científico, Universidad de Caldas)",
+   "url": "https://revistasojs.ucaldas.edu.co/index.php/boletincientifico/article/download/5261/4748/9151"
+  },
+  "ebird_aguila": {
+   "titulo": "Black-chested Buzzard-Eagle, Geranoaetus melanoleucus (eBird, Cornell Lab)",
+   "url": "https://ebird.org/species/bcbeag1"
   }
  },
  "fichas": [
@@ -1286,7 +1306,6 @@
     "qué pájaros puedo ver",
     "qué pájaros hay",
     "qué aves son endémicas",
-    "hay águilas",
     "qué es el tororoi"
    ],
    "qen": [
@@ -1315,6 +1334,119 @@
    ],
    "es": "Sí, el cóndor andino (Vultur gryphus) está en la lista de aves del parque. Si ves uno, obsérvalo de lejos y sin perseguirlo.",
    "en": "Yes, the Andean condor (Vultur gryphus) is on the park's bird list. If you see one, watch from afar without chasing it."
+  },
+  {
+   "id": "musgos",
+   "tema": "flora",
+   "fuente": "unal_turberas",
+   "q": [
+    "qué son los musgos",
+    "qué son los líquenes",
+    "para qué sirven los musgos",
+    "por qué hay tanto musgo",
+    "qué es una turbera",
+    "qué es esa cosa verde en las rocas",
+    "qué es el musgo esponja",
+    "los musgos guardan agua",
+    "qué es el sphagnum",
+    "qué son esas manchas en las piedras"
+   ],
+   "qen": [
+    "what are mosses",
+    "what are lichens",
+    "what is a peat bog"
+   ],
+   "es": "Los musgos y líquenes cubren suelos y rocas del páramo. En las turberas, humedales donde los musgos acumulan materia orgánica sin descomponerse, se guarda carbono y se regula el agua que llega a los ríos. Míralos sin pisarlos.",
+   "en": "Mosses and lichens cover the páramo soil and rocks. In peat bogs, wetlands where mosses pile up organic matter that does not decay, carbon is stored and the water that reaches the rivers is regulated. Look without stepping on them."
+  },
+  {
+   "id": "humedales",
+   "tema": "naturaleza",
+   "fuente": "ramsar_otun",
+   "q": [
+    "qué son los humedales",
+    "qué lagunas hay en el parque",
+    "para qué sirven las lagunas",
+    "qué es esta laguna",
+    "cuántas lagunas hay",
+    "qué es un pantano de páramo",
+    "qué lagunas forman el sitio Ramsar",
+    "qué es la laguna El Mosquito",
+    "qué es la laguna La Leona",
+    "por qué son importantes las lagunas"
+   ],
+   "qen": [
+    "what are the wetlands",
+    "which lakes are in the park",
+    "why are the lakes important"
+   ],
+   "es": "Lagunas, pantanos y turberas son los humedales del páramo. El Complejo de Humedales Laguna del Otún, con unas 6.579 ha y los complejos El Mosquito, El Silencio, La Leona, La Alsacia y El Bosque, es sitio Ramsar desde 2008: retiene sedimentos y nutrientes y estabiliza el microclima.",
+   "en": "Lakes, marshes and peat bogs are the páramo wetlands. The Laguna del Otún Wetland Complex, about 6,579 ha including the El Mosquito, El Silencio, La Leona, La Alsacia and El Bosque complexes, has been a Ramsar site since 2008: it holds sediments and nutrients and stabilizes the microclimate."
+  },
+  {
+   "id": "periquito",
+   "tema": "fauna",
+   "fuente": "birdlife_periquito",
+   "q": [
+    "qué es el periquito de los nevados",
+    "hay loros en el parque",
+    "hay periquitos",
+    "dónde vive el periquito",
+    "el periquito está en peligro",
+    "qué es el perico frentirrufo",
+    "cómo es el periquito de los nevados",
+    "por qué el periquito lleva el nombre del parque"
+   ],
+   "qen": [
+    "what is the rufous-fronted parakeet",
+    "are there parrots",
+    "is the parakeet endangered"
+   ],
+   "es": "El periquito de los nevados o perico frentirrufo (Bolborhynchus ferrugineifrons) solo vive en la Cordillera Central de Colombia, en páramo y subpáramo entre 3.200 y 4.000 m. Es verde oscuro con la frente rojiza. Está en categoría Vulnerable porque su hábitat se reduce.",
+   "en": "The rufous-fronted parakeet (Bolborhynchus ferrugineifrons) lives only in the Central Andes of Colombia, in páramo and sub-páramo between 3,200 and 4,000 m. It is dark green with a rufous forehead. It is listed as Vulnerable because its habitat is shrinking."
+  },
+  {
+   "id": "pato_andino",
+   "tema": "fauna",
+   "fuente": "caldas_otun_aves",
+   "q": [
+    "qué es el pato andino",
+    "hay patos en la laguna",
+    "qué patos hay",
+    "el pato andino está en peligro",
+    "qué es el pato rojizo",
+    "cuántos patos hay en el Otún",
+    "por qué hay menos patos",
+    "qué aves hay en la laguna"
+   ],
+   "qen": [
+    "what is the Andean duck",
+    "are there ducks in the lake",
+    "is the Andean duck endangered"
+   ],
+   "es": "El pato andino (Oxyura jamaicensis) vive en lagunas de alta montaña como la del Otún. Allí, los censos mostraron que su población cayó un 63 % entre 1998 y 2007. Obsérvalo desde lejos, sin acercarte a la orilla.",
+   "en": "The Andean duck (Oxyura jamaicensis) lives in high mountain lakes such as Laguna del Otún. There, counts showed its population fell 63 % between 1998 and 2007. Watch it from afar, without approaching the shore."
+  },
+  {
+   "id": "aguila",
+   "tema": "fauna",
+   "fuente": "ebird_aguila",
+   "q": [
+    "qué es el águila de páramo",
+    "hay águilas",
+    "cómo es el águila paramuna",
+    "qué es esa ave grande que planea",
+    "qué es el águila mora",
+    "qué rapaces hay",
+    "cómo reconozco el águila de páramo"
+   ],
+   "qen": [
+    "what is the black-chested buzzard-eagle",
+    "are there eagles",
+    "what is that big soaring bird"
+   ],
+   "es": "El águila de páramo o paramuna (Geranoaetus melanoleucus) es una rapaz grande de alas anchas y cola corta. El adulto tiene la cabeza y el pecho gris oscuro y el vientre blanco. Vive desde los Andes altos de Colombia hasta Tierra del Fuego.",
+   "en": "The black-chested buzzard-eagle (Geranoaetus melanoleucus) is a large raptor with broad wings and a short tail. Adults have a dark grey head and breast and a white belly. It ranges from the high Andes of Colombia to Tierra del Fuego."
   },
   {
    "id": "mamiferos",

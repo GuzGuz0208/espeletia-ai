@@ -7,7 +7,7 @@ import { listoOffline } from './portada.js';
 import { albumPNG, descargar } from './exportar.js';
 import { iniciarGPS } from './mapa.js';
 import * as chat from './chat.js';
-import { errores } from './motor.js';
+import { errores, tiempos } from './motor.js';
 
 const PIN = '2611';
 let ctx = {};
@@ -146,7 +146,7 @@ export function pintarEquipo() {
   };
   $('#eq-borrar').onclick = async () => { if (confirm(t('eq.borrarSeguro'))) { await ml.clearSamples(); pintarClases(); } };
   $('#eq-demo').onchange = async (e) => { E.ajustes.demo = e.target.checked; await guardar(); };
-  $('#eq-vaciar').onclick = async () => { if (confirm(t('eq.vaciarSeguro'))) { await vaciar(); aviso(t('eq.vaciado')); } };
+  $('#eq-vaciar').onclick = async () => { if (confirm(t('eq.vaciarSeguro'))) { await vaciar(); (await import('./bitacora.js')).borrar(); aviso(t('eq.vaciado')); } };
   $('#eq-imprimir').onclick = hojaCodigos;
   pintarEstaciones();
 }
@@ -274,6 +274,7 @@ function pintarIA(hoja) {
   const ch = !chat.listo() ? 'no' : chat.modoLexico() ? 'parcial' : 'ok';
   const fila = (nombre, st) => `<li class="ia-${st}"><span class="punto"></span>${esc(nombre)}: ${esc(t(`aj.ia.${st}`))}</li>`;
   box.innerHTML = `<p class="ia-titulo">${esc(t('aj.ia.titulo'))}</p><ul>${fila(t('nav.lente'), lente)}${fila(t('nav.chat'), ch)}</ul>
+    ${Object.keys(tiempos).length ? `<details><summary>${esc(t('aj.ia.tiempos'))}</summary><pre>${esc(Object.entries(tiempos).map(([k, v]) => `${k === 'vision' ? t('nav.lente') : t('nav.chat')}: ${((v.total ?? v.espera) / 1000).toFixed(1)} s` + (v.sesion != null ? ` (${t('aj.ia.leer')} ${v.leer} ms · ${t('aj.ia.preparar')} ${v.sesion} ms${v.tokenizador ? ` · tokenizador ${v.tokenizador} ms` : ''}${v.motor ? ` · motor ${v.motor} ms` : ''} · ${v.origen})` : '')).join('\n'))}</pre></details>` : ''}
     ${errores.length ? `<details><summary>${esc(t('aj.ia.detalle'))}</summary><pre>${esc([...new Set(errores)].slice(-6).join('\n'))}</pre></details>` : ''}
     ${lente !== 'ok' || ch !== 'ok' ? `<button class="btn btn-linea btn-ancho" id="aj-ia-probar">${esc(t('aj.ia.probar'))}</button>` : ''}`;
   const b = $('#aj-ia-probar', box);

@@ -13,7 +13,7 @@ export async function listoOffline() {
       const c = await caches.open(k);
       const man = await c.match('models/partes.json', { ignoreSearch: true });
       if (!man) continue;
-      const partes = Object.values(await man.json()).flatMap((m) => m.partes);
+      const partes = Object.keys(await man.json()); // los archivos grandes se guardan unidos (ver sw.js)
       let todas = partes.length > 0;
       for (const p of partes) if (!(await c.match(p, { ignoreSearch: true }))) { todas = false; break; }
       if (todas) return true;

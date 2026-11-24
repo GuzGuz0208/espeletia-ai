@@ -11,7 +11,7 @@ import { mostrarPortada, progresoOffline, estadoOffline } from './portada.js';
 import { iniciarAjustes, abrirAjustes, aplicarTema, entrarEquipo, salirEquipo, pintarEquipo } from './ajustes.js';
 import { lluvia } from './celebrar.js';
 import * as ml from './ml.js';
-import { iniciarChatUI, entrarChat, retraducirChat } from './chatui.js';
+import { iniciarChatUI, entrarChat, retraducirChat, abrirConTema, temaDeCromo } from './chatui.js';
 import { iniciarGuia, entrarGuia, salirGuia } from './guia.js';
 
 let vista = null;
@@ -32,7 +32,7 @@ export async function irA(v, opciones = {}) {
   if (v === 'mapa') mapa.entrar();
   if (v === 'equipo') await entrarEquipo();
   if (v === 'album') pintarCabezote();
-  if (v === 'chat') entrarChat();
+  if (v === 'chat') entrarChat({ enfocar: !opciones.tema });
   if (v === 'guia') await entrarGuia();
 }
 
@@ -101,10 +101,31 @@ async function iniciar() {
   await est.cargar();
   aplicarTema();
   traducir();
-  // Prepara la Lente en segundo plano, después de que el álbum ya se ve.
-  setTimeout(() => ml.load().catch(() => {}), 2500);
+  // Precarga de la IA en segundo plano (en el worker: no congela la pantalla).
+  // En la primera visita se espera a que termine de guardarse para usar sin señal: si no, los modelos
+  // se descargarían dos veces a la vez (una para usarlos y otra para guardarlos) y todo iría lento.
+  let precargada = false;
+  const precargar = () => {
+    if (precargada) return;
+    precargada = true;
+    const idle = window.requestIdleCallback || ((f) => setTimeout(f, 1));
+    setTimeout(() => idle(async () => {
+      await ml.load().catch(() => {});
+      // El chat también, si el teléfono tiene memoria de sobra (deviceMemory solo existe en Chrome)
+      if ((navigator.deviceMemory ?? 4) >= 3) import('./chat.js').then((c) => c.cargar()).catch(() => {});
+    }), 1500);
+  };
+  if (navigator.serviceWorker?.controller) precargar();
 
+  // Unión Lente/álbum → chat: abre «Pregúntale a Fray» hablando de ese cromo
+  async function preguntarSobre(id, opc = {}) {
+    const tema = temaDeCromo(id);
+    if (!tema) return;
+    await irA('chat', { tema: true, forzar: vista === 'chat' });
+    await abrirConTema(tema, opc);
+  }
   const acciones = {
+    preguntar: (id) => preguntarSobre(id),
     abrirSobres: () => abrirSobres(),
     abrirLente: (m) => irA('lente', { modo: m, forzar: vista === 'lente' }),
     pedirFoto: (id, msg) => { lente.pedirFoto(id, msg); irA('lente', { modo: 'foto', forzar: true }); },
@@ -113,9 +134,19 @@ async function iniciar() {
   };
   iniciarAlbum({ irA, acciones });
   iniciarGuia({ irA });
-  iniciarSobres({ irA });
-  lente.iniciarLente({ onGanar: despuesDeGanar });
-  mapa.iniciarMapa({ llegada: async (id, { simulado }) => { pintarCabezote(); if (simulado && vista === 'album') abrirSobres(); } });
+  iniciarSobres({ irA, preguntar: (id) => preguntarSobre(id) });
+  lente.iniciarLente({ onGanar: despuesDeGanar, onPreguntar: (id, { clase, confianza }) => preguntarSobre(id, { intro: t('chat.lenteVe', { cosa: est.nombreClase(clase).toLowerCase(), p: Math.round(confianza * 100) }) }) });
+  mapa.iniciarMapa({
+    llegada: async (id, { simulado }) => { pintarCabezote(); if (simulado && vista === 'album') abrirSobres(); },
+    preguntar: (id) => preguntarSobre(id),
+    // Abrir el chat sobre una ficha que no es de un cromo (p. ej. el mal de altura desde la bitácora)
+    preguntarFicha: async (ficha) => {
+      const temas = { mal_altura: { es: 'el mal de altura', en: 'altitude sickness' } };
+      await irA('chat', { tema: true, forzar: vista === 'chat' });
+      await abrirConTema({ id: ficha, ficha, ...(temas[ficha] || { es: ficha, en: ficha }) });
+    },
+    abrirSobres: () => abrirSobres(),
+  });
   iniciarAjustes({ irA, alCambiar: () => { retraducir(); retraducirChat(); if (vista === 'mapa') mapa.pintar(); if (vista === 'equipo') pintarEquipo(); if (vista === 'guia') entrarGuia(); } });
   celebrar();
 
@@ -123,10 +154,11 @@ async function iniciar() {
   $('.muelle [data-accion="ajustes"]').onclick = abrirAjustes;
   iniciarChatUI();
 
+  if (!('serviceWorker' in navigator)) precargar();
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('message', (e) => {
       if (e.data?.tipo === 'progreso') progresoOffline(e.data.p);
-      if (e.data?.tipo === 'listo') { progresoOffline(1); estadoOffline(); }
+      if (e.data?.tipo === 'listo') { progresoOffline(1); estadoOffline(); precargar(); }
       if (e.data?.tipo === 'error') import('./motor.js').then((m) => m.anotar('Guardar para usar sin señal', e.data.detalle));
     });
     // Si ya había una versión guardada y llega una nueva, recargar una sola vez para mostrarla

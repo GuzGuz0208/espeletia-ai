@@ -8,7 +8,8 @@ import { chispas } from './celebrar.js';
 
 let abriendo = false;
 let nav = () => {};
-export function iniciarSobres({ irA }) { nav = irA; }
+let preguntar = () => {};
+export function iniciarSobres({ irA, preguntar: pr }) { nav = irA; if (pr) preguntar = pr; }
 
 export async function abrirSobres() {
   if (abriendo) return;
@@ -17,6 +18,8 @@ export async function abrirSobres() {
     while (pendientes().length) {
       const id = pendientes()[0];
       const seguir = await revelar(id, pendientes().length - 1);
+      // «Pregúntale a Fray»: el cromo ya quedó pegado; los demás sobres esperan en el álbum
+      if (seguir === 'preguntar') { abriendo = false; await preguntar(id); break; }
       if (!seguir) break;
     }
   } finally { abriendo = false; }
@@ -46,6 +49,7 @@ async function revelar(id, quedan) {
       <div class="sobre-acciones" hidden>
         <button class="btn btn-flor" data-a="pegar">${esc(t('sobre.pegar'))}</button>
         <button class="btn btn-claro" data-a="escuchar">${esc(t('det.escuchar'))}</button>
+        ${c.ficha ? `<button class="btn btn-claro" data-a="preguntar">${esc(t('sobre.preguntar'))}</button>` : ''}
       </div>
       <p class="sobre-quedan">${quedan > 0 ? esc(t('sobre.quedan', { n: quedan })) : ''}</p>
     </div>`);
@@ -106,7 +110,11 @@ async function revelar(id, quedan) {
   acc.querySelector('[data-a="escuchar"]').onclick = () => hablar(`${tx.nombre}. ${tx.dato}`, E.lang);
   acc.querySelector('[data-a="pegar"]').focus({ preventScroll: true });
 
-  await new Promise((ok) => { acc.querySelector('[data-a="pegar"]').onclick = ok; });
+  const eleccion = await new Promise((ok) => {
+    acc.querySelector('[data-a="pegar"]').onclick = () => ok('pegar');
+    const pr = acc.querySelector('[data-a="preguntar"]');
+    if (pr) pr.onclick = () => ok('preguntar');
+  });
   quitarBrillo();
   card.classList.remove('volteado');
   acc.hidden = true; titulo.textContent = '';
@@ -116,7 +124,7 @@ async function revelar(id, quedan) {
   soltar();
   capa.hidden = true;
   capa.innerHTML = '';
-  return true;
+  return eleccion === 'preguntar' ? 'preguntar' : true;
 }
 
 async function pegarEnAlbum(id, card, capa) {

@@ -104,7 +104,16 @@ export async function albumPNG() {
   ctx.fillStyle = C.verde; ctx.font = '800 84px "Bricolage Grotesque"'; ctx.fillText(t('titulo'), 80, 120);
   ctx.fillStyle = C.noche; ctx.font = '400 32px "Atkinson Hyperlegible"';
   ctx.fillText(`${t('parque')}${E.nombre ? ' — ' + t('de', { nombre: E.nombre }) : ''} — ${t('album.pegados', { n: pegados(), t: total() })}`, 80, 172);
-  let y = 230;
+  // La bitácora del recorrido, si hay: altura máxima, distancia y tiempo
+  const { resumen } = await import('./bitacora.js');
+  const r = resumen();
+  if (r && r.altMax != null) {
+    const min = Math.round(r.duracion / 60000), tiempo = min < 60 ? `${min} min` : `${Math.floor(min / 60)} h ${String(min % 60).padStart(2, '0')} min`;
+    const loc = E.lang === 'es' ? 'es-CO' : 'en-US';
+    ctx.fillStyle = C.verde; ctx.font = '700 26px "Atkinson Hyperlegible"';
+    ctx.fillText(t('poster.recorrido', { alt: `${r.alturaGps ? '' : '≈ '}${r.altMax.toLocaleString(loc)} m`, dist: r.distancia >= 1000 ? `${(r.distancia / 1000).toLocaleString(loc, { maximumFractionDigits: 1 })} km` : `${r.distancia} m`, tiempo }), 80, 212);
+  }
+  let y = 236;
   for (const k of caps) {
     ctx.fillStyle = C.verde; ctx.font = '800 34px "Bricolage Grotesque"'; ctx.fillText(`${k.num}  ${k[E.lang]}`, 80, y + 34); y += 60;
     const lista = cromosDe(k.id);

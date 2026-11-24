@@ -3,14 +3,14 @@
 // El equipo enseña cada clase con fotos reales del páramo y se clasifica por vecinos más cercanos (k-NN).
 import * as db from './db.js';
 import { E } from './estado.js';
-import { sesion, anotar } from './motor.js';
+import { cargarModelo, embedImagen, anotar } from './motor.js';
 
 const MEAN = [0.485, 0.456, 0.406];
 const STD = [0.229, 0.224, 0.225];
 const SIZE = 224;
 const K = 7;
 
-let ort, session, cargando = null;
+let listo = false, cargando = null;
 let samples = []; // { clase, v: Float32Array, base?: true }  base = vienen del paquete del parque (models/parque.json)
 let base = null;
 const canvas = document.createElement('canvas');
@@ -18,17 +18,17 @@ canvas.width = canvas.height = SIZE;
 const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
 export function load(onStatus = () => {}) {
-  if (session) return Promise.resolve();
+  if (listo) return Promise.resolve();
   cargando ??= (async () => {
     onStatus('Cargando el modelo de la cámara…');
-    ({ ort, s: session } = await sesion('models/mnv2_embed.onnx'));
-    await loadSamples();
+    await Promise.all([cargarModelo('vision'), loadSamples()]);
+    listo = true;
     onStatus('');
   })().catch((e) => { cargando = null; anotar('Lente (modelo de visión)', e); throw e; });
   return cargando;
 }
 
-export const ready = () => !!session;
+export const ready = () => listo;
 
 async function loadSamples() {
   const rows = await db.all('muestras');
@@ -73,18 +73,12 @@ function toTensor(source) {
     f[plane + i] = (data[i * 4 + 1] / 255 - MEAN[1]) / STD[1];
     f[2 * plane + i] = (data[i * 4 + 2] / 255 - MEAN[2]) / STD[2];
   }
-  return new ort.Tensor('float32', f, [1, 3, SIZE, SIZE]);
+  return f;
 }
 
+// La huella (1280 números, normalizada) la calcula el worker: aquí solo se prepara la imagen.
 export async function embed(source) {
-  const out = await session.run({ input: toTensor(source) });
-  const v = out[session.outputNames[0]].data;
-  let n = 0;
-  for (let i = 0; i < v.length; i++) n += v[i] * v[i];
-  n = Math.sqrt(n) || 1;
-  const u = new Float32Array(v.length);
-  for (let i = 0; i < v.length; i++) u[i] = v[i] / n;
-  return u;
+  return embedImagen(toTensor(source));
 }
 
 export async function addSample(clase, source) {

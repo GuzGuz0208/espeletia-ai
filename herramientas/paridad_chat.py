@@ -1,15 +1,16 @@
 """Comprueba que el chat en el navegador (JS) da lo mismo que Python: embeddings y respuestas en los dos bancos de prueba."""
-import json, sys
+import json, sys, os
 from playwright.sync_api import sync_playwright
-sys.path.insert(0, '/home/claude/tools')
+APP = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.join(APP, 'herramientas'))
 import numpy as np
 import indice_chat as ic
 
-ev1 = json.load(open('/home/claude/app/pruebas/preguntas_eval.json'))['preguntas']
-ev2 = json.load(open('/home/claude/app/pruebas/preguntas_eval2.json'))['preguntas']
+ev1 = json.load(open(os.path.join(APP, 'pruebas', 'preguntas_eval.json')))['preguntas']
+ev2 = json.load(open(os.path.join(APP, 'pruebas', 'preguntas_eval2.json')))['preguntas']
 
 with sync_playwright() as p:
-    b = p.chromium.launch(executable_path='/usr/bin/google-chrome', headless=True)
+    b = p.chromium.launch(headless=True)
     pg = b.new_page()
     logs = []
     pg.on('console', lambda m: logs.append(m.text) if m.type in ('error', 'warning') else None)
@@ -44,5 +45,25 @@ with sync_playwright() as p:
         print(f"\n{nombre}\n  con respuesta oficial ({n_in}): correctas {ok}, equivocadas {mal}, '¿te refieres a…?' con la correcta {duda_ok}, duda sin la correcta {duda_mal}, 'no sé' {nose_in}")
         print(f"  sin respuesta oficial ({n_out}): dijo 'no sé' {out_ok}, respondió algo {out_mal}")
         for e in errores: print('   ', e)
+    # 4) Con tema activo: el navegador debe elegir igual que la estrategia medida en Python (tema_chat.py)
+    sys.path.insert(0, os.path.join(APP, 'herramientas'))
+    import tema_chat as tc
+    temas = {c['id']: {'ficha': c['ficha'], **c['tema']} for c in json.load(open(os.path.join(APP, 'paquete.json')))['cromos'] if c.get('tema')}
+    for banco in ('preguntas_tema.json', 'preguntas_tema2.json', 'preguntas_tema3.json'):
+        qs = json.load(open(os.path.join(APP, 'pruebas', banco)))['preguntas']
+        res = pg.evaluate("async ([qs, temas]) => { const out=[]; for (const q of qs) { const r = await window.chat.preguntar(q.p, { tema: temas[q.tema] }); out.push({tipo:r.tipo, id:r.ficha?r.ficha.id:null, alt:r.alternativas.map(a=>a.id), sug:r.sugiereTema?r.sugiereTema.id:null}); } return out; }", [qs, temas])
+        dif = 0; directas = toque = 0
+        for q, r in zip(qs, res):
+            py = tc.responder(q['p'], q['tema'], 'final', -0.04, 0)
+            if isinstance(py, tuple) and py[0] == 'duda': jsr = ('duda', r['alt']) if r['tipo'] == 'duda' else r['id']
+            elif isinstance(py, tuple): jsr = ('relacionado', [r['id'], r['sug']]) if r['sug'] else r['id']
+            else: jsr = r['id'] if r['tipo'] == 'respuesta' else None
+            if jsr != py: dif += 1; print('   distinto:', q['p'], 'py', py, 'js', r)
+            if q.get('propia'): continue
+            e = q['esperado'] if isinstance(q['esperado'], list) else [q['esperado']]
+            if r['tipo'] == 'respuesta' and r['id'] in e: directas += 1
+            elif any(x in r['alt'] for x in e): toque += 1
+        n = sum(1 for q in qs if not q.get('propia'))
+        print(f"\ntema {banco}: navegador = Python en {len(qs) - dif}/{len(qs)}; seguimiento: {directas}/{n} directas, {toque} más a un toque")
     print('\n'.join(set(logs)) or 'sin errores en consola')
     b.close()

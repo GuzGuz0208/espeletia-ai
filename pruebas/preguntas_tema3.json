@@ -1,0 +1,25 @@
+{
+ "nota": "Banco 3 de seguimiento: escrito DESPUÉS de fijar la estrategia final y evaluado una sola vez.",
+ "preguntas": [
+  {"tema": "frailejon", "p": "¿a qué familia pertenece?", "esperado": "frailejon"},
+  {"tema": "frailejon", "p": "¿cómo resiste el frío?", "esperado": "frailejon_hojas"},
+  {"tema": "frailejon", "p": "¿lo puedo tocar?", "esperado": ["recoger", "comer_plantas"]},
+  {"tema": "sietecueros", "p": "¿hasta qué altura sube?", "esperado": "siete_cueros"},
+  {"tema": "pajonal", "p": "¿por qué domina el paisaje?", "esperado": "pajonal"},
+  {"tema": "laguna", "p": "¿desde cuándo es Ramsar?", "esperado": ["humedales", "otun"]},
+  {"tema": "laguna", "p": "¿cuánto mide el complejo?", "esperado": "humedales"},
+  {"tema": "nevado", "p": "¿se puede subir hasta arriba?", "esperado": "cima"},
+  {"tema": "nevado", "p": "¿cuándo se acaba el glaciar?", "esperado": "glaciares"},
+  {"tema": "roca", "p": "¿qué hay en esta zona?", "esperado": "superparamo"},
+  {"tema": "musgo", "p": "¿guarda carbono?", "esperado": "musgos"},
+  {"tema": "condor", "p": "¿es común verlo?", "esperado": "condor"},
+  {"tema": "oso", "p": "¿por qué protegerlo ayuda a otros?", "esperado": "oso"},
+  {"tema": "danta", "p": "¿quién la ha visto?", "esperado": "danta"},
+  {"tema": "periquito", "p": "¿solo vive en Colombia?", "esperado": "periquito"},
+  {"tema": "pato", "p": "¿cuánto ha bajado su población?", "esperado": "pato_andino"},
+  {"tema": "aguila", "p": "¿qué tamaño tiene?", "esperado": "aguila"},
+  {"tema": "pato", "p": "¿hay que pagar seguro?", "esperado": "seguro", "propia": true},
+  {"tema": "musgo", "p": "¿cuál es el horario?", "esperado": "horario", "propia": true},
+  {"tema": "oso", "p": "¿me prestan una cobija?", "esperado": null, "propia": true}
+ ]
+}
