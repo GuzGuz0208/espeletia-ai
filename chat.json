@@ -1,0 +1,1610 @@
+{
+ "version": "0.1-poc",
+ "actualizado": "2026-11-24",
+ "estado": {
+  "es": "Borrador: textos redactados a partir de fuentes oficiales; deben ser validados por PNN Los Nevados antes de uso real.",
+  "en": "Draft: texts written from official sources; they must be validated by PNN Los Nevados before real use."
+ },
+ "fuentes": {
+  "pnn_web": {
+   "titulo": "Parque Nacional Natural Los Nevados (Parques Nacionales Naturales, página oficial, consultada 24/11/2026)",
+   "url": "https://www.parquesnacionales.gov.co/nuestros-parques/parque-nacional-natural-los-nevados/"
+  },
+  "pnn_reglas": {
+   "titulo": "Reglamentación para visitantes PNN Los Nevados (Parques Nacionales Naturales)",
+   "url": "https://test.parquesnacionales.gov.co/nuestros-parques/pnn-los-nevados/"
+  },
+  "pnn2019": {
+   "titulo": "Descripción PNN Los Nevados (Parques Nacionales, DTAO, 2019)",
+   "url": "https://old.parquesnacionales.gov.co/portal/wp-content/uploads/2017/12/Descripcion-PNN-Los-Nevados.pdf"
+  },
+  "wcs": {
+   "titulo": "Los páramos y las plantas (WCS Colombia)",
+   "url": "https://colombia.wcs.org/en-us/WCS-VISUAL/Photo-Gallery/THE-PÁRAMOS-AND-THE-PLANTS-Part-1.aspx"
+  },
+  "wcsfrailejon": {
+   "titulo": "Los frailejones (WCS Colombia)",
+   "url": "https://colombia.wcs.org/en-us/WCS-VISUAL/Photo-Gallery/The-frailejones.aspx"
+  },
+  "utp": {
+   "titulo": "Nevado del Ruiz y Termales (UTP)",
+   "url": "https://media2.utp.edu.co/oficinas/60/Nevado%20del%20Ru%C3%ADz%20y%20Termales%20del%20Ru%C3%ADz_Ase%20Utp.pdf"
+  },
+  "cenicafe": {
+   "titulo": "Los grandes mamíferos del Parque Los Nevados (Cenicafé, 2004)",
+   "url": "https://publicaciones.cenicafe.org/index.php/bio/article/download/2701/2602/2176"
+  },
+  "sgc": {
+   "titulo": "Boletines del volcán Nevado del Ruiz (Servicio Geológico Colombiano)",
+   "url": "https://www2.sgc.gov.co"
+  },
+  "app": {
+   "titulo": "Álbum del Páramo (esta app)",
+   "url": ""
+  }
+ },
+ "fichas": [
+  {
+   "id": "emergencia",
+   "tema": "seguridad",
+   "urgente": true,
+   "fuente": "pnn_reglas",
+   "q": [
+    "necesito ayuda urgente",
+    "hay una emergencia",
+    "alguien se accidentó",
+    "me perdí del grupo",
+    "una persona se desmayó",
+    "no encuentro a mi grupo",
+    "auxilio",
+    "alguien está herido",
+    "se cayó una persona",
+    "una señora no responde",
+    "llamen a alguien",
+    "socorro",
+    "qué hago si hay un accidente",
+    "a quién le pido ayuda",
+    "estoy solo y perdido"
+   ],
+   "qen": [
+    "I need help",
+    "there is an emergency",
+    "someone is hurt",
+    "I am lost",
+    "call for help",
+    "we had an accident",
+    "someone collapsed"
+   ],
+   "es": "Avisa de inmediato a tu guía o a un guardaparque y quédate donde te puedan ver. Si alguien se siente mal, el grupo debe descender y pedir ayuda. En Colombia la línea de emergencias es el 123 (cuando haya señal).",
+   "en": "Tell your guide or a park ranger right away and stay where they can see you. If someone feels sick, the group must go down and ask for help. Colombia's emergency number is 123 (when there is signal)."
+  },
+  {
+   "id": "mal_altura",
+   "tema": "seguridad",
+   "urgente": true,
+   "fuente": "pnn_reglas",
+   "q": [
+    "qué es el mal de altura",
+    "me duele la cabeza",
+    "estoy mareado",
+    "tengo náuseas",
+    "me falta el aire",
+    "siento que me voy a desmayar",
+    "qué es el soroche",
+    "siento presión en la cabeza",
+    "me dio soroche",
+    "tengo ganas de vomitar",
+    "me siento débil y mareado",
+    "me late duro la cabeza",
+    "el niño se siente mal por la altura",
+    "me cuesta respirar",
+    "qué pasa si me da mal de altura",
+    "me siento raro por la altura"
+   ],
+   "qen": [
+    "what is altitude sickness",
+    "I have a headache and feel dizzy",
+    "I can't breathe well",
+    "I feel dizzy",
+    "I feel sick from the altitude",
+    "my head hurts a lot",
+    "symptoms of altitude sickness"
+   ],
+   "es": "La altura puede causar náuseas, dolor de cabeza y, en casos graves, edema. Si te sientes mal, avísale a tu guía y desciende de inmediato. Reporta cualquier molestia durante el recorrido.",
+   "en": "Altitude can cause nausea, headache and, in serious cases, edema. If you feel unwell, tell your guide and go down immediately. Report any discomfort during the walk."
+  },
+  {
+   "id": "aclimatar",
+   "tema": "seguridad",
+   "fuente": "pnn_web",
+   "q": [
+    "cómo evito el mal de altura",
+    "consejos para la altura",
+    "cómo me aclimato",
+    "qué hago para no marearme",
+    "cómo me preparo para la altura",
+    "qué debo comer antes de subir",
+    "cómo respiro en la altura",
+    "hay que tomar mucha agua",
+    "qué hago para no apunarme",
+    "trucos para la altura",
+    "cómo subir sin enfermarme"
+   ],
+   "qen": [
+    "how do I avoid altitude sickness",
+    "tips for the altitude",
+    "how do I adapt to high altitude",
+    "what should I do to feel ok at 4000 meters"
+   ],
+   "es": "Asciende poco a poco y haz pausas de 10 minutos, camina a tu ritmo y respira profundo. Hidrátate antes, durante y después, come bien, lleva snacks energéticos y evita el alcohol.",
+   "en": "Go up gradually and take 10-minute breaks, walk at your own pace and breathe deeply. Drink water before, during and after, eat well, bring energy snacks and avoid alcohol."
+  },
+  {
+   "id": "salud",
+   "tema": "seguridad",
+   "fuente": "pnn_reglas",
+   "q": [
+    "puedo ir si soy hipertenso",
+    "tengo problemas del corazón, puedo subir",
+    "puede ir una mujer embarazada",
+    "tengo asma puedo ir",
+    "quién no debe subir",
+    "restricciones de salud",
+    "tengo la presión alta",
+    "sufro del corazón",
+    "soy diabético puedo ir",
+    "tuve un derrame, puedo subir",
+    "tengo anemia",
+    "puedo ir con marcapasos",
+    "contraindicaciones médicas",
+    "estoy en embarazo"
+   ],
+   "qen": [
+    "can I go if I have heart problems",
+    "can pregnant women go",
+    "I have high blood pressure, can I go",
+    "is it safe with asthma",
+    "medical restrictions"
+   ],
+   "es": "No subas a más de 3.000 m si tienes, entre otras: angina inestable, hipertensión severa no controlada, hipertensión pulmonar, insuficiencia cardíaca, arritmias graves, antecedentes de trombosis, de accidente cerebrovascular o de edema de altura, anemia severa o insuficiencia renal. Las mujeres embarazadas y las personas con problemas cardiovasculares o pulmonares tienen restricción.",
+   "en": "Do not go above 3,000 m if you have, among others: unstable angina, severe uncontrolled hypertension, pulmonary hypertension, heart failure, severe arrhythmias, a history of thrombosis, stroke or high-altitude edema, severe anemia or kidney failure. Pregnant women and people with heart or lung problems are restricted."
+  },
+  {
+   "id": "edades",
+   "tema": "acceso",
+   "fuente": "pnn_web",
+   "q": [
+    "cuál es la edad mínima",
+    "pueden ir niños",
+    "mi abuelo tiene 75 años puede entrar",
+    "hay límite de edad",
+    "puede entrar un bebé",
+    "desde qué edad pueden entrar los niños",
+    "un niño de 3 años puede ir",
+    "hasta qué edad se puede entrar",
+    "pueden subir personas de 70 años",
+    "mi bebé puede ir",
+    "pueden ir adultos mayores"
+   ],
+   "qen": [
+    "is there an age limit",
+    "can children go",
+    "can my 4 year old come",
+    "can elderly people go",
+    "minimum age"
+   ],
+   "es": "En Brisas-Kumanday la edad mínima es 6 años, y la edad máxima en todo el parque es 69 años. Los menores deben ir acompañados de adultos que los cuiden.",
+   "en": "In Brisas-Kumanday the minimum age is 6, and the maximum age in the whole park is 69. Minors must go with adults who look after them."
+  },
+  {
+   "id": "sol",
+   "tema": "seguridad",
+   "fuente": "pnn_reglas",
+   "q": [
+    "necesito bloqueador solar",
+    "hay que llevar gafas de sol",
+    "me puedo quemar con el sol",
+    "el sol es fuerte allá arriba",
+    "qué protector solar uso",
+    "cada cuánto me echo bloqueador",
+    "me puedo insolar",
+    "necesito gafas oscuras",
+    "el sol quema mucho"
+   ],
+   "qen": [
+    "do I need sunscreen",
+    "is the sun strong",
+    "do I need sunglasses",
+    "can I get sunburned"
+   ],
+   "es": "Sí. Usa gafas con alta protección UV y bloqueador solar, y repítelo cada dos horas. El reflejo de la nieve y el viento queman la piel rápido.",
+   "en": "Yes. Wear sunglasses with high UV protection and sunscreen, and reapply every two hours. Snow glare and wind burn the skin quickly."
+  },
+  {
+   "id": "temperatura",
+   "tema": "clima",
+   "fuente": "pnn2019",
+   "q": [
+    "qué temperatura hace",
+    "hace mucho frío",
+    "qué tan frío es arriba",
+    "cuántos grados hace en el parque",
+    "llega a congelarse",
+    "qué clima hace arriba",
+    "hace calor en el día",
+    "cuánto frío hace en el valle de las tumbas",
+    "nieva en el parque"
+   ],
+   "qen": [
+    "how cold is it",
+    "what is the temperature",
+    "is it freezing up there",
+    "what's the weather like",
+    "does it snow"
+   ],
+   "es": "En el parque la temperatura va de 14 °C a 4 °C y puede bajar de 0 °C. Lleva ropa y calzado para frío bajo cero y para lluvia.",
+   "en": "In the park temperatures range from 14 °C to 4 °C and can drop below 0 °C. Bring clothes and shoes for sub-zero cold and rain."
+  },
+  {
+   "id": "que_llevar",
+   "tema": "equipo",
+   "fuente": "pnn_reglas",
+   "q": [
+    "qué debo llevar",
+    "cuál es el equipo obligatorio",
+    "qué empaco para el viaje",
+    "qué ropa me pongo",
+    "qué necesito para la caminata",
+    "qué ropa llevo",
+    "necesito chaqueta",
+    "qué zapatos me pongo",
+    "qué meto en la maleta",
+    "lista de cosas para llevar",
+    "necesito linterna",
+    "hay que llevar comida",
+    "necesito pasamontañas",
+    "llevo botas o tenis"
+   ],
+   "qen": [
+    "what should I bring",
+    "what is the mandatory equipment",
+    "what should I wear",
+    "what clothes do I need",
+    "do I need gloves",
+    "what shoes should I wear",
+    "packing list"
+   ],
+   "es": "Equipo obligatorio para caminar: gafas con protección UV 100 %, bloqueador FPS 50 o más, linterna frontal con pilas de repuesto, morral pequeño, ropa impermeable y abrigada para cabeza, torso y extremidades, guantes, pasamontañas, calzado cómodo (mejor impermeable), botella para agua, bolsa para tu basura y comida liviana con muchas calorías.",
+   "en": "Mandatory hiking gear: sunglasses with 100% UV protection, SPF 50+ sunscreen, headlamp with spare batteries, small backpack, waterproof and warm clothes for head, torso and limbs, gloves, balaclava, comfortable (ideally waterproof) shoes, water bottle, a bag for your trash and light, high-calorie food."
+  },
+  {
+   "id": "grupo",
+   "tema": "normas",
+   "fuente": "pnn_reglas",
+   "q": [
+    "puedo ir solo",
+    "me puedo separar del grupo",
+    "puedo caminar por mi cuenta",
+    "puedo adelantarme",
+    "me puedo quedar atrás",
+    "puedo ir a mi ritmo lejos del grupo",
+    "puedo explorar solo",
+    "tengo que seguir al guía",
+    "puedo ir solo sin el grupo"
+   ],
+   "qen": [
+    "can I go alone",
+    "can I leave the group",
+    "can I walk ahead of the group",
+    "can I explore on my own"
+   ],
+   "es": "No. Ni visitantes ni guías pueden entrar solos al parque. El grupo debe ir unido, nadie se puede quedar atrás ni perder, y hay que seguir las instrucciones del guía.",
+   "en": "No. Neither visitors nor guides may enter the park alone. The group must stay together, nobody may fall behind or get lost, and everyone must follow the guide's instructions."
+  },
+  {
+   "id": "alcohol",
+   "tema": "normas",
+   "fuente": "pnn_reglas",
+   "q": [
+    "puedo tomar cerveza",
+    "se puede llevar trago",
+    "puedo fumar marihuana",
+    "puedo entrar si tomé",
+    "puedo llevar aguardiente",
+    "se puede tomar licor",
+    "puedo fumar",
+    "puedo llevar vino",
+    "puedo ir enguayabado",
+    "revisan si llevo alcohol"
+   ],
+   "qen": [
+    "can I drink alcohol",
+    "can I bring beer",
+    "can I smoke",
+    "are drugs allowed"
+   ],
+   "es": "No. Está prohibido entrar o consumir alcohol o sustancias psicoactivas, y entrar en estado de embriaguez. En los controles se decomisan. Además, el alcohol empeora el mal de altura.",
+   "en": "No. Bringing or consuming alcohol or psychoactive substances, or entering intoxicated, is prohibited. They are confiscated at checkpoints. Alcohol also makes altitude sickness worse."
+  },
+  {
+   "id": "volcan_estado",
+   "tema": "seguridad",
+   "fuente": "sgc",
+   "q": [
+    "está activo el volcán",
+    "hay peligro de erupción",
+    "cuál es el nivel de alerta del volcán",
+    "es seguro ir al Ruiz",
+    "el volcán está botando ceniza",
+    "el volcán va a explotar",
+    "hay erupción ahora",
+    "en qué alerta está el Ruiz",
+    "es peligroso el volcán hoy",
+    "el Ruiz está en alerta naranja",
+    "puede hacer erupción mientras estoy",
+    "está tranquilo el volcán",
+    "qué tan activo está el volcán"
+   ],
+   "qen": [
+    "is the volcano active",
+    "is it safe to visit",
+    "will the volcano erupt",
+    "what is the alert level",
+    "is there ash today"
+   ],
+   "es": "El Nevado del Ruiz es un volcán activo que vigila el Servicio Geológico Colombiano (SGC). Su estado de alerta puede cambiar: consúltalo en los boletines del SGC antes de subir y sigue siempre las indicaciones de tu guía y de los guardaparques. Esta app no conoce el estado de hoy.",
+   "en": "Nevado del Ruiz is an active volcano monitored by the Colombian Geological Service (SGC). Its alert status can change: check the SGC bulletins before going up and always follow your guide and the park rangers. This app does not know today's status."
+  },
+  {
+   "id": "cima",
+   "tema": "acceso",
+   "fuente": "pnn_reglas",
+   "q": [
+    "puedo subir a la cima del Ruiz",
+    "se puede llegar al cráter",
+    "puedo tocar la nieve",
+    "se puede subir al glaciar",
+    "hasta dónde se puede subir",
+    "se puede llegar a la cumbre",
+    "podemos ir hasta el nevado",
+    "se puede jugar en la nieve",
+    "hasta dónde llega el carro",
+    "se puede ver el cráter de cerca",
+    "subimos hasta el glaciar"
+   ],
+   "qen": [
+    "can I climb to the summit",
+    "can I touch the snow",
+    "can we go to the glacier",
+    "can I hike to the crater",
+    "how far up can we go"
+   ],
+   "es": "No. Desde ningún sector se puede llegar a la nieve ni al glaciar del Nevado del Ruiz. Por Brisas, el recorrido autorizado llega en vehículo hasta el Valle de las Tumbas, a unos 4.450 m.",
+   "en": "No. The snow and glacier of Nevado del Ruiz cannot be reached from any sector. From Brisas, the authorized route goes by vehicle to Valle de las Tumbas, at about 4,450 m."
+  },
+  {
+   "id": "brisas",
+   "tema": "acceso",
+   "fuente": "pnn_reglas",
+   "q": [
+    "qué es Brisas",
+    "a qué altura está Brisas",
+    "dónde es la entrada al Ruiz",
+    "por dónde se entra al volcán",
+    "dónde queda Brisas",
+    "cuál es la entrada norte",
+    "Brisas está a cuántos metros",
+    "qué altura tiene la entrada"
+   ],
+   "qen": [
+    "what is Brisas",
+    "where is the entrance",
+    "how high is Brisas",
+    "where is the visitor center"
+   ],
+   "es": "Brisas, a unos 4.100 m, es el único lugar autorizado para acercarse al volcán Nevado del Ruiz. Ahí se hace el registro y la charla de inducción del sector Brisas-Kumanday.",
+   "en": "Brisas, at about 4,100 m, is the only authorized place to approach Nevado del Ruiz. Registration and the induction talk for the Brisas-Kumanday sector happen there."
+  },
+  {
+   "id": "tumbas",
+   "tema": "acceso",
+   "fuente": "pnn_web",
+   "q": [
+    "por qué se llama valle del silencio",
+    "hasta dónde llega el recorrido",
+    "por qué se llama de las tumbas",
+    "cuál es el punto más alto del recorrido",
+    "el valle del silencio dónde queda"
+   ],
+   "qen": [
+    "what is Valle de las Tumbas",
+    "where does the tour end",
+    "how high is Valle de las Tumbas",
+    "what is the highest point of the tour"
+   ],
+   "es": "El Valle de las Tumbas, o del Silencio, está a unos 4.450 m. Se llega desde Brisas por un carreteable que atraviesa el superpáramo; es el punto más alto del recorrido autorizado en ese sector.",
+   "en": "Valle de las Tumbas, also called Valle del Silencio, is at about 4,450 m. It is reached from Brisas by a dirt road through the super-páramo; it is the highest point of the authorized route in that sector."
+  },
+  {
+   "id": "horario",
+   "tema": "acceso",
+   "fuente": "pnn_web",
+   "q": [
+    "a qué hora abren",
+    "hasta qué hora puedo entrar",
+    "cuál es el horario del parque",
+    "abren los domingos",
+    "hasta qué hora abren",
+    "a qué hora cierran",
+    "puedo llegar a las 3 de la tarde",
+    "abren los festivos",
+    "cuál es la hora límite de ingreso",
+    "a qué hora hay que llegar"
+   ],
+   "qen": [
+    "what time does it open",
+    "opening hours",
+    "what time does it close",
+    "until what time can I enter"
+   ],
+   "es": "El sector Brisas-Kumanday abre todos los días de 8:00 a. m. a 2:00 p. m. La última charla de inducción es a la 1:30 p. m.",
+   "en": "The Brisas-Kumanday sector is open every day from 8:00 a.m. to 2:00 p.m. The last induction talk is at 1:30 p.m."
+  },
+  {
+   "id": "induccion",
+   "tema": "acceso",
+   "fuente": "pnn_reglas",
+   "q": [
+    "qué es la charla de inducción",
+    "es obligatoria la charla",
+    "dónde dan la charla",
+    "me puedo saltar la inducción",
+    "hay que ver una charla",
+    "cuánto dura la charla",
+    "la charla es antes de entrar",
+    "qué explican en la inducción",
+    "a qué hora es la última charla"
+   ],
+   "qen": [
+    "is the induction talk mandatory",
+    "do I have to attend a briefing",
+    "when is the last talk"
+   ],
+   "es": "Sí, la charla de inducción es obligatoria y presencial en los puntos de ingreso. En Brisas la última es a la 1:30 p. m.",
+   "en": "Yes, the induction talk is mandatory and in person at the entry points. In Brisas the last one is at 1:30 p.m."
+  },
+  {
+   "id": "guia",
+   "tema": "acceso",
+   "fuente": "pnn_web",
+   "q": [
+    "necesito guía",
+    "puedo entrar sin guía",
+    "el guía es obligatorio",
+    "cómo sé si el guía está autorizado",
+    "se puede ir sin guía",
+    "toca contratar guía",
+    "dónde consigo un guía",
+    "el guía va con nosotros",
+    "qué es el REPSE",
+    "cuánto cobra el guía"
+   ],
+   "qen": [
+    "do I need a guide",
+    "is a guide mandatory",
+    "can I go without a guide",
+    "where do I find a guide"
+   ],
+   "es": "Sí. El guía es obligatorio en todos los sectores y debe estar inscrito en el Registro para Prestadores de Servicios Asociados al Ecoturismo (REPSE). Para subir a un glaciar se requiere un guía especializado en alta montaña.",
+   "en": "Yes. A guide is mandatory in every sector and must be registered in the REPSE (registry of ecotourism service providers). Going up a glacier requires a specialized high-mountain guide."
+  },
+  {
+   "id": "seguro",
+   "tema": "acceso",
+   "fuente": "pnn_web",
+   "q": [
+    "necesito seguro",
+    "el seguro es obligatorio",
+    "dónde pago el seguro de accidentes",
+    "toca pagar seguro",
+    "qué seguro piden",
+    "el seguro cubre rescate",
+    "cuánto cuesta el seguro"
+   ],
+   "qen": [
+    "do I need insurance",
+    "what insurance do I need",
+    "where do I buy the insurance"
+   ],
+   "es": "Sí. Se exige un seguro obligatorio de accidentes de una aseguradora aprobada. En Brisas se paga a través de la UTON; en otros sectores, con la agencia.",
+   "en": "Yes. Mandatory accident insurance from an approved insurer is required. In Brisas it is paid through UTON; in other sectors, through the agency."
+  },
+  {
+   "id": "documento",
+   "tema": "acceso",
+   "fuente": "pnn_reglas",
+   "q": [
+    "qué documentos necesito",
+    "hay que llevar cédula",
+    "los niños necesitan documento",
+    "sirve el pasaporte",
+    "piden cédula",
+    "qué identificación llevo",
+    "llevo el registro civil del niño",
+    "me piden pasaporte"
+   ],
+   "qen": [
+    "what ID do I need",
+    "do I need my passport",
+    "what documents do I need",
+    "do children need ID"
+   ],
+   "es": "Todos deben llevar documento de identidad: cédula, registro civil, pasaporte o DNI.",
+   "en": "Everyone must carry an ID: Colombian ID card, birth certificate, passport or DNI."
+  },
+  {
+   "id": "reservas",
+   "tema": "acceso",
+   "fuente": "pnn_web",
+   "q": [
+    "hay que reservar",
+    "cómo reservo",
+    "necesito reserva para Brisas",
+    "dónde hago la reserva",
+    "toca reservar antes",
+    "cómo aparto el cupo",
+    "hay cupos limitados",
+    "puedo llegar sin reserva",
+    "dónde reservo para el fin de semana",
+    "página para reservar"
+   ],
+   "qen": [
+    "do I need a reservation",
+    "how do I book",
+    "do I need to book in advance",
+    "where do I make a reservation"
+   ],
+   "es": "En Brisas-Kumanday la reserva no es obligatoria entre semana, pero se recomienda hacerla con al menos un día de anticipación porque los cupos son limitados. Los fines de semana y puentes festivos exigen reserva en reservasnevados.com.",
+   "en": "In Brisas-Kumanday booking is not mandatory on weekdays, but it is recommended at least one day ahead because space is limited. Weekends and long holiday weekends require booking at reservasnevados.com."
+  },
+  {
+   "id": "tarifas",
+   "tema": "acceso",
+   "fuente": "pnn_web",
+   "q": [
+    "cuánto cuesta la entrada",
+    "cuál es el precio",
+    "cuánto vale entrar al parque",
+    "cuánto cobran por el carro",
+    "cuánto pago por persona",
+    "cuánto vale para extranjeros",
+    "precio para estudiantes",
+    "cuánto cuesta la entrada para niños",
+    "cuánto vale el parqueo del carro",
+    "hay descuentos"
+   ],
+   "qen": [
+    "how much is the entrance fee",
+    "how much does it cost",
+    "entrance fee for foreigners",
+    "ticket price",
+    "how much for a car"
+   ],
+   "es": "Tarifas 2026 en Brisas-Kumanday: menores de 25 años, $12.500; mayores de 25, $24.500; extranjeros no residentes, $68.000. Automóvil, $10.000. Guianza (UTON), $22.000. El seguro de accidentes se paga aparte. Hay exenciones según la Resolución 695 de 2025. Confirma en los canales oficiales.",
+   "en": "2026 fees in Brisas-Kumanday: under 25, COP 12,500; over 25, COP 24,500; non-resident foreigners, COP 68,000. Car, COP 10,000. Guide service (UTON), COP 22,000. Accident insurance is paid separately. Some exemptions apply (Resolution 695 of 2025). Confirm through official channels."
+  },
+  {
+   "id": "pico_placa",
+   "tema": "acceso",
+   "fuente": "pnn_web",
+   "q": [
+    "hay pico y placa",
+    "puedo subir con mi carro cualquier día",
+    "qué placas pueden entrar",
+    "qué carros pueden subir hoy",
+    "hay restricción de placas",
+    "aplica pico y placa el domingo",
+    "mi placa puede entrar"
+   ],
+   "qen": [
+    "are there vehicle restrictions",
+    "can my car go up on Sunday",
+    "license plate restrictions"
+   ],
+   "es": "Sí. En el acceso Brisas–Valle de las Tumbas aplica pico y placa ambiental en noviembre, fines de semana y puentes festivos, de 5:00 a. m. a 4:00 p. m. Revisa las placas autorizadas al hacer tu reserva.",
+   "en": "Yes. On the Brisas–Valle de las Tumbas access road an environmental license-plate restriction applies in November, on weekends and long holiday weekends, from 5:00 a.m. to 4:00 p.m. Check the allowed plates when you book."
+  },
+  {
+   "id": "motos",
+   "tema": "normas",
+   "fuente": "pnn_web",
+   "q": [
+    "puedo ir en moto",
+    "pueden entrar motos",
+    "se puede subir en moto",
+    "puedo ir en motocicleta",
+    "dejan pasar motos"
+   ],
+   "qen": [
+    "can I go by motorcycle",
+    "are motorbikes allowed"
+   ],
+   "es": "No. El ingreso en moto al sector Brisas-Kumanday está prohibido.",
+   "en": "No. Motorcycles are not allowed into the Brisas-Kumanday sector."
+  },
+  {
+   "id": "transporte",
+   "tema": "acceso",
+   "fuente": "pnn_web",
+   "q": [
+    "cómo llego al parque",
+    "hay bus para subir",
+    "hay transporte público",
+    "por dónde se sube desde Manizales",
+    "cómo se llega",
+    "hay buses hasta el parque",
+    "necesito carro 4x4",
+    "cuál es la vía desde Manizales",
+    "cómo subo desde Murillo",
+    "hay transporte adentro del parque"
+   ],
+   "qen": [
+    "how do I get there",
+    "is there public transport",
+    "is there a bus to the park",
+    "do I need a 4x4"
+   ],
+   "es": "El parque no tiene transporte interno ni público. A Brisas-Kumanday se llega en vehículo desde Manizales por la vía a Bogotá (vía Letras) y el corredor La Esperanza–Murillo, o desde Murillo. Organiza el transporte con tu agencia o guía.",
+   "en": "The park has no internal or public transport. Brisas-Kumanday is reached by vehicle from Manizales via the road to Bogotá (Letras road) and the La Esperanza–Murillo corridor, or from Murillo. Arrange transport with your agency or guide."
+  },
+  {
+   "id": "cierres",
+   "tema": "acceso",
+   "fuente": "pnn_web",
+   "q": [
+    "cuándo cierra el parque",
+    "el parque tiene cierres",
+    "por qué cierran el parque",
+    "está abierto esta semana",
+    "está cerrado el parque",
+    "qué días cierran",
+    "por qué cierran en noviembre",
+    "está abierto en semana santa",
+    "el parque cierra esta semana"
+   ],
+   "qen": [
+    "when is the park closed",
+    "is the park closed this week",
+    "closing dates"
+   ],
+   "es": "El parque cierra al ecoturismo tres veces al año, cinco días cada vez, para que el páramo se regenere: desde el lunes siguiente a Semana Santa, desde el cuarto lunes de septiembre y desde el cuarto lunes de noviembre, hasta el viernes. Consulta los canales oficiales: en cierres anteriores Brisas siguió abierto.",
+   "en": "The park closes to ecotourism three times a year, five days each, so the páramo can recover: from the Monday after Holy Week, from the fourth Monday of September and from the fourth Monday of November, through Friday. Check official channels: in past closures Brisas stayed open."
+  },
+  {
+   "id": "mascotas",
+   "tema": "normas",
+   "fuente": "pnn_reglas",
+   "q": [
+    "puedo llevar a mi perro",
+    "se permiten mascotas",
+    "puedo ir con mi perro",
+    "dejan entrar perros",
+    "puedo llevar mi mascota en el carro",
+    "animales domésticos permitidos"
+   ],
+   "qen": [
+    "can I bring my dog",
+    "are pets allowed",
+    "can I take my cat",
+    "are dogs allowed"
+   ],
+   "es": "No. Las mascotas y animales domésticos están prohibidos en el parque.",
+   "en": "No. Pets and domestic animals are not allowed in the park."
+  },
+  {
+   "id": "drones",
+   "tema": "normas",
+   "fuente": "pnn_reglas",
+   "q": [
+    "puedo volar un dron",
+    "se permiten drones",
+    "puedo grabar con drone",
+    "dejan usar drones",
+    "puedo volar mi dron para una foto"
+   ],
+   "qen": [
+    "can I fly a drone",
+    "are drones allowed"
+   ],
+   "es": "No. Los drones están prohibidos (Resolución 0543 de 2018).",
+   "en": "No. Drones are prohibited (Resolution 0543 of 2018)."
+  },
+  {
+   "id": "fotos",
+   "tema": "normas",
+   "fuente": "pnn_reglas",
+   "q": [
+    "puedo tomar fotos",
+    "se puede grabar video",
+    "necesito permiso para fotos profesionales",
+    "se pueden tomar fotos",
+    "puedo hacer un video para mis redes",
+    "necesito permiso para grabar",
+    "puedo hacer una sesión de fotos profesional"
+   ],
+   "qen": [
+    "can I take photos",
+    "can I film for social media",
+    "do I need a permit for photos"
+   ],
+   "es": "Sí, las fotos y videos no comerciales están permitidos. La fotografía o el video comercial, y el uso de luces o estudios temporales, necesitan autorización previa del parque.",
+   "en": "Yes, non-commercial photos and videos are allowed. Commercial photography or video, and lights or temporary studios, need prior authorization from the park."
+  },
+  {
+   "id": "basura",
+   "tema": "normas",
+   "fuente": "pnn_reglas",
+   "q": [
+    "dónde boto la basura",
+    "hay canecas",
+    "qué hago con mis residuos",
+    "puedo enterrar la basura",
+    "qué hago con la basura",
+    "hay basureros",
+    "dónde tiro el papel",
+    "puedo dejar la basura en el parque"
+   ],
+   "qen": [
+    "where do I throw my trash",
+    "where do I put my garbage",
+    "are there trash cans"
+   ],
+   "es": "Lleva de vuelta toda tu basura: envolturas, pilas, plásticos y bolsas. No entierres ni dejes residuos, y recoge los que encuentres.",
+   "en": "Take all your trash back with you: wrappers, batteries, plastics and bags. Do not bury or leave waste, and pick up any litter you find."
+  },
+  {
+   "id": "plasticos",
+   "tema": "normas",
+   "fuente": "pnn_reglas",
+   "q": [
+    "puedo llevar botellas plásticas",
+    "están prohibidos los plásticos",
+    "puedo llevar pitillos y vasos desechables",
+    "puedo llevar agua en botella plástica",
+    "dejan entrar plástico",
+    "puedo llevar bolsas",
+    "están prohibidos los desechables"
+   ],
+   "qen": [
+    "are plastic bottles allowed",
+    "can I bring plastic bags",
+    "are disposable plastics allowed"
+   ],
+   "es": "Los plásticos de un solo uso están prohibidos (Resolución 1558 de 2019). Lleva un recipiente reutilizable para el agua.",
+   "en": "Single-use plastics are prohibited (Resolution 1558 of 2019). Bring a reusable water container."
+  },
+  {
+   "id": "fuego",
+   "tema": "normas",
+   "fuente": "pnn_reglas",
+   "q": [
+    "puedo hacer una fogata",
+    "puedo prender fuego",
+    "se puede cocinar en el parque",
+    "puedo prender una fogata",
+    "puedo encender fuego para calentarme",
+    "dejan cocinar con leña"
+   ],
+   "qen": [
+    "can I make a campfire",
+    "can I cook on a fire"
+   ],
+   "es": "No. Las fogatas están prohibidas. Donde se permita cocinar, se usa estufa de gas de camping.",
+   "en": "No. Campfires are prohibited. Where cooking is allowed, use a camping gas stove."
+  },
+  {
+   "id": "camping",
+   "tema": "normas",
+   "fuente": "pnn_reglas",
+   "q": [
+    "puedo acampar",
+    "dónde se puede acampar",
+    "se puede dormir en el parque",
+    "se puede acampar en Brisas",
+    "dónde puedo poner la carpa",
+    "puedo quedarme a dormir",
+    "hay zonas de camping"
+   ],
+   "qen": [
+    "can I camp",
+    "can we sleep in the park",
+    "where can I pitch a tent"
+   ],
+   "es": "Acampar está prohibido, salvo en puntos autorizados temporalmente por el parque. Pregunta a tu operador cuáles están habilitados hoy; en Brisas el recorrido es de pasadía.",
+   "en": "Camping is prohibited except at spots temporarily authorized by the park. Ask your operator which are open today; the Brisas route is a day visit."
+  },
+  {
+   "id": "sendero",
+   "tema": "normas",
+   "fuente": "pnn_reglas",
+   "q": [
+    "puedo salirme del camino",
+    "puedo tomar un atajo",
+    "puedo caminar por el pajonal",
+    "por qué no puedo salir del sendero",
+    "me puedo salir del sendero",
+    "puedo caminar por fuera del camino",
+    "puedo pisar las plantas",
+    "puedo ir por otro lado"
+   ],
+   "qen": [
+    "can I leave the trail",
+    "can I walk off the trail",
+    "can I take a shortcut"
+   ],
+   "es": "No. Está prohibido salirse de los senderos marcados o abrir rutas alternas: pisar fuera del camino daña el páramo.",
+   "en": "No. Leaving the marked trails or taking alternate routes is prohibited: stepping off the path damages the páramo."
+  },
+  {
+   "id": "recoger",
+   "tema": "normas",
+   "fuente": "pnn_reglas",
+   "q": [
+    "puedo llevarme una piedra",
+    "puedo coger una planta",
+    "puedo llevarme un frailejón",
+    "puedo recoger ceniza de recuerdo",
+    "puedo llevarme una piedra de recuerdo",
+    "puedo arrancar una flor",
+    "puedo llevarme arena del volcán",
+    "puedo coger una planta para mi casa"
+   ],
+   "qen": [
+    "can I take a rock as a souvenir",
+    "can I pick a flower",
+    "can I take sand from the volcano"
+   ],
+   "es": "No. Está prohibido sacar suelo, rocas, plantas o animales, romper muestras de roca y arrancar frailejones o plántulas.",
+   "en": "No. Removing soil, rocks, plants or animals, breaking rock samples and pulling up frailejones or seedlings is prohibited."
+  },
+  {
+   "id": "fauna_trato",
+   "tema": "normas",
+   "fuente": "pnn_reglas",
+   "q": [
+    "puedo darle comida a los animales",
+    "puedo tocar un animal",
+    "puedo acercarme a un venado",
+    "puedo poner cantos de aves para llamarlas",
+    "puedo alimentar a los pájaros",
+    "puedo perseguir un conejo",
+    "puedo darle de comer a un zorro",
+    "puedo llamar a los pájaros con un audio"
+   ],
+   "qen": [
+    "can I feed the animals",
+    "can I touch the animals",
+    "can I feed the birds"
+   ],
+   "es": "No toques, alimentes, persigas ni atraigas a los animales, y no pongas trampas. También está prohibido usar grabaciones de cantos para llamarlos.",
+   "en": "Do not touch, feed, chase or lure animals, and do not set traps. Playing recorded animal calls to attract them is also prohibited."
+  },
+  {
+   "id": "comer_plantas",
+   "tema": "seguridad",
+   "fuente": "pnn_reglas",
+   "q": [
+    "se puede comer esta planta",
+    "esta planta es venenosa",
+    "puedo probar estas bayas",
+    "este hongo se come",
+    "esa fruta es comestible",
+    "esta planta es tóxica",
+    "puedo comerme esa hoja",
+    "esto es venenoso",
+    "puedo hacer té con esta planta"
+   ],
+   "qen": [
+    "is this plant edible",
+    "can I eat these berries",
+    "is this edible"
+   ],
+   "es": "No toques ni pruebes plantas, frutos ni hongos del páramo: además, está prohibido recolectarlos. Esta app nunca dice si algo se come o es tóxico; pregúntale a tu guía.",
+   "en": "Do not touch or taste páramo plants, berries or fungi: collecting them is also prohibited. This app never says whether something is edible or toxic; ask your guide."
+  },
+  {
+   "id": "sanciones",
+   "tema": "normas",
+   "fuente": "pnn_reglas",
+   "q": [
+    "qué pasa si no cumplo las normas",
+    "me pueden multar",
+    "me pueden sacar del parque",
+    "qué castigo hay si rompo las reglas",
+    "multan por salirse del sendero",
+    "me pueden expulsar",
+    "es delito arrancar plantas"
+   ],
+   "qen": [
+    "what happens if I break the rules",
+    "is there a fine",
+    "can they kick me out"
+   ],
+   "es": "Las infracciones pueden llevar a la expulsión del parque y a medidas preventivas o sanciones según la Ley 1333 de 2009, sin perjuicio de la responsabilidad penal.",
+   "en": "Violations can lead to expulsion from the park and to preventive measures or sanctions under Law 1333 of 2009, without prejudice to criminal liability."
+  },
+  {
+   "id": "contacto",
+   "tema": "acceso",
+   "fuente": "pnn_web",
+   "q": [
+    "cuál es el teléfono del parque",
+    "cómo contacto a Parques Nacionales",
+    "número de la UTON",
+    "tienen WhatsApp",
+    "número de teléfono",
+    "cómo me comunico con el parque",
+    "WhatsApp de parques nacionales",
+    "teléfono de la UTON",
+    "dónde pregunto información"
+   ],
+   "qen": [
+    "what is the park's phone number",
+    "how do I contact the park",
+    "park WhatsApp number"
+   ],
+   "es": "Parques Nacionales: línea gratuita 018000129722, teléfono +57 (601) 353 2400 y WhatsApp +57 322 947 1031. UTON (operador en Brisas): 321 506 6031 y 322 360 3637.",
+   "en": "Parques Nacionales: toll-free 018000129722, phone +57 (601) 353 2400 and WhatsApp +57 322 947 1031. UTON (Brisas operator): 321 506 6031 and 322 360 3637."
+  },
+  {
+   "id": "actividades",
+   "tema": "acceso",
+   "fuente": "pnn_web",
+   "q": [
+    "qué se puede hacer en Brisas",
+    "qué actividades hay",
+    "qué voy a ver en el recorrido",
+    "qué hay para hacer",
+    "qué se puede ver",
+    "qué incluye la visita",
+    "cuánto dura el recorrido"
+   ],
+   "qen": [
+    "what can I do in Brisas",
+    "what is there to do",
+    "what will I see"
+   ],
+   "es": "En el sector Brisas-Kumanday se permite observación geológica, observación de fauna y flora, y fotografía no comercial. Es una visita corta con caminatas breves.",
+   "en": "In the Brisas-Kumanday sector you can do geological observation, wildlife and plant watching, and non-commercial photography. It is a short visit with brief walks."
+  },
+  {
+   "id": "sectores",
+   "tema": "acceso",
+   "fuente": "pnn_web",
+   "q": [
+    "qué sectores tiene el parque",
+    "por dónde más se puede entrar",
+    "se puede ir a la laguna del Otún",
+    "cómo se llega al Santa Isabel",
+    "qué otras entradas tiene el parque",
+    "se puede ir al nevado del Tolima",
+    "se puede subir al Santa Isabel",
+    "cómo voy a la laguna del Otún",
+    "cuántos sectores tiene el parque"
+   ],
+   "qen": [
+    "which sectors does the park have",
+    "can I visit Nevado del Tolima",
+    "how do I get to Laguna del Otún",
+    "other entrances to the park"
+   ],
+   "es": "El parque tiene cuatro sectores ecoturísticos: Brisas-Kumanday, Cisne-Poleka Kasue, Laguna del Otún y Quindío-Dulima, con accesos en Caldas, Risaralda, Quindío y Tolima. Cada uno exige guía, y los tres últimos, reserva con agencia.",
+   "en": "The park has four ecotourism sectors: Brisas-Kumanday, Cisne-Poleka Kasue, Laguna del Otún and Quindío-Dulima, with access from Caldas, Risaralda, Quindío and Tolima. All require a guide, and the last three require booking through an agency."
+  },
+  {
+   "id": "parque",
+   "tema": "parque",
+   "fuente": "pnn_web",
+   "q": [
+    "qué es el Parque Nacional Natural Los Nevados",
+    "cuándo se creó el parque",
+    "qué tan grande es el parque",
+    "en qué departamentos está el parque",
+    "cuántas hectáreas tiene",
+    "en qué año fundaron el parque",
+    "qué departamentos abarca",
+    "desde cuándo es parque nacional"
+   ],
+   "qen": [
+    "when was the park created",
+    "how big is the park",
+    "where is the park",
+    "which departments does it cover"
+   ],
+   "es": "El Parque Nacional Natural Los Nevados se declaró el 30 de abril de 1974. Tiene unas 61.400 hectáreas en la cordillera Central, entre Caldas, Quindío, Risaralda y Tolima.",
+   "en": "Los Nevados National Natural Park was declared on April 30, 1974. It covers about 61,400 hectares of the Central Cordillera, across Caldas, Quindío, Risaralda and Tolima."
+  },
+  {
+   "id": "volcanes",
+   "tema": "parque",
+   "fuente": "pnn_web",
+   "q": [
+    "qué volcanes hay en el parque",
+    "cuáles son los nevados",
+    "qué significa Kumanday",
+    "cómo se llaman los cráteres",
+    "cuántos nevados hay",
+    "cómo se llaman los volcanes",
+    "qué es La Olleta",
+    "qué nevados se ven desde aquí"
+   ],
+   "qen": [
+    "which volcanoes are in the park",
+    "what are the snow peaks called",
+    "how many volcanoes are there"
+   ],
+   "es": "En el parque están los nevados del Ruiz (Kumanday), Santa Isabel (Poleka Kasue) y Tolima (Dulima), además de los cráteres La Olleta y La Piraña y los paramillos del Cisne, Santa Rosa y Quindío.",
+   "en": "The park includes the Ruiz (Kumanday), Santa Isabel (Poleka Kasue) and Tolima (Dulima) snow peaks, plus La Olleta and La Piraña craters and the Cisne, Santa Rosa and Quindío paramillos."
+  },
+  {
+   "id": "glaciares",
+   "tema": "parque",
+   "fuente": "pnn_web",
+   "q": [
+    "cuántos glaciares hay",
+    "se están derritiendo los glaciares",
+    "va a desaparecer la nieve",
+    "qué le pasa al Santa Isabel",
+    "cuánta nieve queda",
+    "se va a acabar el glaciar",
+    "cuántos glaciares tiene Colombia",
+    "el deshielo",
+    "cambio climático en el nevado"
+   ],
+   "qen": [
+    "are the glaciers melting",
+    "will the glacier disappear",
+    "climate change and glaciers"
+   ],
+   "es": "Los glaciares ocupan cerca del 1,82 % del parque, que protege 3 de los 6 glaciares que le quedan a Colombia. Según el IDEAM, el glaciar del Santa Isabel podría extinguirse hacia 2028, según el clima y la actividad del Ruiz.",
+   "en": "Glaciers cover about 1.82% of the park, which protects 3 of Colombia's 6 remaining glaciers. According to IDEAM, the Santa Isabel glacier could disappear around 2028, depending on the climate and the Ruiz's activity."
+  },
+  {
+   "id": "paramo",
+   "tema": "naturaleza",
+   "fuente": "pnn_web",
+   "q": [
+    "qué es el páramo",
+    "qué ecosistemas hay en el parque",
+    "por qué es importante el páramo",
+    "qué es el superpáramo",
+    "para qué sirve el páramo",
+    "qué ecosistemas protege",
+    "qué es el bosque altoandino"
+   ],
+   "qen": [
+    "what is a páramo",
+    "why is the páramo important",
+    "what ecosystems are protected"
+   ],
+   "es": "El páramo cubre cerca del 84 % del parque. También hay bosque altoandino, superpáramo, humedales altoandinos, glaciares y volcanes.",
+   "en": "Páramo covers about 84% of the park. There are also high Andean forest, super-páramo, high Andean wetlands, glaciers and volcanoes."
+  },
+  {
+   "id": "superparamo",
+   "tema": "naturaleza",
+   "fuente": "pnn2019",
+   "q": [
+    "por qué no hay plantas arriba",
+    "qué son los arenales",
+    "por qué parece la luna",
+    "qué hay en el superpáramo",
+    "por qué hay tanta arena",
+    "por qué no crecen plantas arriba",
+    "qué es esta zona de piedras",
+    "parece otro planeta"
+   ],
+   "qen": [
+    "why are there no plants up there",
+    "why is it so rocky and sandy",
+    "why does it look like the moon"
+   ],
+   "es": "En el superpáramo hay rocas, cenizas, arenales y poca vegetación: un paisaje casi lunar.",
+   "en": "The super-páramo has rocks, ash, sandy flats and little vegetation: an almost lunar landscape."
+  },
+  {
+   "id": "agua",
+   "tema": "naturaleza",
+   "fuente": "pnn_web",
+   "q": [
+    "de dónde sale el agua de Manizales",
+    "qué ríos nacen en el parque",
+    "por qué el páramo es una fábrica de agua",
+    "a quién le da agua el parque",
+    "de dónde viene el agua",
+    "qué ríos salen del nevado",
+    "el parque da agua a las ciudades",
+    "por qué el páramo produce agua"
+   ],
+   "qen": [
+    "where does the water come from",
+    "does the park supply water to cities",
+    "why is the páramo a water factory"
+   ],
+   "es": "En el parque nacen ríos de las cuencas altas del Chinchiná y del Otún, que vierten al Cauca y al Magdalena. El parque abastece de agua a Tolima, Risaralda, Caldas y Quindío.",
+   "en": "Rivers of the upper Chinchiná and Otún basins are born in the park and flow to the Cauca and Magdalena. The park supplies water to Tolima, Risaralda, Caldas and Quindío."
+  },
+  {
+   "id": "otun",
+   "tema": "naturaleza",
+   "fuente": "pnn_web",
+   "q": [
+    "qué es la laguna del Otún",
+    "cuál es la laguna más grande",
+    "qué es un sitio Ramsar",
+    "dónde queda la laguna del Otún",
+    "qué laguna es la más grande",
+    "qué es Ramsar"
+   ],
+   "qen": [
+    "what is Laguna del Otún",
+    "what is the biggest lake",
+    "what is a Ramsar site"
+   ],
+   "es": "La Laguna del Otún es la más grande del parque, y sus humedales son sitio Ramsar, una designación internacional para humedales importantes.",
+   "en": "Laguna del Otún is the largest lake in the park, and its wetlands are a Ramsar site, an international designation for important wetlands."
+  },
+  {
+   "id": "frailejon",
+   "tema": "flora",
+   "fuente": "wcs",
+   "q": [
+    "qué es un frailejón",
+    "cuánto vive un frailejón",
+    "qué tan alto crece el frailejón",
+    "cuántas especies de frailejón hay aquí",
+    "qué es esa planta peluda",
+    "cuánto crece un frailejón",
+    "cuántos años vive un frailejón",
+    "cómo se llama el frailejón de aquí",
+    "qué familia es el frailejón",
+    "el frailejón es un árbol"
+   ],
+   "qen": [
+    "what is a frailejón",
+    "how tall do frailejones grow",
+    "what is that hairy plant",
+    "how long do frailejones live"
+   ],
+   "es": "El frailejón del parque es Espeletia hartwegiana, la única especie de frailejón que hay en él. Es una planta en roseta de la familia de los girasoles que puede vivir hasta 40 años y llegar a 5 o 6 metros.",
+   "en": "The park's frailejón is Espeletia hartwegiana, the only frailejón species in it. It is a rosette plant of the sunflower family that can live up to 40 years and reach 5 to 6 meters."
+  },
+  {
+   "id": "frailejon_hojas",
+   "tema": "flora",
+   "fuente": "wcsfrailejon",
+   "q": [
+    "por qué el frailejón tiene hojas secas",
+    "por qué el frailejón tiene pelos",
+    "cómo aguanta el frío el frailejón",
+    "por qué el frailejón tiene falda de hojas",
+    "para qué guarda las hojas secas",
+    "cómo se protege del frío el frailejón"
+   ],
+   "qen": [
+    "why do frailejones keep dead leaves",
+    "why do frailejones have dry leaves"
+   ],
+   "es": "Muchos frailejones guardan sus hojas muertas pegadas al tallo: así conservan calor y nutrientes.",
+   "en": "Many frailejones keep their dead leaves attached to the stem: that is how they keep warm and save nutrients."
+  },
+  {
+   "id": "siete_cueros",
+   "tema": "flora",
+   "fuente": "pnn_web",
+   "q": [
+    "qué es el siete cueros",
+    "por qué está amenazado el polylepis",
+    "qué árboles hay en el páramo",
+    "qué es el polylepis",
+    "árbol de corteza roja que se pela",
+    "por qué se llama siete cueros"
+   ],
+   "qen": [
+    "what is Polylepis",
+    "tree with peeling red bark"
+   ],
+   "es": "El siete cueros de páramo (Polylepis sericea) crece por encima de los 3.000 m y está amenazado por la agricultura y la ganadería.",
+   "en": "The páramo siete cueros (Polylepis sericea) grows above 3,000 m and is threatened by farming and cattle ranching."
+  },
+  {
+   "id": "palma_cera",
+   "tema": "flora",
+   "fuente": "pnn_web",
+   "q": [
+    "hay palma de cera en el parque",
+    "dónde está la palma de cera",
+    "cuál es el árbol nacional",
+    "hay palmas de cera aquí",
+    "dónde crece la palma de cera",
+    "la palma de cera vive en el páramo"
+   ],
+   "qen": [
+    "is there wax palm in the park",
+    "where does the wax palm grow"
+   ],
+   "es": "Sí. La palma de cera del Quindío (Ceroxylon quindiuense), árbol nacional de Colombia, crece en los bosques altoandinos del parque, no en el superpáramo.",
+   "en": "Yes. The Quindío wax palm (Ceroxylon quindiuense), Colombia's national tree, grows in the park's high Andean forests, not in the super-páramo."
+  },
+  {
+   "id": "flora",
+   "tema": "flora",
+   "fuente": "pnn_web",
+   "q": [
+    "qué plantas hay en el parque",
+    "qué flores hay en el páramo",
+    "qué es el cacho de venado",
+    "qué plantas hay en los humedales",
+    "qué flores hay",
+    "qué crece en los humedales",
+    "qué es el romero de páramo"
+   ],
+   "qen": [
+    "what plants live in the park",
+    "what flowers grow here",
+    "which plants are endemic"
+   ],
+   "es": "Además del frailejón hay romeros, pajonales, especies de Senecio, velillos y el cacho de venado (Andicolea colombiana), endémico de Colombia, en el superpáramo. En los humedales la más común es Plantago rigida.",
+   "en": "Besides the frailejón there are romeros, bunchgrass, Senecio species, velillos and the cacho de venado (Andicolea colombiana), endemic to Colombia, in the super-páramo. In the wetlands the most common is Plantago rigida."
+  },
+  {
+   "id": "pajonal",
+   "tema": "flora",
+   "fuente": "wcs",
+   "q": [
+    "qué es el pajonal",
+    "qué es ese pasto amarillo",
+    "qué es ese pasto",
+    "qué es la paja del páramo",
+    "cómo se llama la hierba amarilla"
+   ],
+   "qen": [
+    "what is bunchgrass",
+    "what is that yellow grass"
+   ],
+   "es": "El pajonal es un pasto de la familia Poaceae y suele dominar el paisaje del páramo.",
+   "en": "Bunchgrass is a grass of the Poaceae family and usually dominates the páramo landscape."
+  },
+  {
+   "id": "aves",
+   "tema": "fauna",
+   "fuente": "pnn_web",
+   "q": [
+    "qué aves hay en el parque",
+    "hay colibríes",
+    "qué es el chivito de páramo",
+    "qué pájaros puedo ver",
+    "qué pájaros hay",
+    "qué aves son endémicas",
+    "hay águilas",
+    "qué es el tororoi"
+   ],
+   "qen": [
+    "which birds live in the park",
+    "are there hummingbirds",
+    "which birds are endemic"
+   ],
+   "es": "Entre las aves del parque están el chivito de páramo (Oxypogon stuebelii) y el tororoi de Miller (Grallaria milleri), ambos endémicos, el cóndor andino, el pato andino, el periquito de los nevados, el águila de páramo y el águila crestada.",
+   "en": "Park birds include the Buffy helmetcrest (Oxypogon stuebelii) and Miller's antpitta (Grallaria milleri), both endemic, the Andean condor, the Andean duck, the rufous-fronted parakeet, the black-chested buzzard-eagle and the black-and-chestnut eagle."
+  },
+  {
+   "id": "condor",
+   "tema": "fauna",
+   "fuente": "pnn_web",
+   "q": [
+    "hay cóndores",
+    "dónde veo un cóndor",
+    "el cóndor vive aquí",
+    "se ven cóndores",
+    "hay cóndores en el Ruiz",
+    "el cóndor anda por aquí"
+   ],
+   "qen": [
+    "are there condors",
+    "will I see a condor"
+   ],
+   "es": "Sí, el cóndor andino (Vultur gryphus) está en la lista de aves del parque. Si ves uno, obsérvalo de lejos y sin perseguirlo.",
+   "en": "Yes, the Andean condor (Vultur gryphus) is on the park's bird list. If you see one, watch from afar without chasing it."
+  },
+  {
+   "id": "mamiferos",
+   "tema": "fauna",
+   "fuente": "pnn_web",
+   "q": [
+    "qué animales hay en el parque",
+    "hay pumas",
+    "hay osos",
+    "qué mamíferos viven aquí",
+    "hay murciélagos",
+    "hay pumas en el parque",
+    "qué animales grandes hay",
+    "hay venados",
+    "qué mamíferos hay",
+    "es peligroso algún animal"
+   ],
+   "qen": [
+    "which animals live in the park",
+    "are there pumas",
+    "are there bears",
+    "are there dangerous animals",
+    "what mammals live here"
+   ],
+   "es": "En el parque viven la danta de montaña, la guagua loba, el puma y unas 20 especies de murciélagos. También se investigan el oso de anteojos, el venado conejo y el loro orejiamarillo.",
+   "en": "The park is home to the mountain tapir, the mountain paca, the puma and about 20 bat species. The spectacled bear, the pudu and the yellow-eared parrot are also studied there."
+  },
+  {
+   "id": "oso",
+   "tema": "fauna",
+   "fuente": "pnn2019",
+   "q": [
+    "qué es el oso de anteojos",
+    "por qué el oso es especie sombrilla",
+    "qué es una especie sombrilla",
+    "qué es especie sombrilla",
+    "hay oso de anteojos"
+   ],
+   "qen": [
+    "what is an umbrella species",
+    "why protect the Andean bear"
+   ],
+   "es": "El oso andino es una especie sombrilla: al proteger su hábitat se protegen muchas otras especies. Danta, puma y venados también lo son.",
+   "en": "The Andean bear is an umbrella species: protecting its habitat protects many other species. Tapir, puma and deer are too."
+  },
+  {
+   "id": "danta",
+   "tema": "fauna",
+   "fuente": "cenicafe",
+   "q": [
+    "hay dantas en el parque",
+    "qué es la danta de páramo",
+    "hay dantas",
+    "existe la danta de páramo aquí",
+    "se ha visto la danta"
+   ],
+   "qen": [
+    "are there tapirs",
+    "has anyone seen a tapir"
+   ],
+   "es": "Sí. Funcionarios, vecinos y visitantes han confirmado la presencia de la danta de páramo en el parque.",
+   "en": "Yes. Park staff, neighbors and visitors have confirmed the mountain tapir in the park."
+  },
+  {
+   "id": "armero",
+   "tema": "historia",
+   "fuente": "pnn_web",
+   "q": [
+    "qué pasó en 1985",
+    "qué pasó con Armero",
+    "cuándo hizo erupción el Ruiz",
+    "la tragedia de Armero",
+    "cuándo fue la erupción del Ruiz",
+    "qué destruyó el volcán"
+   ],
+   "qen": [
+    "what happened in 1985",
+    "what happened to Armero",
+    "when did the Ruiz erupt"
+   ],
+   "es": "En 1985 la erupción del Nevado del Ruiz generó flujos de lodo por los ríos Lagunilla, Gualí y Chinchiná, que sepultaron a Armero.",
+   "en": "In 1985 the eruption of Nevado del Ruiz sent mudflows down the Lagunilla, Gualí and Chinchiná rivers, burying the town of Armero."
+  },
+  {
+   "id": "derechos",
+   "tema": "historia",
+   "fuente": "pnn_web",
+   "q": [
+    "el parque es sujeto de derechos",
+    "el Ruiz es patrimonio",
+    "qué reconocimientos tiene el parque",
+    "el parque tiene derechos",
+    "el Ruiz es patrimonio natural",
+    "qué dijo la corte sobre el parque"
+   ],
+   "qen": [
+    "does the park have legal rights",
+    "is the Ruiz a national heritage"
+   ],
+   "es": "En 2020 el parque fue declarado sujeto de derechos (Sentencia STL 10716) y en 2025 el Nevado del Ruiz fue declarado Patrimonio Natural de la Nación.",
+   "en": "In 2020 the park was recognized as a subject of rights (ruling STL 10716), and in 2025 Nevado del Ruiz was declared a Natural Heritage of the Nation."
+  },
+  {
+   "id": "pueblos",
+   "tema": "historia",
+   "fuente": "pnn_web",
+   "q": [
+    "qué pueblos indígenas vivían aquí",
+    "de dónde vienen los nombres Kumanday y Dulima",
+    "quiénes vivían aquí antes",
+    "qué indígenas había",
+    "qué significa Dulima"
+   ],
+   "qen": [
+    "which indigenous peoples lived here",
+    "what does Kumanday mean"
+   ],
+   "es": "El territorio está asociado a los pueblos quimbayas, pijaos, pantágoras y muiscas. Los nombres Kumanday, Poleka Kasue y Dulima nombran a los nevados Ruiz, Santa Isabel y Tolima.",
+   "en": "The territory is associated with the Quimbaya, Pijao, Pantágora and Muisca peoples. The names Kumanday, Poleka Kasue and Dulima refer to the Ruiz, Santa Isabel and Tolima peaks."
+  },
+  {
+   "id": "lluvias",
+   "tema": "clima",
+   "fuente": "pnn_web",
+   "q": [
+    "cuándo llueve en el parque",
+    "cuál es la mejor época para ir",
+    "cuándo es temporada seca",
+    "cuándo es mejor ir",
+    "cuándo hace mejor clima",
+    "temporada de lluvias"
+   ],
+   "qen": [
+    "when does it rain",
+    "what is the best time to visit",
+    "rainy season"
+   ],
+   "es": "El clima del parque es bimodal: hay dos periodos de lluvias y dos secos al año, y la temperatura cambia según la estación y la altura. Lleva siempre ropa impermeable.",
+   "en": "The park's climate is bimodal: two rainy and two dry periods a year, and temperature changes with the season and altitude. Always bring waterproof clothes."
+  },
+  {
+   "id": "saludo",
+   "tema": "app",
+   "fuente": "app",
+   "q": [
+    "hola",
+    "quién eres",
+    "buenos días Fray",
+    "qué puedes hacer",
+    "cómo te llamas",
+    "hola Fray",
+    "buenas",
+    "qué tal",
+    "con quién hablo",
+    "para qué sirves"
+   ],
+   "qen": [
+    "hello",
+    "who are you",
+    "hi",
+    "good morning",
+    "what can you do"
+   ],
+   "es": "¡Hola! Soy Fray, el frailejón del álbum. Respondo solo con información oficial del parque: normas, seguridad, altura, plantas, animales y volcanes. Si no lo sé, te lo digo y te mando con tu guía.",
+   "en": "Hi! I'm Fray, the album's frailejón. I only answer with official park information: rules, safety, altitude, plants, animals and volcanoes. If I don't know, I'll say so and send you to your guide."
+  },
+  {
+   "id": "app_offline",
+   "tema": "app",
+   "fuente": "app",
+   "q": [
+    "esta app necesita internet",
+    "cómo funciona el chat",
+    "de dónde sacas las respuestas",
+    "eres una inteligencia artificial",
+    "funcionas sin señal",
+    "cómo sabes las respuestas",
+    "tus respuestas son oficiales",
+    "usas internet"
+   ],
+   "qen": [
+    "does this app need internet",
+    "are your answers official",
+    "are you an AI"
+   ],
+   "es": "Funciono sin internet: un modelo de lenguaje pequeño, dentro de tu celular, entiende tu pregunta y busca la ficha oficial más parecida. No invento respuestas; si no encuentro una ficha que corresponda, te digo que no lo sé.",
+   "en": "I work offline: a small language model inside your phone understands your question and finds the closest official fact sheet. I don't make up answers; if no sheet matches, I tell you I don't know."
+  },
+  {
+   "id": "album",
+   "tema": "app",
+   "fuente": "app",
+   "q": [
+    "cómo consigo cromos",
+    "cómo lleno el álbum",
+    "qué son los sobres",
+    "cuántos cromos hay",
+    "cómo se ganan los cromos",
+    "qué es un sobre del páramo",
+    "dónde están los códigos QR"
+   ],
+   "qen": [
+    "how do I get stickers",
+    "how does the sticker album work",
+    "how do I fill the album"
+   ],
+   "es": "El álbum tiene 24 cromos: se ganan llegando a las estaciones del sendero (GPS), apuntando la Lente al paisaje, escaneando los QR de fauna, con los códigos que dice el guía, con una pausa de dos minutos sin pantalla y con una foto de grupo.",
+   "en": "The album has 24 stickers: earn them by reaching trail stations (GPS), pointing the Lens at the landscape, scanning fauna QR codes, with the guide's codes, with a two-minute screen-free pause and with a group photo."
+  },
+  {
+   "id": "servicios",
+   "tema": "acceso",
+   "fuente": "pnn_web",
+   "abstencion": true,
+   "q": [
+    "hay baños",
+    "dónde hay un baño",
+    "venden comida",
+    "hay restaurante o cafetería",
+    "dónde compro agua",
+    "hay tienda",
+    "dónde parqueo el carro",
+    "hay internet",
+    "dónde cargo el celular",
+    "venden recuerdos",
+    "hay enfermería",
+    "dónde compro un café",
+    "hay cajero"
+   ],
+   "qen": [
+    "are there toilets",
+    "is there food for sale",
+    "is there wifi",
+    "where can I park",
+    "are there restaurants",
+    "is there phone signal",
+    "where can I charge my phone"
+   ],
+   "es": "No tengo información oficial sobre servicios como baños, comida, parqueadero, internet o señal. Pregúntale a tu guía o a la UTON, el operador de Brisas (321 506 6031).",
+   "en": "I don't have official information about services such as toilets, food, parking, internet or phone signal. Ask your guide or UTON, the Brisas operator (321 506 6031)."
+  }
+ ],
+ "fuera": [
+  "quién ganó el partido de fútbol",
+  "cuéntame un chiste",
+  "cuánto es 2 más 2",
+  "dame una receta de arepas",
+  "qué clima hace mañana en Bogotá",
+  "recomiéndame un hotel en Manizales",
+  "qué opinas del presidente",
+  "escríbeme un poema",
+  "cuál es la capital de Francia",
+  "traduce esto al inglés",
+  "cómo arreglo mi celular",
+  "quién es el mejor cantante",
+  "dónde compro tenis baratos",
+  "qué serie me recomiendas",
+  "cómo hago una tarea de matemáticas",
+  "cuál es el precio del dólar",
+  "cómo se juega ajedrez",
+  "a qué hora sale el vuelo a Bogotá",
+  "dónde queda el centro comercial",
+  "quiero pedir un domicilio",
+  "who won the world cup",
+  "tell me a joke",
+  "what is the capital of Italy",
+  "recommend a restaurant in Medellín",
+  "cómo invierto en bitcoin",
+  "cuál es tu color favorito",
+  "explícame la relatividad",
+  "cuántos años tiene Shakira",
+  "cuánto cuesta un tiquete a Cartagena",
+  "cómo cocino arroz",
+  "qué equipo es el mejor de Colombia",
+  "cuéntame una historia de miedo",
+  "quién descubrió América",
+  "dónde puedo bailar salsa en Manizales",
+  "cuál es el mejor celular",
+  "ayúdame con mi hoja de vida",
+  "cómo bajo de peso",
+  "qué signo zodiacal soy",
+  "cuánto mide la torre Eiffel",
+  "what time is it in New York",
+  "play some music",
+  "how do I cook pasta",
+  "cuál es el mejor hotel de Pereira",
+  "cómo se llama tu creador",
+  "dónde venden empanadas en Manizales",
+  "a qué hora juega la selección",
+  "escríbeme un correo para mi jefe",
+  "cuál es la mejor universidad"
+ ]
+}

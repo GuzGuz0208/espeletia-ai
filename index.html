@@ -26,9 +26,6 @@
         <p id="album-dueno" class="dueno"></p>
       </div>
       <p class="contador" aria-live="polite"><b id="cuenta-n">0</b><span>/</span><span id="cuenta-t">24</span></p>
-      <button id="btn-ajustes" class="btn-icono" data-t="aj.titulo" data-t-attr="aria-label">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>
-      </button>
     </header>
     <div class="barra-progreso" aria-hidden="true"><span id="barra"></span></div>
 
@@ -91,14 +88,35 @@
     <ol id="estaciones" class="estaciones"></ol>
   </section>
 
+
+  <!-- PREGUNTAR (chat sin internet) -->
+  <section id="v-chat" class="vista vista-papel vista-chat" aria-labelledby="chat-titulo" hidden>
+    <header class="chat-cab">
+      <div id="chat-pj" class="chat-pj" aria-hidden="true"></div>
+      <div>
+        <h1 id="chat-titulo" data-t="chat.titulo">Pregúntale a Fray</h1>
+        <p class="chat-sub" data-t="chat.sub"></p>
+      </div>
+    </header>
+    <p id="chat-estado" class="chat-estado" role="status" hidden></p>
+    <div id="chat-log" class="chat-log" aria-live="polite"></div>
+    <div id="chat-sug" class="chat-sug"></div>
+    <form id="chat-form" class="chat-form" autocomplete="off">
+      <input id="chat-in" enterkeyhint="send" maxlength="200" data-t="chat.placeholder" data-t-attr="placeholder" aria-labelledby="chat-titulo">
+      <button class="btn btn-flor" data-t="chat.enviar">Enviar</button>
+    </form>
+  </section>
+
   <!-- EQUIPO -->
   <section id="v-equipo" class="vista vista-campo" aria-labelledby="eq-titulo" hidden></section>
 
   <!-- MUELLE DE NAVEGACIÓN -->
   <nav class="muelle" aria-label="Secciones">
+    <button data-vista="album" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7a2 2 0 0 1 1 1v15a2 2 0 0 0-1-1H4z M20 4h-7a2 2 0 0 0-1 1v15a2 2 0 0 1 1-1h7z"/></svg><span data-t="nav.album">Álbum</span><b id="muelle-badge" class="badge" hidden></b></button>
     <button data-vista="mapa"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2z M9 4v14 M15 6v14"/></svg><span data-t="nav.mapa">Mapa</span></button>
     <button data-vista="lente" class="muelle-lente"><span class="lente-ojo" aria-hidden="true"><i></i></span><span data-t="nav.lente">Lente</span></button>
-    <button data-vista="album" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4h7a2 2 0 0 1 1 1v15a2 2 0 0 0-1-1H4z M20 4h-7a2 2 0 0 0-1 1v15a2 2 0 0 1 1-1h7z"/></svg><span data-t="nav.album">Álbum</span><b id="muelle-badge" class="badge" hidden></b></button>
+    <button data-vista="chat"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v10H9l-5 4z"/><path d="M8 9h8M8 12h5"/></svg><span data-t="nav.chat">Preguntar</span></button>
+    <button data-accion="ajustes"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1"/></svg><span data-t="nav.ajustes">Ajustes</span></button>
   </nav>
 
   <!-- CAPAS -->

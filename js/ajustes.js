@@ -6,6 +6,8 @@ import { $, $$, h, esc, aviso, vibrar, animar, atraparFoco } from './util.js';
 import { listoOffline } from './portada.js';
 import { albumPNG, descargar } from './exportar.js';
 import { iniciarGPS } from './mapa.js';
+import * as chat from './chat.js';
+import { errores } from './motor.js';
 
 const PIN = '2611';
 let ctx = {};
@@ -28,6 +30,7 @@ export async function abrirAjustes() {
       <label class="interruptor"><input type="checkbox" id="aj-vibrar" ${E.ajustes.vibrar ? 'checked' : ''}><span>${esc(t('aj.vibrar'))}</span></label>
       <button class="btn btn-linea btn-ancho" id="aj-poster">${esc(t('aj.poster'))}</button>
       <p class="estado-offline ${listo ? 'listo' : ''}"><span class="punto"></span>${esc(listo ? t('aj.listo') : t('aj.noListo'))}</p>
+      <div class="estado-ia" id="aj-ia"></div>
       <div class="hoja-pie">
         <button class="link" id="aj-equipo">${esc(t('aj.equipo'))}</button>
         <span class="version">${esc(t('aj.version', { v: E.paquete.version }))}</span>
@@ -57,6 +60,7 @@ export async function abrirAjustes() {
   $('#aj-poster').onclick = async () => descargar(await albumPNG(), 'album-del-paramo.png');
   $('#aj-equipo').onclick = async () => { await cerrar(); pedirPIN(); };
   $('#aj-cerrar').onclick = cerrar;
+  pintarIA(hoja);
   capa.onclick = (e) => { if (e.target === capa) cerrar(); };
 }
 
@@ -215,4 +219,21 @@ function hojaCodigos() {
     <style>body{font-family:system-ui,sans-serif;color:#1d2b38;padding:24px}h1{margin:0 0 4px}.qrs{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}figure{margin:0;text-align:center;border:1px dashed #9aa;padding:10px;break-inside:avoid}img{width:100%;image-rendering:pixelated}code{font-size:1.3em}</style>
     </head><body><h1>${esc(t('titulo'))}</h1><p>${esc(t('eq.codigosSub'))}</p><div class="qrs">${qrs}</div><h2>${esc(t('tipo.guia'))}</h2><ul>${guias}</ul><p><small>${esc(E.paquete.estado[E.lang])}</small></p></body></html>`);
   w.document.close();
+}
+
+// ---------- Estado de la IA: qué modelo cargó y, si falló, por qué ----------
+function pintarIA(hoja) {
+  const box = $('#aj-ia', hoja);
+  const lente = ml.ready() ? 'ok' : 'no';
+  const ch = !chat.listo() ? 'no' : chat.modoLexico() ? 'parcial' : 'ok';
+  const fila = (nombre, st) => `<li class="ia-${st}"><span class="punto"></span>${esc(nombre)}: ${esc(t(`aj.ia.${st}`))}</li>`;
+  box.innerHTML = `<p class="ia-titulo">${esc(t('aj.ia.titulo'))}</p><ul>${fila(t('nav.lente'), lente)}${fila(t('nav.chat'), ch)}</ul>
+    ${errores.length ? `<details><summary>${esc(t('aj.ia.detalle'))}</summary><pre>${esc([...new Set(errores)].slice(-6).join('\n'))}</pre></details>` : ''}
+    ${lente !== 'ok' || ch !== 'ok' ? `<button class="btn btn-linea btn-ancho" id="aj-ia-probar">${esc(t('aj.ia.probar'))}</button>` : ''}`;
+  const b = $('#aj-ia-probar', box);
+  if (b) b.onclick = async () => {
+    b.disabled = true; b.textContent = t('aj.ia.cargando');
+    await Promise.allSettled([ml.load(), chat.reintentar()]);
+    pintarIA(hoja);
+  };
 }

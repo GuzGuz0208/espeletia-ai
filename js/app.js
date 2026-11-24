@@ -11,6 +11,7 @@ import { mostrarPortada, progresoOffline, estadoOffline } from './portada.js';
 import { iniciarAjustes, abrirAjustes, aplicarTema, entrarEquipo, salirEquipo, pintarEquipo } from './ajustes.js';
 import { lluvia } from './celebrar.js';
 import * as ml from './ml.js';
+import { iniciarChatUI, entrarChat, retraducirChat } from './chatui.js';
 
 let vista = null;
 
@@ -20,7 +21,7 @@ export async function irA(v, opciones = {}) {
   if (antes === 'lente') lente.salir();
   if (antes === 'equipo') salirEquipo();
   vista = v;
-  for (const id of ['album', 'lente', 'mapa', 'equipo']) $(`#v-${id}`).hidden = id !== v;
+  for (const id of ['album', 'lente', 'mapa', 'chat', 'equipo']) $(`#v-${id}`).hidden = id !== v;
   document.body.dataset.vista = v;
   $$('.muelle button').forEach((b) => (b.dataset.vista === v || (v === 'equipo' && b.dataset.vista === 'mapa') ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current')));
   const el = $(`#v-${v}`);
@@ -29,6 +30,7 @@ export async function irA(v, opciones = {}) {
   if (v === 'mapa') mapa.entrar();
   if (v === 'equipo') await entrarEquipo();
   if (v === 'album') pintarCabezote();
+  if (v === 'chat') entrarChat();
 }
 
 // Pausa de contemplación: 2 minutos sin tocar la pantalla.
@@ -110,18 +112,27 @@ async function iniciar() {
   iniciarSobres({ irA });
   lente.iniciarLente({ onGanar: despuesDeGanar });
   mapa.iniciarMapa({ llegada: async (id, { simulado }) => { pintarCabezote(); if (simulado && vista === 'album') abrirSobres(); } });
-  iniciarAjustes({ irA, alCambiar: () => { retraducir(); if (vista === 'mapa') mapa.pintar(); if (vista === 'equipo') pintarEquipo(); } });
+  iniciarAjustes({ irA, alCambiar: () => { retraducir(); retraducirChat(); if (vista === 'mapa') mapa.pintar(); if (vista === 'equipo') pintarEquipo(); } });
   celebrar();
 
-  $$('.muelle button').forEach((b) => (b.onclick = () => irA(b.dataset.vista)));
-  $('#btn-ajustes').onclick = abrirAjustes;
+  $$('.muelle button[data-vista]').forEach((b) => (b.onclick = () => irA(b.dataset.vista)));
+  $('.muelle [data-accion="ajustes"]').onclick = abrirAjustes;
+  iniciarChatUI();
 
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('message', (e) => {
       if (e.data?.tipo === 'progreso') progresoOffline(e.data.p);
       if (e.data?.tipo === 'listo') { progresoOffline(1); estadoOffline(); }
     });
-    navigator.serviceWorker.register('sw.js').catch((e) => console.warn('SW', e));
+    // Si ya había una versión guardada y llega una nueva, recargar una sola vez para mostrarla
+    const habiaVersion = !!navigator.serviceWorker.controller;
+    let recargado = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (habiaVersion && !recargado) { recargado = true; location.reload(); }
+    });
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' })
+      .then((reg) => reg.update())
+      .catch((e) => console.warn('SW', e));
   }
   import('./db.js').then((db) => db.persist());
 
@@ -138,4 +149,4 @@ async function iniciar() {
 iniciar();
 
 // Para pruebas automáticas
-window.__paramo = { E, est, ml, irA, abrirSobres, mapa };
+window.__paramo = { E, est, ml, irA, abrirSobres, mapa, chat: () => import('./chat.js') };

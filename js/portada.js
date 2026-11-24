@@ -11,7 +11,12 @@ export async function listoOffline() {
     for (const k of await caches.keys()) {
       if (!k.startsWith('album-paramo-')) continue;
       const c = await caches.open(k);
-      if (await c.match('models/mnv2_embed.onnx', { ignoreSearch: true }) && await c.match('lib/ort-wasm-simd-threaded.wasm', { ignoreSearch: true })) return true;
+      const man = await c.match('models/partes.json', { ignoreSearch: true });
+      if (!man) continue;
+      const partes = Object.values(await man.json()).flatMap((m) => m.partes);
+      let todas = partes.length > 0;
+      for (const p of partes) if (!(await c.match(p, { ignoreSearch: true }))) { todas = false; break; }
+      if (todas) return true;
     }
   } catch (e) { /* sin caché */ }
   return false;

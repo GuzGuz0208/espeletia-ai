@@ -2,30 +2,28 @@
 // MobileNetV2 (ONNX, ~9 MB) convierte cada imagen en una "huella" de 1280 números.
 // El equipo enseña cada clase con fotos reales del páramo y se clasifica por vecinos más cercanos (k-NN).
 import * as db from './db.js';
+import { sesion, anotar } from './motor.js';
 
 const MEAN = [0.485, 0.456, 0.406];
 const STD = [0.229, 0.224, 0.225];
 const SIZE = 224;
 const K = 7;
 
-let ort, session;
+let ort, session, cargando = null;
 let samples = []; // { clase, v: Float32Array }
 const canvas = document.createElement('canvas');
 canvas.width = canvas.height = SIZE;
 const ctx = canvas.getContext('2d', { willReadFrequently: true });
 
-export async function load(onStatus = () => {}) {
-  if (session) return;
-  onStatus('Cargando el modelo de la cámara…');
-  ort = await import('../lib/ort.wasm.min.mjs');
-  ort.env.wasm.wasmPaths = new URL('../lib/', import.meta.url).href;
-  ort.env.wasm.numThreads = 1; // sin aislamiento entre orígenes; un hilo es suficiente para MobileNet
-  session = await ort.InferenceSession.create(new URL('../models/mnv2_embed.onnx', import.meta.url).href, {
-    executionProviders: ['wasm'],
-    graphOptimizationLevel: 'all',
-  });
-  await loadSamples();
-  onStatus('');
+export function load(onStatus = () => {}) {
+  if (session) return Promise.resolve();
+  cargando ??= (async () => {
+    onStatus('Cargando el modelo de la cámara…');
+    ({ ort, s: session } = await sesion('models/mnv2_embed.onnx'));
+    await loadSamples();
+    onStatus('');
+  })().catch((e) => { cargando = null; anotar('Lente (modelo de visión)', e); throw e; });
+  return cargando;
 }
 
 export const ready = () => !!session;

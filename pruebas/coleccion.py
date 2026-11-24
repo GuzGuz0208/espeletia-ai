@@ -41,7 +41,7 @@ def abrir_todo(pg):
 
 def equipo(pg):
     pg.click('.muelle [data-vista="album"]'); pg.wait_for_timeout(300)
-    pg.click('#btn-ajustes'); pg.click('#aj-equipo'); pg.wait_for_timeout(500)
+    pg.click('.muelle [data-accion="ajustes"]'); pg.click('#aj-equipo'); pg.wait_for_timeout(500)
     for d in '2611': pg.click(f'.teclado [data-k="{d}"]')
     pg.wait_for_selector('#v-equipo:not([hidden]) #clases .clase', timeout=30000)
     pg.wait_for_function("document.querySelector('#video-eq') && document.querySelector('#video-eq').videoWidth > 0", timeout=15000)

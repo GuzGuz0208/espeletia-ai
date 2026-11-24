@@ -1,0 +1,32 @@
+{
+ "models/e5_small_latino.onnx": {
+  "bytes": 66021593,
+  "sha256": "a774ad5d751a1add56d76c5371eae410f639370067af5a5d75e974acb80d23f0",
+  "partes": [
+   "models/partes/e5_small_latino.onnx.a774ad5d.00.bin",
+   "models/partes/e5_small_latino.onnx.a774ad5d.01.bin",
+   "models/partes/e5_small_latino.onnx.a774ad5d.02.bin",
+   "models/partes/e5_small_latino.onnx.a774ad5d.03.bin",
+   "models/partes/e5_small_latino.onnx.a774ad5d.04.bin",
+   "models/partes/e5_small_latino.onnx.a774ad5d.05.bin",
+   "models/partes/e5_small_latino.onnx.a774ad5d.06.bin",
+   "models/partes/e5_small_latino.onnx.a774ad5d.07.bin"
+  ]
+ },
+ "models/mnv2_embed.onnx": {
+  "bytes": 8840380,
+  "sha256": "d0049881dc99da166c7519a596df35ca0d25bff5c223fe0c72cd76deb150c793",
+  "partes": [
+   "models/partes/mnv2_embed.onnx.d0049881.00.bin",
+   "models/partes/mnv2_embed.onnx.d0049881.01.bin"
+  ]
+ },
+ "lib/ort-wasm-simd-threaded.wasm": {
+  "bytes": 14848852,
+  "sha256": "4b884c203b0fa48d057be3332c65513ff85aa3c5bddd6946acc0fab7ecda001d",
+  "partes": [
+   "models/partes/ort-wasm-simd-threaded.wasm.4b884c20.00.bin",
+   "models/partes/ort-wasm-simd-threaded.wasm.4b884c20.01.bin"
+  ]
+ }
+}

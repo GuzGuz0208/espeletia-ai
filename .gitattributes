@@ -1,0 +1,6 @@
+# Binarios: que git nunca intente convertir finales de línea
+*.bin binary
+*.onnx binary
+*.wasm binary
+*.woff2 binary
+*.png binary

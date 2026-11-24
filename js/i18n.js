@@ -8,6 +8,14 @@ const T = {
     de: 'de {nombre}',
     sinNombre: 'sin dueño todavía',
     'nav.mapa': 'Mapa', 'nav.lente': 'Lente', 'nav.album': 'Álbum',
+    'nav.chat': 'Preguntar', 'nav.ajustes': 'Ajustes',
+    'chat.titulo': 'Pregúntale a Fray', 'chat.sub': 'Solo información oficial del parque. Funciona sin internet.',
+    'chat.despertando': 'Fray se está despertando…', 'chat.buscando': 'Fray está buscando',
+    'chat.hola': '¡Hola! Pregúntame sobre el parque: normas, seguridad, altura, plantas, animales o volcanes.',
+    'chat.reglas': 'Respondo con fichas oficiales y te digo la fuente. Si no lo sé, te lo digo.',
+    'chat.relacionado': 'Relacionado:', 'chat.teRefieres': 'No estoy seguro de entenderte. ¿Te refieres a…?',
+    'chat.nose': 'No tengo esa información oficial. Pregúntale a tu guía o a un guardaparque.',
+    'chat.placeholder': 'Escribe tu pregunta', 'chat.enviar': 'Enviar',
     // Portada
     'portada.es': 'Este álbum es de',
     'portada.nombre': 'Tu nombre o apodo',
@@ -63,6 +71,13 @@ const T = {
     'lente.reconocer': 'Reconocer', 'lente.qr': 'Leer QR',
     'lente.apunta': 'Apunta a algo del páramo: un frailejón, la laguna, una roca…',
     'lente.cargando': 'Preparando la Lente…',
+    'aj.ia.titulo': 'Inteligencia artificial en este teléfono',
+    'aj.ia.ok': 'lista, funciona sin señal',
+    'aj.ia.parcial': 'solo por palabras clave (el modelo no cargó)',
+    'aj.ia.no': 'no cargó todavía',
+    'aj.ia.detalle': 'Ver la causa',
+    'aj.ia.probar': 'Intentar cargar de nuevo',
+    'aj.ia.cargando': 'Cargando…',
     'lente.sinModelo': 'No pude preparar la Lente. Puedes ganar cromos con el GPS, los QR y los códigos.',
     'lente.sinEntrenar': 'La Lente todavía no conoce las cosas del páramo. El equipo puede enseñarle en Modo equipo.',
     'lente.duda': 'No estoy seguro de qué es. Pregúntale a tu guía.',
@@ -127,6 +142,14 @@ const T = {
     de: "{nombre}'s album",
     sinNombre: 'no owner yet',
     'nav.mapa': 'Map', 'nav.lente': 'Lens', 'nav.album': 'Album',
+    'nav.chat': 'Ask', 'nav.ajustes': 'Settings',
+    'chat.titulo': 'Ask Fray', 'chat.sub': 'Official park information only. Works offline.',
+    'chat.despertando': 'Fray is waking up…', 'chat.buscando': 'Fray is searching',
+    'chat.hola': 'Hi! Ask me about the park: rules, safety, altitude, plants, animals or volcanoes.',
+    'chat.reglas': "I answer with official fact sheets and show the source. If I don't know, I'll say so.",
+    'chat.relacionado': 'Related:', 'chat.teRefieres': "I'm not sure I understood. Do you mean…?",
+    'chat.nose': "I don't have that official information. Ask your guide or a park ranger.",
+    'chat.placeholder': 'Type your question', 'chat.enviar': 'Send',
     'portada.es': 'This album belongs to',
     'portada.nombre': 'Your name or nickname',
     'portada.abrir': 'Open the album',
@@ -176,6 +199,13 @@ const T = {
     'lente.reconocer': 'Recognize', 'lente.qr': 'Scan QR',
     'lente.apunta': 'Point at something in the páramo: a frailejón, the lagoon, a rock…',
     'lente.cargando': 'Getting the Lens ready…',
+    'aj.ia.titulo': 'AI on this phone',
+    'aj.ia.ok': 'ready, works offline',
+    'aj.ia.parcial': 'keywords only (the model did not load)',
+    'aj.ia.no': 'not loaded yet',
+    'aj.ia.detalle': 'Show the cause',
+    'aj.ia.probar': 'Try loading again',
+    'aj.ia.cargando': 'Loading…',
     'lente.sinModelo': "I couldn't load the Lens. You can still earn stickers with GPS, QR codes and guide codes.",
     'lente.sinEntrenar': "The Lens doesn't know the páramo yet. The team can teach it in Team mode.",
     'lente.duda': "I'm not sure what that is. Ask your guide.",
@@ -231,8 +261,8 @@ const T = {
 };
 
 const faltantes = new Set();
-export function t(clave, vars = {}) {
-  const dic = T[E.lang] || T.es;
+export function t(clave, vars = {}, lang = E.lang) {
+  const dic = T[lang] || T.es;
   let s = dic[clave] ?? T.es[clave];
   if (s === undefined) {
     if (!faltantes.has(clave)) { faltantes.add(clave); console.warn('[i18n] falta', clave); }
