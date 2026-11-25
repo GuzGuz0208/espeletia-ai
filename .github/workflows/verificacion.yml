@@ -39,6 +39,8 @@ jobs:
           python herramientas/version_sw.py --check --base "$BASE"
       - name: Índices generados al día
         run: python herramientas/generar_indices.py --check
+      - name: Audios al día con su texto
+        run: python herramientas/audios.py --check
 
   evals:
     name: evals
