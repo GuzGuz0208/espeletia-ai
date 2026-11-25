@@ -13,7 +13,7 @@ Uso:
 Decisión: docs/decisiones/2026-11-24-voz-audio-pregrabado.md · Spec: docs/specs/2026-11-24-manifiesto-audios.md
 Licencias de las voces: docs/licencias.md §3. es-CO no se sintetiza: se graba con personas.
 """
-import argparse, hashlib, json, os, shutil, subprocess, sys, unicodedata
+import argparse, hashlib, json, os, re, shutil, subprocess, sys, unicodedata
 
 AQUI = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MANIFIESTO = os.path.join(AQUI, 'audios', 'manifiesto.json')
@@ -41,18 +41,31 @@ def cargar(nombre):
         return json.load(f)
 
 
+def elemento(tipo, id_, chat, paq):
+    """La ficha, cromo, parada o frase con ese id en el Paquete, o None."""
+    lista = {'ficha': chat['fichas'], 'cromo': paq['cromos'], 'parada': paq.get('paradas', []),
+             'frase': paq.get('frases', [])}[tipo]
+    return next((x for x in lista if x.get('id') == id_), None)
+
+
 def texto_de(tipo, id_, idioma, chat, paq):
     """Texto vigente que debe leer el audio, o None si no existe."""
     k = CLAVE[idioma]
+    x = elemento(tipo, id_, chat, paq)
+    if x is None:
+        return None
     if tipo == 'ficha':
-        f = next((x for x in chat['fichas'] if x['id'] == id_), None)
-        return f.get(k) if f else None
+        return x.get(k)
     if tipo == 'cromo':
-        c = next((x for x in paq['cromos'] if x['id'] == id_), None)
-        return (c.get(k) or {}).get('dato') if c else None
-    lista = paq.get('paradas' if tipo == 'parada' else 'frases', [])
-    x = next((p for p in lista if p['id'] == id_), None)
-    return (x.get('texto') or {}).get(k) if x else None
+        return (x.get(k) or {}).get('dato')
+    return (x.get('texto') or {}).get(k)
+
+
+def dentro_de_audios(rel):
+    """True si la ruta relativa del manifiesto queda dentro de audios/ (nunca fuera del repo)."""
+    base = os.path.realpath(os.path.join(AQUI, 'audios'))
+    ruta = os.path.realpath(os.path.join(AQUI, rel))
+    return os.path.commonpath([base, ruta]) == base
 
 
 def check():
@@ -75,7 +88,9 @@ def check():
         if (a['idioma'], a['tipo'], a['id']) in vistos:
             errores.append(f'{nombre}: repetido en el manifiesto')
         vistos.add((a['idioma'], a['tipo'], a['id']))
-        if not os.path.exists(os.path.join(AQUI, a['archivo'])):
+        if not dentro_de_audios(a['archivo']):
+            errores.append(f"{nombre}: la ruta {a['archivo']!r} sale de audios/")
+        elif not os.path.isfile(os.path.realpath(os.path.join(AQUI, a['archivo']))):
             errores.append(f"{nombre}: no existe {a['archivo']}")
         t = texto_de(a['tipo'], a['id'], a['idioma'], chat, paq)
         if t is None:
@@ -118,9 +133,15 @@ def sintetizar(idioma, tipo, ids):
     if os.path.exists(MANIFIESTO):
         with open(MANIFIESTO, encoding='utf-8') as f:
             man = json.load(f)
+    idioma = next(k for k in VOCES if k == idioma)  # el nombre de carpeta sale de la tabla, no de la línea de comandos
     carpeta = os.path.join(AQUI, 'audios', idioma)
     os.makedirs(carpeta, exist_ok=True)
-    for id_ in ids:
+    for pedido in ids:
+        x = elemento(tipo, pedido, chat, paq)
+        if x is None or not re.fullmatch(r'[a-z0-9_]+', str(x.get('id', ''))):
+            print(f'  salto  {tipo} {pedido!r}: no existe en el Paquete')
+            continue
+        id_ = x['id']  # las rutas usan el id del Paquete, nunca el texto escrito en la línea de comandos
         t = texto_de(tipo, id_, idioma, chat, paq)
         if not t:
             print(f'  salto  {tipo} {id_}: no hay texto en {CLAVE[idioma]}')
