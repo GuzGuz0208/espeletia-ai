@@ -9,7 +9,7 @@ Decisión: [licencias-de-modelos](decisiones/2026-11-24-licencias-de-modelos.md)
 | Componente | Licencia | ¿Comercial? | Qué exige | Fuente |
 |---|---|---|---|---|
 | multilingual-e5-small (podado e int8) | MIT (model card; base Multilingual-MiniLM: MIT) | Sí | Aviso MIT; indicar que la versión está modificada | huggingface.co/intfloat/multilingual-e5-small |
-| MobileNetV2 (embeddings) | **Origen sin registrar.** ONNX Model Zoo: Apache-2.0 · Keras: Apache-2.0 · torchvision: código BSD-3, pesos «pueden tener su propia licencia» | Depende del origen | Ver acción 2 | github.com/onnx/models · github.com/pytorch/vision |
+| MobileNetV2 (embeddings) | **Apache-2.0: es el `mobilenetv2-12` del ONNX Model Zoo** sin el clasificador (pesos y salidas idénticos, verificado el 24-nov) | Sí | LICENSE Apache-2.0 | github.com/onnx/models/tree/main/validated/vision/classification/mobilenet |
 | ONNX Runtime Web 1.31 | MIT (© Microsoft) | Sí | Aviso MIT | npmjs.com/package/onnxruntime-web |
 | @huggingface/tokenizers | Apache-2.0 | Sí | LICENSE (ya en `lib/tokenizers.LICENSE`) | github.com/huggingface/tokenizers.js |
 | jsQR | Apache-2.0 | Sí | LICENSE (**falta en lib/**) | github.com/cozmo/jsQR |
@@ -71,14 +71,12 @@ antes de prometer nada. iOS Safari tiene WebGPU solo desde iOS 26 (dato de fuent
    - **Pendiente:** aplicarlo a `models/relieve.json` con `python herramientas/relieve.py --solo-atribucion` (cambia solo esos
      campos, no necesita los datos del DEM) y subir la versión del SW. El mapa muestra ese texto bajo el pliego; si es muy largo
      para la pantalla, R2 puede mostrar «Copernicus WorldDEM-30 © DLR, Airbus — ver créditos» con enlace a la pantalla de créditos.
-2. **MobileNetV2.**
-   - Los metadatos del ONNX dicen productor `pytorch` y grafo `torch-jit-export`: se exportó desde PyTorch, casi seguro
-     `torchvision.models.mobilenet_v2` con pesos de ImageNet. Código BSD-3; los pesos «pueden tener su propia licencia».
-   - **Decisión pendiente, urgente:** re-exportar desde el ONNX Model Zoo (`mobilenetv2-12`, Apache-2.0) **antes de que alguien
-     publique el entrenamiento de la Lente**. Hoy `parque.json` está vacío; después habría que volver a enseñar todo. Exige volver
-     a medir la Lente (decisión modelos-congelados-sha256).
+2. **MobileNetV2: resuelto, no hay que cambiar nada.** El ONNX de la app es el `mobilenetv2-12` del ONNX Model Zoo
+   (Apache-2.0) cortado en el tensor `472`, justo antes del clasificador, y optimizado. Comprobación del 24-nov: los 103 tensores
+   de pesos grandes son idénticos uno a uno y las salidas coinciden con diferencia 0,0 sobre entradas aleatorias. Los dos dicen
+   «pytorch 1.8 / torch-jit-export» porque el Zoo lo convirtió desde PyTorch. No hay que re-exportar ni recalibrar la Lente.
 3. **Archivos de licencia.**
    - Hecho: carpeta [licencias/](../licencias/README.md) con los textos oficiales (Apache-2.0, MIT de ORT, e5-small y
-     qrcode-generator, BSD-3 de torchvision, OFL de las dos fuentes) y el índice de componentes.
+     qrcode-generator, OFL de las dos fuentes) y el índice de componentes.
    - **Pendiente (R2):** pantalla «Créditos y licencias» en Ajustes que enlace a `licencias/README.md`.
 4. Si se usan voces CC BY o un LLM: añadir sus créditos a esa pantalla y a `licencias/` (lista en §3 y §2).
