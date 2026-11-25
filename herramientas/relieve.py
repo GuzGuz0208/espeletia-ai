@@ -12,20 +12,44 @@ Salidas (en models/):
 
 Uso, desde la raíz de la app:
     python3 herramientas/relieve.py herramientas/datos/dem_ruiz_60m.bin
+    python3 herramientas/relieve.py --solo-atribucion    (actualiza solo la atribución de models/relieve.json)
 
 Fuente y licencia: Copernicus DEM GLO-30 © DLR e.V. 2010-2014 y © Airbus Defence and Space GmbH
 2014-2018, provisto bajo COPERNICUS por la Unión Europea y la ESA. Es un modelo de superficie (incluye
 hielo y vegetación) con error típico de unos metros; sirve para ver el terreno, no para medir.
+La licencia (art. 6) exige el texto exacto de ATRIBUCION y la frase DESCARGO: ver licencias/README.md.
 """
 import json, os, sys
+
+RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+# Texto exigido por la licencia de Copernicus DEM (art. 6 b y c). No acortar.
+ATRIBUCION = ('produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space GmbH 2014-2018 '
+              'provided under COPERNICUS by the European Union and ESA; all rights reserved')
+DESCARGO = ('The organisations in charge of the Copernicus programme by law or by delegation do not incur any liability '
+            'for any use of the Copernicus WorldDEM-30.')
+
+
+def solo_atribucion():
+    """Corrige la atribución de models/relieve.json sin volver a generar la malla (no necesita los datos del DEM)."""
+    ruta = os.path.join(RAIZ, 'models', 'relieve.json')
+    with open(ruta, encoding='utf-8') as f:
+        meta = json.load(f)
+    meta['atribucion'], meta['descargo'] = ATRIBUCION, DESCARGO
+    with open(ruta, 'w', encoding='utf-8', newline='\n') as f:
+        json.dump(meta, f, ensure_ascii=False, indent=1)
+    print('atribución actualizada en models/relieve.json (sube la versión del SW: python herramientas/version_sw.py --subir)')
+
+
+if __name__ == '__main__' and sys.argv[1:] == ['--solo-atribucion']:
+    solo_atribucion()
+    sys.exit(0)
+
 import numpy as np
 from scipy import ndimage
 from PIL import Image
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
-
-RAIZ = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 ESCALA = 4  # la imagen sale a 4× la malla (1080×864) para que las curvas se vean suaves
 
 # Tinte por altura, en la paleta del álbum: bosque → páramo → superpáramo → roca y hielo
@@ -87,8 +111,8 @@ def main(entrada):
     json.dump({
         'lon0': meta['lon0'], 'lat1': meta['lat1'], 'paso': meta['paso'], 'w': w, 'h': h,
         'min': int(z.min()), 'max': int(z.max()), 'formato': 'uint16 little-endian, metros, filas de norte a sur',
-        'atribucion': 'Relieve: Copernicus DEM GLO-30 © DLR, Airbus DS, ESA',
-    }, open(os.path.join(RAIZ, 'models', 'relieve.json'), 'w'), ensure_ascii=False, indent=1)
+        'atribucion': ATRIBUCION, 'descargo': DESCARGO,
+    }, open(os.path.join(RAIZ, 'models', 'relieve.json'), 'w', encoding='utf-8'), ensure_ascii=False, indent=1)
     t = os.path.getsize(os.path.join(RAIZ, 'models', 'relieve.webp')) / 1e3
     print(f'malla {w}×{h} ({z.min():.0f}–{z.max():.0f} m), imagen {W}×{H} ({t:.0f} KB)')
 

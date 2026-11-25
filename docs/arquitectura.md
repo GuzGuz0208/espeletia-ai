@@ -62,13 +62,14 @@ código/QR del guía → `estado.js` guarda en IndexedDB → sobre → álbum �
 | `models/relieve.*` | `python herramientas/relieve.py …` |
 | `docs/decisiones/README.md`, `CHANGELOG.md` | `python herramientas/generar_indices.py` |
 
-## Modelos y licencias (por verificar en la ficha oficial: decisión licencias-de-modelos)
-| Modelo | Uso | Tamaño | Licencia declarada | Verificado |
+## Modelos y licencias (detalle y fuentes en [licencias.md](licencias.md))
+| Modelo | Uso | Tamaño | Licencia | Verificado 24-nov |
 |---|---|---|---|---|
-| multilingual-e5-small (podado a vocabulario latino, int8) | Fray | 66 MB | MIT (según LEEME) | no |
-| MobileNetV2 (embeddings) | Lente | 8,8 MB | por confirmar según origen de la exportación | no |
-| ONNX Runtime Web 1.31 | motor | 14,8 MB (WASM) | MIT | no |
-| Piper / Kokoro-82M | síntesis offline de audios (en el computador, no en el teléfono) | — | por voz / Apache-2.0 | no |
+| multilingual-e5-small (podado a vocabulario latino, int8) | Fray | 66 MB | MIT | sí |
+| MobileNetV2 (embeddings) | Lente | 8,8 MB | según origen (ONNX Model Zoo: Apache-2.0); **origen sin registrar** | pendiente |
+| ONNX Runtime Web 1.31 | motor | 14,8 MB (WASM) | MIT | sí |
+| Qwen2.5-0.5B-Instruct (propuesto, opcional) | reformular la ficha recuperada | ~480-510 MB | Apache-2.0 | sí (licencia); velocidad en teléfono sin medir |
+| Piper (voces davefx, joe/mike, siwis, cadu/jeff) | síntesis offline de audios en el computador, no en el teléfono | — | motor GPL-3.0; voces CC0 / CC BY | sí |
 
 ## Puntos de choque entre roles
 `sw.js` (VERSION y lista APP), `js/i18n.js`, `styles.css`, `index.html`, `chat.json` y `models/chat_indice.json`.
