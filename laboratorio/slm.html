@@ -5,14 +5,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Laboratorio SLM</title>
 <style>
-  :root { --fondo: #f6f3ea; --tinta: #1f3a2f; --suave: #5d7268; --borde: #cfd8cf; --ok: #2f6b4f; --mal: #a33a2a; --tarjeta: #fffdf7; }
-  @media (prefers-color-scheme: dark) { :root { --fondo: #121a16; --tinta: #e6efe8; --suave: #9fb3a8; --borde: #2c3b33; --ok: #7fc59f; --mal: #f08a78; --tarjeta: #18221d; } }
+  :root { --fondo: #f6f3ea; --tinta: #1f3a2f; --suave: #5d7268; --borde: #cfd8cf; --ok: #2f6b4f; --mal: #a33a2a; --tarjeta: #fffdf7; --aviso: #8a5a00; }
+  @media (prefers-color-scheme: dark) { :root { --fondo: #121a16; --tinta: #e6efe8; --suave: #9fb3a8; --borde: #2c3b33; --ok: #7fc59f; --mal: #f08a78; --tarjeta: #18221d; --aviso: #f0c060; } }
   * { box-sizing: border-box; }
   body { margin: 0; padding: 16px; background: var(--fondo); color: var(--tinta); font: 15px/1.45 system-ui, sans-serif; max-width: 860px; margin-inline: auto; }
   h1 { font-size: 1.3rem; margin: 0 0 4px; }
-  p.sub { color: var(--suave); margin: 0 0 16px; }
+  p.sub { color: var(--suave); margin: 0 0 12px; }
   .caja { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+  .aviso { color: var(--aviso); font-weight: 600; }
   button, select { font: inherit; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--borde); background: var(--ok); color: #fff; }
+  button.secundario { background: var(--mal); }
   select { background: var(--tarjeta); color: var(--tinta); }
   button:disabled { opacity: .5; }
   .fila { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
@@ -21,21 +23,28 @@
   .ok { color: var(--ok); font-weight: 600; } .mal { color: var(--mal); font-weight: 600; }
   .q { font-weight: 600; } .min { color: var(--suave); font-size: .85rem; }
   textarea { width: 100%; min-height: 120px; font: 12px/1.3 ui-monospace, monospace; background: var(--tarjeta); color: var(--tinta); border: 1px solid var(--borde); border-radius: 8px; }
-  code { font-size: .85rem; }
 </style>
 </head>
 <body>
-<h1>Laboratorio: Qwen2.5-0.5B en este teléfono</h1>
-<p class="sub">Mide si un SLM puede reformular las fichas oficiales de Fray en el navegador y si el verificador atrapa los errores.
-<b>No es la app</b>: necesita internet para bajar el modelo (~0,5 GB, se guarda para la próxima). Decisión: slm-generativo-opcional.</p>
+<h1>Laboratorio: un SLM generativo en este teléfono</h1>
+<p class="sub">Mide si Qwen2.5-0.5B puede reformular las fichas oficiales de Fray, cuánto tarda y si el verificador atrapa sus errores.
+<b>No es la app</b>: necesita internet para bajar el modelo (~0,5 GB, se guarda para la próxima).</p>
+<p class="aviso">El teléfono puede calentarse: el modelo usa la GPU o todos los núcleos mientras responde. Si notas lentitud, pulsa «Detener».</p>
 
 <div class="caja">
   <div id="equipo" class="min">Revisando el teléfono…</div>
   <div class="fila" style="margin-top:8px">
-    <label for="modo" class="min">Modo:</label>
-    <select id="modo"></select>
-    <button id="cargar">1. Descargar y cargar el modelo</button>
+    <label for="modo" class="min">Motor:</label><select id="modo"></select>
+    <label for="contexto" class="min">Contexto:</label>
+    <select id="contexto">
+      <option value="frase">Frase enfocada (la que eligió e5)</option>
+      <option value="ficha">Ficha completa</option>
+    </select>
+  </div>
+  <div class="fila" style="margin-top:8px">
+    <button id="cargar">1. Descargar y cargar</button>
     <button id="correr" disabled>2. Correr las 7 pruebas</button>
+    <button id="detener" class="secundario" disabled>Detener</button>
   </div>
   <progress id="barra" max="1" value="0" hidden></progress>
   <div id="estado" class="min"></div>
@@ -45,74 +54,99 @@
 
 <div class="caja" id="salida" hidden>
   <b>Resultados para enviar a R3</b>
-  <p class="min">Cópialos y pégalos en el issue #24 o mándalos al equipo.</p>
+  <p class="min">Cópialos y pégalos en el issue #24.</p>
   <label for="json" class="min">Resultados en JSON</label>
   <textarea id="json" readonly></textarea>
   <div class="fila"><button id="copiar">Copiar resultados</button></div>
 </div>
 
 <script type="module">
-import { pipeline, TextStreamer, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.2';
-env.allowLocalModels = false;
-
 const MODELO = 'onnx-community/Qwen2.5-0.5B-Instruct';
-// Preguntas de prueba: la ficha ya viene «recuperada» (la búsqueda se mide aparte con herramientas/evaluar.py).
-// Nunca se prueban fichas del carril crítico: esas no pasan por el generador.
+// La ficha ya viene «recuperada» (la búsqueda se mide aparte). «frase» = la frase de la ficha que e5 eligió como la más
+// parecida a la pregunta (calculada con el modelo de la app el 24-nov). Nunca se prueban fichas del carril crítico.
 const PRUEBAS = [
-  { ficha: 'temperatura', p: '¿hace mucho frío allá arriba?' },
-  { ficha: 'horario', p: '¿hasta qué hora puedo entrar a Brisas?' },
-  { ficha: 'tarifas', p: '¿cuánto paga un extranjero por entrar?' },
-  { ficha: 'frailejon', p: '¿qué tan grande crece el frailejón?' },
-  { ficha: 'glaciares', p: '¿cuántos glaciares le quedan a Colombia?' },
-  { ficha: 'drones', p: '¿puedo llevar mi dron para grabar el paisaje?' },
-  { ficha: 'horario', p: '¿hay restaurante en Brisas?', trampa: true },
+  { ficha: 'temperatura', p: '¿hace mucho frío allá arriba?', frase: 'Lleva ropa y calzado para frío bajo cero y para lluvia.' },
+  { ficha: 'horario', p: '¿hasta qué hora puedo entrar a Brisas?', frase: 'El sector Brisas-Kumanday abre todos los días de 8:00 a. m. a 2:00 p. m.' },
+  { ficha: 'tarifas', p: '¿cuánto paga un extranjero por entrar?', frase: 'Tarifas 2026 en Brisas-Kumanday: menores de 25 años, $12.500; mayores de 25, $24.500; extranjeros no residentes, $68.000.' },
+  { ficha: 'frailejon', p: '¿qué tan grande crece el frailejón?', frase: 'El frailejón del parque es Espeletia hartwegiana, la única especie de frailejón que hay en él.' },
+  { ficha: 'glaciares', p: '¿cuántos glaciares le quedan a Colombia?', frase: 'Los glaciares ocupan cerca del 1,82 % del parque, que protege 3 de los 6 glaciares que le quedan a Colombia.' },
+  { ficha: 'drones', p: '¿puedo llevar mi dron para grabar el paisaje?', frase: 'Los drones están prohibidos (Resolución 0543 de 2018).' },
+  { ficha: 'horario', p: '¿hay restaurante en Brisas?', frase: 'El sector Brisas-Kumanday abre todos los días de 8:00 a. m. a 2:00 p. m.', trampa: true },
 ];
-// Instrucciones en inglés + un ejemplo resuelto: en la prueba del 24-nov rindió algo mejor que el prompt en español.
-const SISTEMA = 'You answer visitor questions for a national park in Colombia. Reply in Spanish, in ONE short sentence, using ONLY facts ' +
-  'copied from the OFFICIAL FACT SHEET. Never invent numbers, places or names. If the fact sheet does not answer the question, reply ' +
-  'exactly: "No tengo esa información oficial; pregúntale a tu guía."';
-const EJEMPLO = [{ role: 'user', content: 'OFFICIAL FACT SHEET: Las mascotas no pueden entrar al parque.\nQUESTION: ¿puedo llevar a mi perro?' },
-  { role: 'assistant', content: 'No, las mascotas no pueden entrar al parque.' }];
-const NO_SE = 'no tengo esa informacion oficial';
+const NO_SE_TXT = 'No tengo esa información oficial; pregúntale a tu guía.';
+const PROMPTS = {
+  frase: {
+    sistema: 'Eres Fray, guía del parque. Reescribe el DATO como respuesta corta y amable a la PREGUNTA, en una sola frase en español. ' +
+      `Copia las cifras y los nombres tal cual. No agregues nada que no esté en el DATO. Si el DATO no responde la PREGUNTA, responde exactamente: ${NO_SE_TXT}`,
+    ejemplos: [['¿puedo llevar a mi perro?', 'Las mascotas no pueden entrar al parque.', 'No, las mascotas no pueden entrar al parque.'],
+      ['¿a qué altura queda Brisas?', 'Brisas está a 4.100 m de altura.', 'Brisas queda a 4.100 m de altura.'],
+      ['¿venden almuerzo en el sendero?', 'El sendero mide 5 km.', NO_SE_TXT]],
+    usuario: (t, texto) => `PREGUNTA: ${t.p}\nDATO: ${texto}`,
+  },
+  ficha: {
+    sistema: 'You answer visitor questions for a national park in Colombia. Reply in Spanish, in ONE short sentence, using ONLY facts ' +
+      `copied from the OFFICIAL FACT SHEET. Never invent numbers, places or names. If the fact sheet does not answer the question, reply exactly: "${NO_SE_TXT}"`,
+    ejemplos: [['¿puedo llevar a mi perro?', 'Las mascotas no pueden entrar al parque.', 'No, las mascotas no pueden entrar al parque.']],
+    usuario: (t, texto) => `OFFICIAL FACT SHEET: ${texto}\nQUESTION: ${t.p}`,
+  },
+};
 
 const $ = (s) => document.querySelector(s);
 const norm = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 const info = { modelo: MODELO, ua: navigator.userAgent, memoriaGB: navigator.deviceMemory ?? null, nucleos: navigator.hardwareConcurrency ?? null, webgpu: false };
-let generador = null, fichas = {}, tCarga = 0;
+let worker = null, fichas = {}, detenido = false;
 
 // ---------- Verificador determinista («supervisor de cifras») ----------
-// La respuesta solo pasa si todo lo que afirma está en la ficha (o en la pregunta). Si no, se muestra la ficha original.
+// Pasa solo si todo lo que afirma está en el texto fuente. Pasar NO significa ser útil: eso lo juzga una persona.
 const PROHIBIDO = /(se puede comer|es comestible|comestible|venenos|toxic|alerta (amarilla|naranja|roja|verde)|nivel (amarillo|naranja|rojo|verde))/;
 const numeros = (s) => (s.match(/\d+(?:[.,:]\d+)*/g) || []).map((n) => n.replace(/[.,:]/g, ''));
 const propios = (s) => {
   const out = [];
   for (const frase of s.split(/[.!?¿¡]\s*/)) {
-    const pal = frase.trim().split(/\s+/).slice(1); // la primera palabra de cada frase va en mayúscula por gramática
-    for (const w of pal) { const x = w.replace(/[^\p{L}]/gu, ''); if (x.length > 2 && /^\p{Lu}/u.test(x)) out.push(x); }
+    for (const w of frase.trim().split(/\s+/).slice(1)) { const x = w.replace(/[^\p{L}-]/gu, '').replace(/^-+|-+$/g, ''); if (x.length > 2 && /^\p{Lu}/u.test(x)) out.push(x); }
   }
   return out;
 };
-function verificar(resp, ficha, pregunta) {
+// Cifra + unidad: «2026 pesos» no vale si en la fuente 2026 es un año. Solo se comparan unidades de medida o de dinero.
+const MEDIDA = new Set(['$', '%', '°', 'c', 'm', 'km', 'cm', 'ha', 'anos', 'ano', 'am', 'pm', 'metros', 'horas', 'hora', 'min', 'minutos', 'msnm']);
+function unidades(s) {
+  const t = norm(s).replace(/\b([ap])\.\s?m\./g, '$1m').replace(/\bpesos\b|\bcop\b/g, '$');
+  const out = [];
+  for (const m of t.matchAll(/(\$\s?)?(\d+(?:[.,:]\d+)*)\s*([%°]|\$|[a-z]+)?/g)) {
+    const u = m[1] ? '$' : (m[3] || '');
+    out.push([m[2].replace(/[.,:]/g, ''), MEDIDA.has(u) ? u : '']);
+  }
+  return out;
+}
+function verificar(resp, fuenteTxt, pregunta) {
   const fallas = [];
-  const fuente = norm(ficha + ' ' + pregunta);
-  const nf = new Set(numeros(ficha + ' ' + pregunta));
-  for (const n of numeros(resp)) if (!nf.has(n)) fallas.push(`cifra ${n} no está en la ficha`);
-  for (const w of propios(resp)) if (!fuente.includes(norm(w)) && !['Fray'].includes(w)) fallas.push(`nombre «${w}» no está en la ficha`);
+  const fuente = norm(fuenteTxt + ' ' + pregunta);
+  const nf = new Set(numeros(fuenteTxt + ' ' + pregunta));
+  for (const n of numeros(resp)) if (!nf.has(n)) fallas.push(`cifra ${n} no está en la fuente`);
+  const uf = unidades(fuenteTxt + ' ' + pregunta);
+  for (const [n, u] of unidades(resp)) {
+    if (u && nf.has(n) && !uf.some(([n2, u2]) => n2 === n && u2 === u)) fallas.push(`la cifra ${n} no va con «${u}» en la fuente`);
+  }
+  for (const w of propios(resp)) if (!fuente.includes(norm(w)) && w !== 'Fray') fallas.push(`nombre «${w}» no está en la fuente`);
   if (PROHIBIDO.test(norm(resp))) fallas.push('dice algo prohibido (comer, tóxico o alerta del volcán)');
   const palabras = resp.trim().split(/\s+/).length;
   if (palabras > 60) fallas.push(`demasiado larga (${palabras} palabras)`);
   if (!resp.trim()) fallas.push('vacía');
   if (/\?\s*$/.test(resp.trim())) fallas.push('responde con una pregunta');
   if (/no puedo responder/.test(norm(resp))) fallas.push('esquiva la pregunta');
-  return { ok: fallas.length === 0, fallas, dijoNoSe: norm(resp).includes(NO_SE) };
+  return { ok: fallas.length === 0, fallas, dijoNoSe: norm(resp).includes('no tengo esa informacion oficial') };
 }
+
+// ---------- Worker ----------
+function nuevoWorker() { worker = new Worker(new URL('./slm-worker.js', import.meta.url), { type: 'module' }); }
+const esperar = (tipos) => new Promise((ok) => { const f = ({ data }) => { if (tipos.includes(data.tipo)) { worker.removeEventListener('message', f); ok(data); } }; worker.addEventListener('message', f); });
 
 // ---------- Equipo ----------
 (async () => {
   if (navigator.gpu) {
-    try { const a = await navigator.gpu.requestAdapter(); info.webgpu = !!a; info.gpu = a?.info ? `${a.info.vendor} ${a.info.architecture || ''} ${a.info.description || ''}`.trim() : null; } catch (e) { info.webgpu = false; }
+    try { const a = await navigator.gpu.requestAdapter(); info.webgpu = !!a; info.gpu = a?.info ? `${a.info.vendor} ${a.info.architecture || ''}`.trim() : null; } catch (e) { info.webgpu = false; }
   }
-  const opciones = info.webgpu ? [['webgpu|q4f16', 'WebGPU · q4f16 (483 MB) — recomendado'], ['wasm|q8', 'WASM · int8 (512 MB) — sin GPU']] : [['wasm|q8', 'WASM · int8 (512 MB) — este teléfono no tiene WebGPU']];
+  const opciones = [['wasm|q8', 'WASM · int8 (512 MB) — más estable'], ...(info.webgpu ? [['webgpu|q4f16', 'WebGPU · q4f16 (483 MB) — más rápido, más calor']] : [])];
   $('#modo').innerHTML = opciones.map(([v, t]) => `<option value="${v}">${t}</option>`).join('');
   $('#equipo').textContent = `Memoria: ${info.memoriaGB ?? '?'} GB · núcleos: ${info.nucleos ?? '?'} · WebGPU: ${info.webgpu ? 'sí' : 'no'}${info.gpu ? ' (' + info.gpu + ')' : ''}`;
   const chat = await (await fetch('../chat.json')).json();
@@ -122,64 +156,69 @@ function verificar(resp, ficha, pregunta) {
 // ---------- Cargar ----------
 $('#cargar').onclick = async () => {
   const [device, dtype] = $('#modo').value.split('|');
-  info.device = device; info.dtype = dtype;
-  $('#cargar').disabled = true; $('#barra').hidden = false;
+  Object.assign(info, { device, dtype });
+  $('#cargar').disabled = true; $('#barra').hidden = false; $('#detener').disabled = false; detenido = false;
+  nuevoWorker();
   const archivos = {};
-  const t0 = performance.now();
-  try {
-    generador = await pipeline('text-generation', MODELO, {
-      device, dtype,
-      progress_callback: (p) => {
-        if (p.status === 'progress' && p.total) { archivos[p.file] = [p.loaded, p.total]; const v = Object.values(archivos); const l = v.reduce((a, x) => a + x[0], 0), t = v.reduce((a, x) => a + x[1], 0); $('#barra').value = l / t; $('#estado').textContent = `Descargando ${(l / 1e6).toFixed(0)} de ${(t / 1e6).toFixed(0)} MB…`; }
-        if (p.status === 'ready') $('#estado').textContent = 'Preparando el modelo…';
-      },
-    });
-    tCarga = (performance.now() - t0) / 1000;
-    info.cargaSegundos = +tCarga.toFixed(1);
-    $('#estado').textContent = `Modelo listo en ${tCarga.toFixed(1)} s (incluye la descarga la primera vez).`;
-    $('#correr').disabled = false;
-  } catch (e) {
-    $('#estado').innerHTML = `<span class="mal">No cargó: ${e.message}</span>. Prueba el otro modo.`;
-    info.errorCarga = e.message; $('#cargar').disabled = false; mostrarJSON([]);
-  }
+  worker.addEventListener('message', ({ data }) => {
+    if (data.tipo !== 'progreso') return;
+    archivos[data.archivo] = [data.cargado, data.total];
+    const v = Object.values(archivos); const l = v.reduce((a, x) => a + x[0], 0), t = v.reduce((a, x) => a + x[1], 0);
+    $('#barra').value = l / t; $('#estado').textContent = `Descargando ${(l / 1e6).toFixed(0)} de ${(t / 1e6).toFixed(0)} MB…`;
+  });
+  worker.postMessage({ tipo: 'cargar', modelo: MODELO, device, dtype });
+  const r = await esperar(['listo', 'error']);
+  if (r.tipo === 'error') { $('#estado').innerHTML = `<span class="mal">No cargó: ${r.detalle}</span>. Prueba el otro motor.`; info.errorCarga = r.detalle; $('#cargar').disabled = false; mostrarJSON([]); return; }
+  info.cargaSegundos = +r.segundos.toFixed(1);
+  $('#estado').textContent = `Modelo listo en ${r.segundos.toFixed(1)} s (incluye la descarga la primera vez).`;
+  $('#correr').disabled = false;
+};
+
+// ---------- Detener ----------
+$('#detener').onclick = () => {
+  detenido = true; worker?.terminate(); worker = null;
+  $('#estado').innerHTML = '<span class="mal">Detenido.</span> Recarga la página para volver a empezar.';
+  $('#correr').disabled = true; $('#cargar').disabled = true; $('#detener').disabled = true;
 };
 
 // ---------- Correr ----------
 $('#correr').onclick = async () => {
-  $('#correr').disabled = true; $('#resultados').hidden = false; $('#resultados').innerHTML = '<b>Resultados</b>';
+  const ctx = $('#contexto').value; info.contexto = ctx;
+  const pr = PROMPTS[ctx];
+  const ejemplos = pr.ejemplos.flatMap(([q, d, r]) => [{ role: 'user', content: pr.usuario({ p: q }, d) }, { role: 'assistant', content: r }]);
+  $('#correr').disabled = true; $('#resultados').hidden = false; $('#resultados').innerHTML = `<b>Resultados · contexto: ${ctx}</b>`;
   const filas = [];
   for (const [i, t] of PRUEBAS.entries()) {
+    if (detenido) break;
+    const fuente = ctx === 'frase' ? t.frase : fichas[t.ficha];
+    const caja = document.createElement('div'); caja.className = 'r';
+    caja.innerHTML = `<div class="q">${i + 1}. ${t.p}${t.trampa ? ' <span class="min">(trampa)</span>' : ''}</div><div class="min" data-v>Fray: «Dame un momento…»</div>`;
+    $('#resultados').appendChild(caja);
+    let vivo = '';
+    const alTrozo = ({ data }) => { if (data.tipo === 'trozo' && data.id === i) { vivo += data.txt; caja.querySelector('[data-v]').textContent = `Fray: «${vivo}»`; } };
+    worker.addEventListener('message', alTrozo);
     $('#estado').textContent = `Prueba ${i + 1} de ${PRUEBAS.length}…`;
-    const ficha = fichas[t.ficha];
-    const mensajes = [{ role: 'system', content: SISTEMA }, ...EJEMPLO, { role: 'user', content: `OFFICIAL FACT SHEET: ${ficha}\nQUESTION: ${t.p}` }];
-    let tPrimera = null, n = 0;
-    const t0 = performance.now();
-    const streamer = new TextStreamer(generador.tokenizer, { skip_prompt: true, skip_special_tokens: true, callback_function: () => { n++; if (tPrimera === null) tPrimera = performance.now() - t0; } });
-    let resp = '';
-    try {
-      const out = await generador(mensajes, { max_new_tokens: 90, do_sample: false, streamer });
-      resp = out[0].generated_text.at(-1).content.trim();
-    } catch (e) { resp = ''; }
-    const total = (performance.now() - t0) / 1000;
-    const v = verificar(resp, ficha, t.p);
-    // Pasar el verificador NO significa que la respuesta sea útil: eso lo juzga una persona (prueba del 24-nov).
-    const correcta = t.trampa ? v.dijoNoSe : (v.ok && !v.dijoNoSe);
-    const fila = { ficha: t.ficha, pregunta: t.p, trampa: !!t.trampa, respuesta: resp, verificador: v.ok ? 'pasa' : 'bloquea', fallas: v.fallas, dijoNoSe: v.dijoNoSe, pasaVerificador: correcta, utilSegunPersona: null,
-      primeraPalabraS: tPrimera ? +(tPrimera / 1000).toFixed(2) : null, totalS: +total.toFixed(2), trozosPorS: n ? +(n / total).toFixed(1) : 0 };
+    worker.postMessage({ tipo: 'generar', id: i, max: 50, mensajes: [{ role: 'system', content: pr.sistema }, ...ejemplos, { role: 'user', content: pr.usuario(t, fuente) }] });
+    const r = await esperar(['respuesta', 'error']);
+    worker?.removeEventListener('message', alTrozo);
+    const resp = r.tipo === 'respuesta' ? r.texto : '';
+    const v = verificar(resp, fuente, t.p);
+    const pasa = t.trampa ? v.dijoNoSe : (v.ok && !v.dijoNoSe);
+    const fila = { ficha: t.ficha, pregunta: t.p, trampa: !!t.trampa, respuesta: resp, verificador: v.ok ? 'pasa' : 'bloquea', fallas: v.fallas, pasaVerificador: pasa, utilSegunPersona: null,
+      primeraPalabraS: r.primera != null ? +r.primera.toFixed(2) : null, totalS: r.total != null ? +r.total.toFixed(2) : null, error: r.tipo === 'error' ? r.detalle : undefined };
     filas.push(fila);
-    const muestra = v.ok ? resp : ficha;
-    $('#resultados').insertAdjacentHTML('beforeend', `<div class="r"><div class="q">${i + 1}. ${t.p}${t.trampa ? ' <span class="min">(trampa: la ficha no lo responde)</span>' : ''}</div>
-      <div>Qwen: «${resp || '—'}»</div>
-      <div class="${v.ok ? 'ok' : 'mal'}">Verificador: ${v.ok ? 'pasa' : 'bloquea → se muestra la ficha original'}</div>${v.fallas.length ? `<div class="min">${v.fallas.join(' · ')}</div>` : ''}
+    const muestra = v.ok ? resp : fuente;
+    caja.querySelector('[data-v]').outerHTML = `<div>Qwen: «${resp || '—'}»</div>
+      <div class="${v.ok ? 'ok' : 'mal'}">Verificador: ${v.ok ? 'pasa' : 'bloquea → se muestra el texto oficial'}</div>${v.fallas.length ? `<div class="min">${v.fallas.join(' · ')}</div>` : ''}
       <div class="min">Lo que vería el visitante: «${muestra.slice(0, 220)}${muestra.length > 220 ? '…' : ''}»</div>
-      <div class="min">Primera palabra: ${fila.primeraPalabraS ?? '?'} s · total: ${fila.totalS} s · pasa el verificador: ${correcta ? 'sí' : 'no'} · ¿es útil? júzgalo tú</div></div>`);
+      <div class="min">Primera palabra: ${fila.primeraPalabraS ?? '?'} s · total: ${fila.totalS ?? '?'} s · pasa el verificador: ${pasa ? 'sí' : 'no'} · ¿es útil? júzgalo tú</div>`;
   }
   const ok = filas.filter((f) => f.pasaVerificador).length;
   const med = (k) => { const v = filas.map((f) => f[k]).filter((x) => x != null).sort((a, b) => a - b); return v.length ? v[Math.floor(v.length / 2)] : null; };
-  info.resumen = { pasanVerificador: `${ok}/${filas.length}`, bloqueadas: filas.filter((f) => f.verificador === 'bloquea').length, medianaPrimeraPalabraS: med('primeraPalabraS'), medianaTotalS: med('totalS') };
-  $('#estado').textContent = `Listo: ${ok} de ${filas.length} pasan el verificador · mediana ${info.resumen.medianaTotalS} s por respuesta.`;
+  info.resumen = { pasanVerificador: `${ok}/${filas.length}`, medianaPrimeraPalabraS: med('primeraPalabraS'), medianaTotalS: med('totalS') };
+  if (!detenido) $('#estado').textContent = `Listo: ${ok} de ${filas.length} pasan el verificador · mediana ${info.resumen.medianaTotalS} s por respuesta.`;
   mostrarJSON(filas);
-  $('#correr').disabled = false;
+  if (!detenido) $('#correr').disabled = false;
 };
 
 function mostrarJSON(filas) { $('#salida').hidden = false; $('#json').value = JSON.stringify({ fecha: new Date().toISOString(), ...info, pruebas: filas }, null, 1); }

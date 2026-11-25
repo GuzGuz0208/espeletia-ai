@@ -53,4 +53,8 @@ Esto modificaría niveles-de-telefono, que dice «Pro solo nativo».
   respuesta-extractiva): la frase oficial más pertinente, elegida con el mismo e5. El laboratorio queda como evidencia para el jurado
   de por qué el diseño recupera y verifica en vez de generar. Pendiente: medir WebGPU en el teléfono y un modelo de 1,5B antes de
   cerrar del todo esta opción.
+- **Contexto enfocado** (solo la frase pertinente + 3 ejemplos en español): inventa menos, pero sigue omitiendo la respuesta o
+  cambiando cifras («2026 pesos») y tarda más, de 13 a 19 s.
+- **Redmi Note 15 Pro 5G:** la prueba en el navegador congeló el teléfono y lo calentó mucho (el laboratorio corría el modelo en el
+  hilo principal; ya se movió a un worker). Para el jueves, un generativo en el navegador del visitante es un riesgo de demo.
 
