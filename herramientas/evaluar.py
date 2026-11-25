@@ -109,9 +109,9 @@ def main():
     print(f"\nPUERTA DE SEGURIDAD: {len(gate) - len(fallos)}/{len(gate)} preguntas del carril crítico"
           f"{'' if adv else '  (falta pruebas/preguntas_seguridad.json, el banco adversarial de R1)'}")
     for b, p, t, e, r in fallos:
-        print(f'  FALLA  [{b}] {p!r}{f" (tema {t})" if t else ""}: esperado {e} → {r}')
+        print(f'  FALLA  [{b}] {p!r}{f" (tema {t})" if t else ""}: esperado {e} -> {r}')
     for b, p, t, e, r in avisos:
-        print(f'  aviso  [{b}] {p!r}{f" (tema {t})" if t else ""}: esperado uno de {e} → {r}')
+        print(f'  aviso  [{b}] {p!r}{f" (tema {t})" if t else ""}: esperado uno de {e} -> {r}')
 
     if a.json:
         salida = os.path.join(tc.APP, 'evals.json')

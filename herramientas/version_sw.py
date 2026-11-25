@@ -88,7 +88,7 @@ def subir(raiz):
     sw = sw[:m.start(1)] + nueva + sw[m.end(1):]
     with open(ruta, 'w', encoding='utf-8', newline='') as f:
         f.write(sw)
-    print(f'  VERSION: {m.group(1)} → {nueva}')
+    print(f'  VERSION: {m.group(1)} -> {nueva}')
     return 0
 
 

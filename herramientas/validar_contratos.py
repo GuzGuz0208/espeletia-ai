@@ -82,7 +82,7 @@ def revisar_chat(raiz, inf):
         donde = f"chat.json ficha {f.get('id', '?')}"
         validar_esquema(val, f, donde, inf)
         if f.get('fuente') not in fuentes:
-            inf.error(donde, f"fuente {f.get('fuente')!r} no está en chat.json → fuentes")
+            inf.error(donde, f"fuente {f.get('fuente')!r} no está en chat.json -> fuentes")
         if f.get('fuente') == 'app' and f.get('tema') not in ('app', 'recorrido'):
             inf.error(donde, "fuente 'app' solo se permite en fichas de uso de la app o del recorrido, nunca en datos del parque")
         texto = ' '.join(str(f.get(k, '')) for k in ('es', 'en', 'fr', 'de', 'pt-BR', 'es-ES'))
@@ -122,7 +122,7 @@ def revisar_paquete(raiz, ids_fichas, inf):
         if ids_fichas is not None and c.get('ficha') not in ids_fichas:
             inf.error(donde, f"ficha {c.get('ficha')!r} no existe en chat.json")
         if c.get('fuente') is not None and c.get('fuente') not in fuentes:
-            inf.error(donde, f"fuente {c.get('fuente')!r} no está en paquete.json → fuentes")
+            inf.error(donde, f"fuente {c.get('fuente')!r} no está en paquete.json -> fuentes")
         if c.get('capitulo') not in cap:
             inf.error(donde, f"capítulo {c.get('capitulo')!r} no existe")
         if 'estacion' in c and c['estacion'] not in est:
@@ -144,7 +144,7 @@ def revisar_paquete(raiz, ids_fichas, inf):
         if pa.get('estacion') not in est:
             inf.error(donde, f"estación {pa.get('estacion')!r} no existe")
         if pa.get('fuente') not in fuentes:
-            inf.error(donde, f"fuente {pa.get('fuente')!r} no está en paquete.json → fuentes")
+            inf.error(donde, f"fuente {pa.get('fuente')!r} no está en paquete.json -> fuentes")
         if 'cromo' in pa and pa['cromo'] not in ids_cromos:
             inf.error(donde, f"cromo {pa['cromo']!r} no existe")
     for e in p.get('estaciones', []):
