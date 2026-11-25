@@ -94,7 +94,7 @@ async function verificar() {
     const r = await cache.match(ruta);
     if (!r || (await sha256(await r.arrayBuffer())) !== m.sha256) malos.push(ruta);
   }
-  avisar({ tipo: 'verificado', malos });
+  await avisar({ tipo: 'verificado', malos });
 }
 
 // «reparar» (con señal): vuelve a descargar y verificar solo los archivos pedidos que sean de la app.
@@ -117,10 +117,12 @@ async function reparar(rutas = []) {
       ok.push(ruta);
     } catch (e) { fallidos.push({ ruta, detalle: e.message }); }
   }
-  avisar({ tipo: 'reparado', ok, fallidos });
+  await avisar({ tipo: 'reparado', ok, fallidos });
 }
 
 self.addEventListener('message', (event) => {
+  // Solo se atienden mensajes de páginas de esta misma app
+  if (event.origin && event.origin !== location.origin) return;
   const d = event.data || {};
   if (d.tipo === 'verificar') event.waitUntil(verificar());
   if (d.tipo === 'reparar' && Array.isArray(d.rutas)) event.waitUntil(reparar(d.rutas.filter((r) => typeof r === 'string')));
@@ -149,9 +151,10 @@ self.addEventListener('fetch', (event) => {
       const res = await fetch(req, esPaquete ? { cache: 'no-cache' } : undefined);
       if (res.ok && esPaquete && hit) {
         const [antes, ahora] = await Promise.all([hit.clone().text(), res.clone().text()]);
-        if (antes !== ahora) avisar({ tipo: 'contenido', archivo: new URL(req.url).pathname.split('/').pop() });
+        if (antes !== ahora) event.waitUntil(avisar({ tipo: 'contenido', archivo: new URL(req.url).pathname.split('/').pop() }));
       }
-      if (res.ok && (esPaquete || esDeLaApp(req.url))) cache.put(req, res.clone());
+      // waitUntil: que el navegador no corte el guardado a medias si la página se cierra
+      if (res.ok && (esPaquete || esDeLaApp(req.url))) event.waitUntil(cache.put(req, res.clone()));
       return res;
     } catch (e) {
       if (hit) return hit;
