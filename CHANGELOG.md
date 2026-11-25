@@ -4,6 +4,10 @@
 Se genera desde `docs/cambios/` (un archivo por cambio). Para agregar uno, copia
 `docs/cambios/plantilla.md`.
 
+## 2026-11-25
+
+- **R3** · agregado (r3/llm-nativo): Protocolo para medir un LLM nativo en el teléfono con apps abiertas (PocketPal, AI Edge Gallery) y decisión propuesta de APK Android que envuelve la PWA con un LLM nativo.
+
 ## 2026-11-24
 
 - **R3** · agregado (r3/al-recuperar-senal): Service worker v18: avisa cuando llega contenido nuevo, revalida el paquete con el servidor, verifica y repara archivos dañados (responde «sin señal» si no hay red) y ya no guarda en caché archivos ajenos a la app.
