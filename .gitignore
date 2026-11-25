@@ -1,3 +1,5 @@
 *.zip
 __pycache__/
 evals.json
+# Voces de Piper (60+ MB cada una): se descargan en el PC solo para sintetizar, nunca van al repo
+herramientas/voces/
