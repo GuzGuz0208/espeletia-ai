@@ -66,7 +66,7 @@ código/QR del guía → `estado.js` guarda en IndexedDB → sobre → álbum �
 | Modelo | Uso | Tamaño | Licencia | Verificado 24-nov |
 |---|---|---|---|---|
 | multilingual-e5-small (podado a vocabulario latino, int8) | Fray | 66 MB | MIT | sí |
-| MobileNetV2 (embeddings) | Lente | 8,8 MB | según origen (ONNX Model Zoo: Apache-2.0); **origen sin registrar** | pendiente |
+| MobileNetV2 (embeddings) | Lente | 8,8 MB | Apache-2.0 (ONNX Model Zoo `mobilenetv2-12`, sin clasificador; pesos idénticos) | sí |
 | ONNX Runtime Web 1.31 | motor | 14,8 MB (WASM) | MIT | sí |
 | Qwen2.5-0.5B-Instruct (propuesto, opcional) | reformular la ficha recuperada | ~480-510 MB | Apache-2.0 | sí (licencia); velocidad en teléfono sin medir |
 | Piper (voces davefx, joe/mike, siwis, cadu/jeff) | síntesis offline de audios en el computador, no en el teléfono | — | motor GPL-3.0; voces CC0 / CC BY | sí |
