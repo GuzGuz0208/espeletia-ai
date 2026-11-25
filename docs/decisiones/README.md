@@ -20,7 +20,7 @@ este índice con `python herramientas/generar_indices.py`.
 | 2026-11-24 | [Tótems físicos descartados para el piloto](2026-11-24-totems-descartados.md) |
 | 2026-11-24 | [Traducción: textos pre-traducidos y revisados](2026-11-24-traduccion-pretraducida.md) |
 
-## Propuestas (12)
+## Propuestas (13)
 
 | Fecha | Decisión |
 |---|---|
@@ -34,5 +34,6 @@ este índice con `python herramientas/generar_indices.py`.
 | 2026-11-24 | [Licencias de modelos y voces](2026-11-24-licencias-de-modelos.md) |
 | 2026-11-24 | [Metodología: desarrollo guiado por specs con harness](2026-11-24-sdd-con-harness.md) |
 | 2026-11-24 | [PIN y clave del QR en un repo público: solo para la prueba de concepto](2026-11-24-secretos-poc-en-repo-publico.md) |
+| 2026-11-24 | [SLM generativo opcional en el navegador que reformula la ficha recuperada](2026-11-24-slm-generativo-opcional.md) |
 | 2026-11-24 | [Versión del service worker calculada en el despliegue](2026-11-24-version-sw-en-despliegue.md) |
 | 2026-11-24 | [Voz por idioma con audio pregrabado del texto validado](2026-11-24-voz-audio-pregrabado.md) |
