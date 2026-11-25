@@ -1,6 +1,6 @@
 ---
 rol: R3
-estado: borrador
+estado: hecha (parte R3)
 prioridad: P1
 decisiones: [2026-11-24-fuente-unica-github-netlify, 2026-11-24-escalera-de-degradacion]
 ---
@@ -23,3 +23,17 @@ Prueba de Playwright: offline → online con un paquete cambiado; comprobar que 
 
 ## Fuera de alcance
 Respaldo en la nube o envío de datos a UTON (fase 2, con consentimiento explícito).
+
+## Estado (24-nov)
+- Hecho en `sw.js` (v18):
+  - aviso `contenido` cuando llega un paquete distinto;
+  - revalidación de `paquete.json`/`parque.json` con `cache: 'no-cache'` (antes la caché HTTP podía devolver uno viejo durante minutos);
+  - mensajes `verificar` y `reparar`, que responden `sin señal` si no hay red;
+  - la caché guarda solo los archivos de la app (antes guardaba cualquier archivo pedido).
+- Protocolo en [docs/contratos/sw-mensajes.md](../contratos/sw-mensajes.md).
+- Probado en el navegador:
+  - un modelo dañado a propósito → `verificar` lo detecta → `reparar` lo arregla;
+  - rutas ajenas rechazadas;
+  - paquete cambiado → un aviso, y ninguno si no cambió;
+  - sin servidor: la app carga y `reparar` responde `sin señal`.
+- Pendiente (R2, #20): mostrar «contenido actualizado» y usar `verificar`/`reparar` en la escalera de degradación.
