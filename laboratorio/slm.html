@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Laboratorio SLM</title>
+<style>
+  :root { --fondo: #f6f3ea; --tinta: #1f3a2f; --suave: #5d7268; --borde: #cfd8cf; --ok: #2f6b4f; --mal: #a33a2a; --tarjeta: #fffdf7; }
+  @media (prefers-color-scheme: dark) { :root { --fondo: #121a16; --tinta: #e6efe8; --suave: #9fb3a8; --borde: #2c3b33; --ok: #7fc59f; --mal: #f08a78; --tarjeta: #18221d; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 16px; background: var(--fondo); color: var(--tinta); font: 15px/1.45 system-ui, sans-serif; max-width: 860px; margin-inline: auto; }
+  h1 { font-size: 1.3rem; margin: 0 0 4px; }
+  p.sub { color: var(--suave); margin: 0 0 16px; }
+  .caja { background: var(--tarjeta); border: 1px solid var(--borde); border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+  button, select { font: inherit; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--borde); background: var(--ok); color: #fff; }
+  select { background: var(--tarjeta); color: var(--tinta); }
+  button:disabled { opacity: .5; }
+  .fila { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  progress { width: 100%; height: 10px; }
+  .r { border-top: 1px solid var(--borde); padding: 10px 0; }
+  .ok { color: var(--ok); font-weight: 600; } .mal { color: var(--mal); font-weight: 600; }
+  .q { font-weight: 600; } .min { color: var(--suave); font-size: .85rem; }
+  textarea { width: 100%; min-height: 120px; font: 12px/1.3 ui-monospace, monospace; background: var(--tarjeta); color: var(--tinta); border: 1px solid var(--borde); border-radius: 8px; }
+  code { font-size: .85rem; }
+</style>
+</head>
+<body>
+<h1>Laboratorio: Qwen2.5-0.5B en este teléfono</h1>
+<p class="sub">Mide si un SLM puede reformular las fichas oficiales de Fray en el navegador y si el verificador atrapa los errores.
+<b>No es la app</b>: necesita internet para bajar el modelo (~0,5 GB, se guarda para la próxima). Decisión: slm-generativo-opcional.</p>
+
+<div class="caja">
+  <div id="equipo" class="min">Revisando el teléfono…</div>
+  <div class="fila" style="margin-top:8px">
+    <label for="modo" class="min">Modo:</label>
+    <select id="modo"></select>
+    <button id="cargar">1. Descargar y cargar el modelo</button>
+    <button id="correr" disabled>2. Correr las 7 pruebas</button>
+  </div>
+  <progress id="barra" max="1" value="0" hidden></progress>
+  <div id="estado" class="min"></div>
+</div>
+
+<div class="caja" id="resultados" hidden></div>
+
+<div class="caja" id="salida" hidden>
+  <b>Resultados para enviar a R3</b>
+  <p class="min">Cópialos y pégalos en el issue #24 o mándalos al equipo.</p>
+  <label for="json" class="min">Resultados en JSON</label>
+  <textarea id="json" readonly></textarea>
+  <div class="fila"><button id="copiar">Copiar resultados</button></div>
+</div>
+
+<script type="module">
+import { pipeline, TextStreamer, env } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.3.2';
+env.allowLocalModels = false;
+
+const MODELO = 'onnx-community/Qwen2.5-0.5B-Instruct';
+// Preguntas de prueba: la ficha ya viene «recuperada» (la búsqueda se mide aparte con herramientas/evaluar.py).
+// Nunca se prueban fichas del carril crítico: esas no pasan por el generador.
+const PRUEBAS = [
+  { ficha: 'temperatura', p: '¿hace mucho frío allá arriba?' },
+  { ficha: 'horario', p: '¿hasta qué hora puedo entrar a Brisas?' },
+  { ficha: 'tarifas', p: '¿cuánto paga un extranjero por entrar?' },
+  { ficha: 'frailejon', p: '¿qué tan grande crece el frailejón?' },
+  { ficha: 'glaciares', p: '¿cuántos glaciares le quedan a Colombia?' },
+  { ficha: 'drones', p: '¿puedo llevar mi dron para grabar el paisaje?' },
+  { ficha: 'horario', p: '¿hay restaurante en Brisas?', trampa: true },
+];
+// Instrucciones en inglés + un ejemplo resuelto: en la prueba del 24-nov rindió algo mejor que el prompt en español.
+const SISTEMA = 'You answer visitor questions for a national park in Colombia. Reply in Spanish, in ONE short sentence, using ONLY facts ' +
+  'copied from the OFFICIAL FACT SHEET. Never invent numbers, places or names. If the fact sheet does not answer the question, reply ' +
+  'exactly: "No tengo esa información oficial; pregúntale a tu guía."';
+const EJEMPLO = [{ role: 'user', content: 'OFFICIAL FACT SHEET: Las mascotas no pueden entrar al parque.\nQUESTION: ¿puedo llevar a mi perro?' },
+  { role: 'assistant', content: 'No, las mascotas no pueden entrar al parque.' }];
+const NO_SE = 'no tengo esa informacion oficial';
+
+const $ = (s) => document.querySelector(s);
+const norm = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const info = { modelo: MODELO, ua: navigator.userAgent, memoriaGB: navigator.deviceMemory ?? null, nucleos: navigator.hardwareConcurrency ?? null, webgpu: false };
+let generador = null, fichas = {}, tCarga = 0;
+
+// ---------- Verificador determinista («supervisor de cifras») ----------
+// La respuesta solo pasa si todo lo que afirma está en la ficha (o en la pregunta). Si no, se muestra la ficha original.
+const PROHIBIDO = /(se puede comer|es comestible|comestible|venenos|toxic|alerta (amarilla|naranja|roja|verde)|nivel (amarillo|naranja|rojo|verde))/;
+const numeros = (s) => (s.match(/\d+(?:[.,:]\d+)*/g) || []).map((n) => n.replace(/[.,:]/g, ''));
+const propios = (s) => {
+  const out = [];
+  for (const frase of s.split(/[.!?¿¡]\s*/)) {
+    const pal = frase.trim().split(/\s+/).slice(1); // la primera palabra de cada frase va en mayúscula por gramática
+    for (const w of pal) { const x = w.replace(/[^\p{L}]/gu, ''); if (x.length > 2 && /^\p{Lu}/u.test(x)) out.push(x); }
+  }
+  return out;
+};
+function verificar(resp, ficha, pregunta) {
+  const fallas = [];
+  const fuente = norm(ficha + ' ' + pregunta);
+  const nf = new Set(numeros(ficha + ' ' + pregunta));
+  for (const n of numeros(resp)) if (!nf.has(n)) fallas.push(`cifra ${n} no está en la ficha`);
+  for (const w of propios(resp)) if (!fuente.includes(norm(w)) && !['Fray'].includes(w)) fallas.push(`nombre «${w}» no está en la ficha`);
+  if (PROHIBIDO.test(norm(resp))) fallas.push('dice algo prohibido (comer, tóxico o alerta del volcán)');
+  const palabras = resp.trim().split(/\s+/).length;
+  if (palabras > 60) fallas.push(`demasiado larga (${palabras} palabras)`);
+  if (!resp.trim()) fallas.push('vacía');
+  if (/\?\s*$/.test(resp.trim())) fallas.push('responde con una pregunta');
+  if (/no puedo responder/.test(norm(resp))) fallas.push('esquiva la pregunta');
+  return { ok: fallas.length === 0, fallas, dijoNoSe: norm(resp).includes(NO_SE) };
+}
+
+// ---------- Equipo ----------
+(async () => {
+  if (navigator.gpu) {
+    try { const a = await navigator.gpu.requestAdapter(); info.webgpu = !!a; info.gpu = a?.info ? `${a.info.vendor} ${a.info.architecture || ''} ${a.info.description || ''}`.trim() : null; } catch (e) { info.webgpu = false; }
+  }
+  const opciones = info.webgpu ? [['webgpu|q4f16', 'WebGPU · q4f16 (483 MB) — recomendado'], ['wasm|q8', 'WASM · int8 (512 MB) — sin GPU']] : [['wasm|q8', 'WASM · int8 (512 MB) — este teléfono no tiene WebGPU']];
+  $('#modo').innerHTML = opciones.map(([v, t]) => `<option value="${v}">${t}</option>`).join('');
+  $('#equipo').textContent = `Memoria: ${info.memoriaGB ?? '?'} GB · núcleos: ${info.nucleos ?? '?'} · WebGPU: ${info.webgpu ? 'sí' : 'no'}${info.gpu ? ' (' + info.gpu + ')' : ''}`;
+  const chat = await (await fetch('../chat.json')).json();
+  for (const f of chat.fichas) fichas[f.id] = f.es;
+})();
+
+// ---------- Cargar ----------
+$('#cargar').onclick = async () => {
+  const [device, dtype] = $('#modo').value.split('|');
+  info.device = device; info.dtype = dtype;
+  $('#cargar').disabled = true; $('#barra').hidden = false;
+  const archivos = {};
+  const t0 = performance.now();
+  try {
+    generador = await pipeline('text-generation', MODELO, {
+      device, dtype,
+      progress_callback: (p) => {
+        if (p.status === 'progress' && p.total) { archivos[p.file] = [p.loaded, p.total]; const v = Object.values(archivos); const l = v.reduce((a, x) => a + x[0], 0), t = v.reduce((a, x) => a + x[1], 0); $('#barra').value = l / t; $('#estado').textContent = `Descargando ${(l / 1e6).toFixed(0)} de ${(t / 1e6).toFixed(0)} MB…`; }
+        if (p.status === 'ready') $('#estado').textContent = 'Preparando el modelo…';
+      },
+    });
+    tCarga = (performance.now() - t0) / 1000;
+    info.cargaSegundos = +tCarga.toFixed(1);
+    $('#estado').textContent = `Modelo listo en ${tCarga.toFixed(1)} s (incluye la descarga la primera vez).`;
+    $('#correr').disabled = false;
+  } catch (e) {
+    $('#estado').innerHTML = `<span class="mal">No cargó: ${e.message}</span>. Prueba el otro modo.`;
+    info.errorCarga = e.message; $('#cargar').disabled = false; mostrarJSON([]);
+  }
+};
+
+// ---------- Correr ----------
+$('#correr').onclick = async () => {
+  $('#correr').disabled = true; $('#resultados').hidden = false; $('#resultados').innerHTML = '<b>Resultados</b>';
+  const filas = [];
+  for (const [i, t] of PRUEBAS.entries()) {
+    $('#estado').textContent = `Prueba ${i + 1} de ${PRUEBAS.length}…`;
+    const ficha = fichas[t.ficha];
+    const mensajes = [{ role: 'system', content: SISTEMA }, ...EJEMPLO, { role: 'user', content: `OFFICIAL FACT SHEET: ${ficha}\nQUESTION: ${t.p}` }];
+    let tPrimera = null, n = 0;
+    const t0 = performance.now();
+    const streamer = new TextStreamer(generador.tokenizer, { skip_prompt: true, skip_special_tokens: true, callback_function: () => { n++; if (tPrimera === null) tPrimera = performance.now() - t0; } });
+    let resp = '';
+    try {
+      const out = await generador(mensajes, { max_new_tokens: 90, do_sample: false, streamer });
+      resp = out[0].generated_text.at(-1).content.trim();
+    } catch (e) { resp = ''; }
+    const total = (performance.now() - t0) / 1000;
+    const v = verificar(resp, ficha, t.p);
+    // Pasar el verificador NO significa que la respuesta sea útil: eso lo juzga una persona (prueba del 24-nov).
+    const correcta = t.trampa ? v.dijoNoSe : (v.ok && !v.dijoNoSe);
+    const fila = { ficha: t.ficha, pregunta: t.p, trampa: !!t.trampa, respuesta: resp, verificador: v.ok ? 'pasa' : 'bloquea', fallas: v.fallas, dijoNoSe: v.dijoNoSe, pasaVerificador: correcta, utilSegunPersona: null,
+      primeraPalabraS: tPrimera ? +(tPrimera / 1000).toFixed(2) : null, totalS: +total.toFixed(2), trozosPorS: n ? +(n / total).toFixed(1) : 0 };
+    filas.push(fila);
+    const muestra = v.ok ? resp : ficha;
+    $('#resultados').insertAdjacentHTML('beforeend', `<div class="r"><div class="q">${i + 1}. ${t.p}${t.trampa ? ' <span class="min">(trampa: la ficha no lo responde)</span>' : ''}</div>
+      <div>Qwen: «${resp || '—'}»</div>
+      <div class="${v.ok ? 'ok' : 'mal'}">Verificador: ${v.ok ? 'pasa' : 'bloquea → se muestra la ficha original'}</div>${v.fallas.length ? `<div class="min">${v.fallas.join(' · ')}</div>` : ''}
+      <div class="min">Lo que vería el visitante: «${muestra.slice(0, 220)}${muestra.length > 220 ? '…' : ''}»</div>
+      <div class="min">Primera palabra: ${fila.primeraPalabraS ?? '?'} s · total: ${fila.totalS} s · pasa el verificador: ${correcta ? 'sí' : 'no'} · ¿es útil? júzgalo tú</div></div>`);
+  }
+  const ok = filas.filter((f) => f.pasaVerificador).length;
+  const med = (k) => { const v = filas.map((f) => f[k]).filter((x) => x != null).sort((a, b) => a - b); return v.length ? v[Math.floor(v.length / 2)] : null; };
+  info.resumen = { pasanVerificador: `${ok}/${filas.length}`, bloqueadas: filas.filter((f) => f.verificador === 'bloquea').length, medianaPrimeraPalabraS: med('primeraPalabraS'), medianaTotalS: med('totalS') };
+  $('#estado').textContent = `Listo: ${ok} de ${filas.length} pasan el verificador · mediana ${info.resumen.medianaTotalS} s por respuesta.`;
+  mostrarJSON(filas);
+  $('#correr').disabled = false;
+};
+
+function mostrarJSON(filas) { $('#salida').hidden = false; $('#json').value = JSON.stringify({ fecha: new Date().toISOString(), ...info, pruebas: filas }, null, 1); }
+$('#copiar').onclick = async () => { try { await navigator.clipboard.writeText($('#json').value); $('#copiar').textContent = 'Copiado'; } catch (e) { $('#json').select(); } };
+</script>
+</body>
+</html>
