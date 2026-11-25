@@ -6,7 +6,7 @@ La app debe mostrar estos créditos en Ajustes → «Créditos y licencias» (pe
 | Componente | Dónde está | Licencia | Texto |
 |---|---|---|---|
 | multilingual-e5-small (versión podada e int8) | `models/partes/e5_small_latino.onnx.*` | MIT | [MIT-multilingual-e5-small.txt](MIT-multilingual-e5-small.txt) |
-| MobileNetV2, exportado desde PyTorch (torchvision, según los metadatos del ONNX: productor `pytorch`, grafo `torch-jit-export`) | `models/partes/mnv2_embed.onnx.*` | Código de torchvision: BSD-3-Clause. Los pesos entrenados con ImageNet «pueden tener su propia licencia» (documentación de torchvision): **revisar** | [BSD-3-torchvision.txt](BSD-3-torchvision.txt) |
+| MobileNetV2 del ONNX Model Zoo (`mobilenetv2-12`, github.com/onnx/models), sin el clasificador y optimizado. Verificado el 24-nov: los 103 tensores de pesos y las salidas son idénticos a los del Zoo cortado en el tensor `472` | `models/partes/mnv2_embed.onnx.*` | Apache-2.0 | [Apache-2.0.txt](Apache-2.0.txt) |
 | ONNX Runtime Web 1.31.1 | `lib/ort.wasm.min.js`, `lib/ort-wasm-simd-threaded.*` | MIT © Microsoft Corporation | [MIT-onnxruntime-web.txt](MIT-onnxruntime-web.txt) |
 | @huggingface/tokenizers | `lib/tokenizers.min.js` | Apache-2.0 | [../lib/tokenizers.LICENSE](../lib/tokenizers.LICENSE) |
 | jsQR (github.com/cozmo/jsQR) | `lib/jsQR.js` | Apache-2.0 | [Apache-2.0.txt](Apache-2.0.txt) |
