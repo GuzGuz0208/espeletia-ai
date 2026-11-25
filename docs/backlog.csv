@@ -33,3 +33,4 @@ id,rol,prioridad,cuando,titulo,descripcion,spec
 32,R3,P0,jueves,"Ensayo general y congelamiento","Ensayo con el guion en 3 teléfonos, congelamiento y etiqueta del commit de la demo.",
 33,R2,P1,mañana,"Avisos sin red","Con la app abierta: llegada a estación, altura, hora de regresar (del guía u horario oficial), pausa terminada, sobres esperando y batería baja (solo Android/Chrome).",docs/specs/2026-11-24-avisos-sin-red.md
 34,R3,P1,mañana,"Qué pasa al recuperar señal","Refrescar paquete y parque, buscar versión nueva, re-descargar archivos dañados y avisar «contenido actualizado»; nunca subir datos.",docs/specs/2026-11-24-al-recuperar-senal.md
+35,R2,P1,mañana,"Botón para hablarle a Fray (dictado sin red)","Mantener presionado para hablar; transcripción editable; reconocimiento offline con Vosk small-es (Apache-2.0, ~39 MB); mismo carril crítico.",docs/specs/2026-11-24-hablarle-a-fray.md
