@@ -13,7 +13,16 @@ El repo es público y el piloto podría usarse con un operador comercial (UTON).
 2. Asumir la licencia que dice un blog
 
 ## Decisión
-Proponemos **verificar en la ficha oficial** y registrar el enlace: multilingual-e5-small (el LEEME dice MIT: confirmar), MobileNetV2 (depende de dónde se exportó: confirmar), Gemma 4 (las fuentes no coinciden: no usar hasta verificar), NLLB (no comercial: descartado), voces Piper (licencia por voz) y Kokoro-82M (Apache-2.0 según su ficha).
+Proponemos **verificar cada licencia en la ficha oficial y registrar el enlace** en [docs/licencias.md](../licencias.md)
+(verificado el 24-nov-2026):
+- multilingual-e5-small: MIT. ONNX Runtime Web: MIT. tokenizers.js y jsQR: Apache-2.0. qrcode-generator: MIT. Fuentes: OFL-1.1.
+- MobileNetV2: origen sin registrar; re-exportar desde el ONNX Model Zoo (Apache-2.0) o documentar el origen real.
+- Gemma 4: Apache-2.0 (resuelto), pero no cabe en un teléfono dentro del navegador. Gemma 3: Gemma Terms (uso comercial
+  con condiciones). Qwen2.5/Qwen3: Apache-2.0.
+- Piper: el motor pasó a GPL-3.0 (no se distribuye con la app); solo se usan voces de la lista comercial oficial
+  (davefx, joe/mike, siwis, cadu/jeff). Kokoro-82M: Apache-2.0, plan B.
+- NLLB: CC-BY-NC, descartado. No existe una voz es-CO abierta y apta para uso comercial: se graba con personas.
+- La atribución de Copernicus debe usar el texto exacto de su licencia (hoy está incompleta).
 
 ## Consecuencias
 - Buenas: sin sorpresas legales.
