@@ -146,9 +146,11 @@ def sintetizar(idioma, tipo, ids):
         if not t:
             print(f'  salto  {tipo} {id_}: no hay texto en {CLAVE[idioma]}')
             continue
-        wav = os.path.join(carpeta, f'{id_}.wav')
-        mp3 = os.path.join(carpeta, f'{id_}.mp3')
-        subprocess.run([sys.executable, '-m', 'piper', '-m', modelo, '-f', wav, '--', t], check=True)
+        archivo = re.sub(r'[^a-z0-9_]', '', id_)  # saneado: solo minúsculas, dígitos y «_»
+        wav = os.path.join(carpeta, f'{archivo}.wav')
+        mp3 = os.path.join(carpeta, f'{archivo}.mp3')
+        # El texto va por la entrada estándar, nunca como argumento del comando
+        subprocess.run([sys.executable, '-m', 'piper', '-m', modelo, '-f', wav], input=t, text=True, encoding='utf-8', check=True)
         subprocess.run([ffmpeg, '-loglevel', 'error', '-y', '-i', wav, '-ac', '1', '-b:a', '48k', mp3], check=True)
         os.remove(wav)
         rel = f'audios/{idioma}/{id_}.mp3'
