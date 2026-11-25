@@ -1,6 +1,17 @@
+# Texto: en el repositorio siempre LF, en todas las máquinas (Windows incluido).
+* text=auto eol=lf
+
 # Binarios: que git nunca intente convertir finales de línea
 *.bin binary
 *.onnx binary
 *.wasm binary
 *.woff2 binary
 *.png binary
+*.webp binary
+*.jpg binary
+*.jpeg binary
+*.y4m binary
+*.mp3 binary
+*.m4a binary
+*.ogg binary
+*.pdf binary

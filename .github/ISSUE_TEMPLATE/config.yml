@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Flujo de trabajo y Definition of Done
+    url: https://github.com/dsalazardev/espeletia-ai/blob/main/docs/flujo-de-trabajo.md
+    about: Cómo se trabaja en este repo (specs, ramas por rol, PR pequeños).

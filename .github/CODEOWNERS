@@ -1,0 +1,45 @@
+# Dueños por rol (la última regla que coincide gana). Ver docs/flujo-de-trabajo.md.
+# R1 · Contenido, campo y seguridad: @dsalazardev
+# R2 · Producto y experiencia:        @Eduardo37830
+# R3 · Plataforma, arquitectura y calidad: @GuzGuz0208
+
+# Por defecto: plataforma
+*                           @GuzGuz0208
+
+# R3 · Plataforma, arquitectura y calidad
+/AGENTS.md                  @GuzGuz0208
+/CLAUDE.md                  @GuzGuz0208
+/.github/                   @GuzGuz0208
+/.gitattributes             @GuzGuz0208
+/.editorconfig              @GuzGuz0208
+/docs/                      @GuzGuz0208
+/sw.js                      @GuzGuz0208
+/netlify.toml               @GuzGuz0208
+/_headers                   @GuzGuz0208
+/herramientas/              @GuzGuz0208
+/models/                    @GuzGuz0208
+/pruebas/*.py               @GuzGuz0208 @Eduardo37830
+
+# R2 · Producto y experiencia
+/js/                        @Eduardo37830
+/index.html                 @Eduardo37830
+/styles.css                 @Eduardo37830
+/manifest.json              @Eduardo37830
+/icons/                     @Eduardo37830
+/fonts/                     @Eduardo37830
+/lib/                       @Eduardo37830 @GuzGuz0208
+/js/i18n.js                 @Eduardo37830 @dsalazardev
+
+# R1 · Contenido, campo y seguridad
+/chat.json                  @dsalazardev
+/paquete.json               @dsalazardev @Eduardo37830
+/pruebas/preguntas_*        @dsalazardev
+/models/chat_indice.json    @dsalazardev @GuzGuz0208
+/models/parque.json         @dsalazardev @GuzGuz0208
+/docs/guion-demo.md         @dsalazardev
+/docs/investigacion/        @dsalazardev @GuzGuz0208
+
+# Contexto: cada rol escribe solo el suyo
+/docs/contexto/R1.md        @dsalazardev
+/docs/contexto/R2.md        @Eduardo37830
+/docs/contexto/R3.md        @GuzGuz0208

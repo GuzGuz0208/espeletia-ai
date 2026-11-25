@@ -1,0 +1,35 @@
+name: Contenido
+description: Una ficha, cromo, parada o traducción que falta, está mal o hay que validar
+title: "[contenido] "
+labels: ["r1"]
+body:
+  - type: dropdown
+    id: tipo
+    attributes:
+      label: Qué es
+      options: ["ficha del chat", "cromo", "parada / guion", "traducción", "estación / coordenadas", "otro"]
+    validations:
+      required: true
+  - type: input
+    id: id
+    attributes:
+      label: Id (si existe)
+      placeholder: "mal_altura, frailejon, e2…"
+  - type: textarea
+    id: que
+    attributes:
+      label: Qué hay que cambiar o validar
+    validations:
+      required: true
+  - type: input
+    id: fuente
+    attributes:
+      label: Fuente oficial (URL y página)
+      description: Sin fuente oficial no entra a la app.
+    validations:
+      required: true
+  - type: dropdown
+    id: estado
+    attributes:
+      label: Estado
+      options: ["borrador", "validado por PNN/UTON"]
