@@ -32,6 +32,7 @@
 <div class="caja">
   <div id="equipo" class="min">Revisando el teléfono…</div>
   <div class="fila" style="margin-top:8px">
+    <label for="modo" class="min">Modo:</label>
     <select id="modo"></select>
     <button id="cargar">1. Descargar y cargar el modelo</button>
     <button id="correr" disabled>2. Correr las 7 pruebas</button>
@@ -45,6 +46,7 @@
 <div class="caja" id="salida" hidden>
   <b>Resultados para enviar a R3</b>
   <p class="min">Cópialos y pégalos en el issue #24 o mándalos al equipo.</p>
+  <label for="json" class="min">Resultados en JSON</label>
   <textarea id="json" readonly></textarea>
   <div class="fila"><button id="copiar">Copiar resultados</button></div>
 </div>
