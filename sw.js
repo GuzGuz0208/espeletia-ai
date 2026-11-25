@@ -9,7 +9,7 @@
 // - Al publicar una versión nueva NO se vuelven a descargar: si un archivo grande tiene la misma huella
 //   que en la versión anterior, se copia de la caché vieja. Los archivos pequeños se revalidan
 //   (si no cambiaron, el servidor responde 304 y no se descargan de nuevo).
-const VERSION = 'v17-2026-11-24';
+const VERSION = 'v18-2026-11-24';
 const CACHE = `album-paramo-${VERSION}`;
 const APP = [
   './', 'index.html', 'styles.css', 'manifest.json', 'paquete.json',
@@ -26,6 +26,7 @@ async function avisar(msg) {
 }
 
 const tipoDe = (ruta) => (ruta.endsWith('.wasm') ? 'application/wasm' : 'application/octet-stream');
+const sha256 = async (buf) => [...new Uint8Array(await crypto.subtle.digest('SHA-256', buf))].map((x) => x.toString(16).padStart(2, '0')).join('');
 
 // Une las partes de un archivo grande, lo verifica y lo devuelve como Response lista para guardar.
 async function armar(ruta, m) {
@@ -38,8 +39,7 @@ async function armar(ruta, m) {
   }
   const blob = new Blob(blobs, { type: tipoDe(ruta) });
   if (blob.size !== m.bytes) throw new Error(`${ruta} quedó incompleto (${blob.size} de ${m.bytes} bytes)`);
-  const h = [...new Uint8Array(await crypto.subtle.digest('SHA-256', await blob.arrayBuffer()))].map((x) => x.toString(16).padStart(2, '0')).join('');
-  if (h !== m.sha256) throw new Error(`${ruta} llegó dañado (la huella SHA-256 no coincide)`);
+  if ((await sha256(await blob.arrayBuffer())) !== m.sha256) throw new Error(`${ruta} llegó dañado (la huella SHA-256 no coincide)`);
   return new Response(blob, { headers: { 'Content-Type': tipoDe(ruta), 'Content-Length': String(m.bytes), 'X-Huella': m.sha256 } });
 }
 
@@ -83,7 +83,58 @@ self.addEventListener('activate', (event) => {
   })());
 });
 
-// Primero la caché (funciona sin señal). El paquete de contenido y el del parque se intentan actualizar con red.
+// ---------- Al recuperar señal (spec al-recuperar-senal; mensajes en docs/contratos/sw-mensajes.md) ----------
+// «verificar» (sin red): recalcula la huella de los archivos grandes guardados y dice cuáles faltan o están dañados.
+async function verificar() {
+  const cache = await caches.open(CACHE);
+  const manRes = await cache.match('models/partes.json');
+  if (!manRes) return avisar({ tipo: 'verificado', malos: ['models/partes.json'] });
+  const malos = [];
+  for (const [ruta, m] of Object.entries(await manRes.json())) {
+    const r = await cache.match(ruta);
+    if (!r || (await sha256(await r.arrayBuffer())) !== m.sha256) malos.push(ruta);
+  }
+  avisar({ tipo: 'verificado', malos });
+}
+
+// «reparar» (con señal): vuelve a descargar y verificar solo los archivos pedidos que sean de la app.
+async function reparar(rutas = []) {
+  const cache = await caches.open(CACHE);
+  let man;
+  try { man = await (await fetch('models/partes.json', { cache: 'no-cache' })).json(); } catch (e) {
+    // Sin señal: no se toca nada de lo guardado y se responde para que la página no se quede esperando
+    return avisar({ tipo: 'reparado', ok: [], fallidos: rutas.map((ruta) => ({ ruta, detalle: 'sin señal' })) });
+  }
+  const ok = [], fallidos = [];
+  for (const ruta of rutas) {
+    try {
+      if (man[ruta]) await cache.put(ruta, await armar(ruta, man[ruta]));
+      else if (APP.includes(ruta)) {
+        const res = await fetch(ruta, { cache: 'no-cache' });
+        if (!res.ok) throw new Error(String(res.status));
+        await cache.put(ruta, res);
+      } else throw new Error('no es un archivo de la app');
+      ok.push(ruta);
+    } catch (e) { fallidos.push({ ruta, detalle: e.message }); }
+  }
+  avisar({ tipo: 'reparado', ok, fallidos });
+}
+
+self.addEventListener('message', (event) => {
+  const d = event.data || {};
+  if (d.tipo === 'verificar') event.waitUntil(verificar());
+  if (d.tipo === 'reparar' && Array.isArray(d.rutas)) event.waitUntil(reparar(d.rutas.filter((r) => typeof r === 'string')));
+});
+
+// ¿La URL es exactamente un archivo de la lista APP? (antes se comparaba con endsWith y './' coincidía con todo,
+// así que se guardaba cualquier archivo pedido)
+function esDeLaApp(url) {
+  const ruta = new URL(url).pathname.slice(new URL(self.registration.scope).pathname.length);
+  return ruta === '' ? APP.includes('./') : APP.includes(ruta);
+}
+
+// Primero la caché (funciona sin señal). El paquete de contenido y el del parque se intentan actualizar con red;
+// si llegan distintos a lo guardado, se avisa a la página («contenido»). Nada se sube: solo se descarga.
 self.addEventListener('fetch', (event) => {
   const req = event.request;
   if (req.method !== 'GET' || new URL(req.url).origin !== location.origin) return;
@@ -93,8 +144,14 @@ self.addEventListener('fetch', (event) => {
     const hit = await cache.match(req, { ignoreSearch: true });
     if (hit && !esPaquete) return hit;
     try {
-      const res = await fetch(req);
-      if (res.ok && (esPaquete || APP.some((u) => req.url.endsWith(u.replace('./', ''))))) cache.put(req, res.clone());
+      // El contenido se revalida siempre con el servidor (si no cambió, 304 sin descargar): sin esto, la caché HTTP del
+      // navegador puede devolver un paquete viejo durante minutos (p. ej. GitHub Pages manda max-age=600).
+      const res = await fetch(req, esPaquete ? { cache: 'no-cache' } : undefined);
+      if (res.ok && esPaquete && hit) {
+        const [antes, ahora] = await Promise.all([hit.clone().text(), res.clone().text()]);
+        if (antes !== ahora) avisar({ tipo: 'contenido', archivo: new URL(req.url).pathname.split('/').pop() });
+      }
+      if (res.ok && (esPaquete || esDeLaApp(req.url))) cache.put(req, res.clone());
       return res;
     } catch (e) {
       if (hit) return hit;
