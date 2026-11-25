@@ -7,3 +7,4 @@ Se genera desde `docs/cambios/` (un archivo por cambio). Para agregar uno, copia
 ## 2026-11-24
 
 - **R3** · agregado (r3/harness-base): Andamiaje del equipo: AGENTS.md, decisiones, specs por rol, investigación del recorrido, contratos JSON Schema, herramientas de verificación (contratos, modelos, evaluación con puerta de seguridad, versión del SW) y CI. No cambia nada de la app.
+- **R3** · agregado (r3/prueba-y-dictado): Guía para probar la app completa en un teléfono lejos del páramo (modo demo, enseñar a la Lente, QR, Modo guía, Fray y batería) y spec del botón para hablarle a Fray con reconocimiento de voz sin red.
