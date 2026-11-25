@@ -64,14 +64,21 @@ antes de prometer nada. iOS Safari tiene WebGPU solo desde iOS 26 (dato de fuent
 | ~~NLLB-200~~ | — | **CC-BY-NC-4.0** | — | **Descartado** |
 | ~~moonshine-es (no streaming)~~ | — | licencia con tope de ingresos | — | Evitar |
 
-## 5. Acciones pendientes
-1. **Atribución de Copernicus** (R3, `herramientas/relieve.py` → `models/relieve.json`): reemplazar «© DLR, Airbus DS, ESA» por
-   el texto exacto de la licencia: «produced using Copernicus WorldDEM-30 © DLR e.V. 2010-2014 and © Airbus Defence and Space
-   GmbH 2014-2018 provided under COPERNICUS by the European Union and ESA; all rights reserved». Añadir además la frase de no
-   responsabilidad: «Las organizaciones a cargo del programa Copernicus no asumen responsabilidad por ningún uso de Copernicus
-   WorldDEM-30».
-2. **MobileNetV2:** registrar de dónde salió el ONNX o re-exportarlo desde el ONNX Model Zoo (`mobilenetv2-12`, Apache-2.0)
-   quitando el clasificador. Hay que volver a medir la Lente (decisión modelos-congelados-sha256).
-3. **Archivos de licencia** en el repo: MIT de e5-small y de ORT en `models/` y `lib/`, Apache de jsQR, OFL.txt en `fonts/`
-   (R3) y una pantalla **«Créditos y licencias»** en Ajustes (R2).
-4. Si se usan voces CC BY o un LLM: añadir sus créditos a esa pantalla (lista en §3 y §2).
+## 5. Acciones
+1. **Atribución de Copernicus.**
+   - Hecho: el texto exacto (art. 6 b y c) está en `herramientas/relieve.py` (constantes `ATRIBUCION` y `DESCARGO`) y en
+     [licencias/README.md](../licencias/README.md).
+   - **Pendiente:** aplicarlo a `models/relieve.json` con `python herramientas/relieve.py --solo-atribucion` (cambia solo esos
+     campos, no necesita los datos del DEM) y subir la versión del SW. El mapa muestra ese texto bajo el pliego; si es muy largo
+     para la pantalla, R2 puede mostrar «Copernicus WorldDEM-30 © DLR, Airbus — ver créditos» con enlace a la pantalla de créditos.
+2. **MobileNetV2.**
+   - Los metadatos del ONNX dicen productor `pytorch` y grafo `torch-jit-export`: se exportó desde PyTorch, casi seguro
+     `torchvision.models.mobilenet_v2` con pesos de ImageNet. Código BSD-3; los pesos «pueden tener su propia licencia».
+   - **Decisión pendiente, urgente:** re-exportar desde el ONNX Model Zoo (`mobilenetv2-12`, Apache-2.0) **antes de que alguien
+     publique el entrenamiento de la Lente**. Hoy `parque.json` está vacío; después habría que volver a enseñar todo. Exige volver
+     a medir la Lente (decisión modelos-congelados-sha256).
+3. **Archivos de licencia.**
+   - Hecho: carpeta [licencias/](../licencias/README.md) con los textos oficiales (Apache-2.0, MIT de ORT, e5-small y
+     qrcode-generator, BSD-3 de torchvision, OFL de las dos fuentes) y el índice de componentes.
+   - **Pendiente (R2):** pantalla «Créditos y licencias» en Ajustes que enlace a `licencias/README.md`.
+4. Si se usan voces CC BY o un LLM: añadir sus créditos a esa pantalla y a `licencias/` (lista en §3 y §2).
