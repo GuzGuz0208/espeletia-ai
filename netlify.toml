@@ -1,4 +1,6 @@
 # Sitio estático: no hay que compilar nada. Netlify publica la raíz del repositorio tal cual.
+# El único paso de «build» sella la versión del service worker con la huella del contenido de la app, para que los
+# teléfonos siempre reciban los archivos nuevos aunque nadie haya subido VERSION a mano (decisión version-sw-en-despliegue).
 [build]
   publish = "."
-  command = ""
+  command = "python3 herramientas/version_sw.py --sellar"

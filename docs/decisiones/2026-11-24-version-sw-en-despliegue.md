@@ -13,7 +13,7 @@ Si alguien olvida subir VERSION en sw.js, los teléfonos se quedan con la versi�
 2. Subirla a mano con ayuda de una herramienta y comprobarla en CI
 
 ## Decisión
-Mientras tanto: `herramientas/version_sw.py --subir` y `--check` en CI. Proponemos pasar a una huella calculada en el despliegue cuando Netlify esté conectado.
+Proponemos las dos cosas juntas: `--subir` (número y fecha, a mano) con `--check` en CI, y además `--sellar` en el despliegue de Netlify, que agrega a VERSION la huella del contenido de la app. Así, aunque alguien olvide `--subir`, la versión publicada cambia cuando cambia cualquier archivo.
 
 ## Consecuencias
 - Buenas: nadie depende de acordarse.

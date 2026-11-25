@@ -3,6 +3,11 @@
 Uso:
   python herramientas/version_sw.py --check [--base origin/main]   falla si cambió la app y VERSION no
   python herramientas/version_sw.py --subir                       VERSION = v<N+1>-<fecha de hoy>
+  python herramientas/version_sw.py --sellar                      (solo en el despliegue) VERSION += -<huella del contenido>
+
+--sellar lo corre Netlify al publicar (netlify.toml): agrega a VERSION los 8 primeros caracteres del SHA-256 de todos los
+archivos de la lista APP, de models/partes.json y de sw.js. Si cualquier archivo cambió, la versión publicada cambia y los
+teléfonos se actualizan aunque nadie haya corrido --subir. No se usa en el repo: el sw.js del repo no lleva huella.
 
 Por qué: los teléfonos solo descargan los archivos nuevos cuando cambia VERSION. Si se olvida subirla, se quedan con la
 versión vieja aunque Netlify ya tenga la nueva.
@@ -87,13 +92,44 @@ def subir(raiz):
     return 0
 
 
+def sellar(raiz):
+    """Solo en el despliegue: VERSION += -<huella de 8 caracteres del contenido de la app>."""
+    import hashlib
+    ruta = os.path.join(raiz, 'sw.js')
+    with open(ruta, encoding='utf-8', newline='') as f:
+        sw = f.read()
+    if re.search(r"const VERSION = 'v\d+-\d{4}-\d{2}-\d{2}-[0-9a-f]{8}';", sw):
+        print('  ok  sw.js ya está sellado')
+        return 0
+    m = PATRON.search(sw)
+    if not m:
+        print('  ERROR  no encuentro VERSION en sw.js')
+        return 1
+    h = hashlib.sha256(sw.encode('utf-8'))
+    for u in sorted(lista_app(sw) | {'models/partes.json'}):
+        archivo = os.path.join(raiz, u) if u else None
+        if not archivo or not os.path.isfile(archivo):
+            continue  # './' (la raíz) o un archivo faltante: validar_contratos.py ya avisa de los faltantes
+        h.update(u.encode('utf-8'))
+        with open(archivo, 'rb') as f:
+            h.update(f.read())
+    nueva = f'{m.group(1)}-{h.hexdigest()[:8]}'
+    with open(ruta, 'w', encoding='utf-8', newline='') as f:
+        f.write(sw[:m.start(1)] + nueva + sw[m.end(1):])
+    print(f'  VERSION publicada: {nueva}')
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     g = ap.add_mutually_exclusive_group(required=True)
     g.add_argument('--check', action='store_true', help='comprobar formato y que VERSION suba si cambió la app')
     g.add_argument('--subir', action='store_true', help='subir VERSION a v<N+1>-<hoy>')
+    g.add_argument('--sellar', action='store_true', help='solo en el despliegue: agregar la huella del contenido a VERSION')
     ap.add_argument('--base', default='origin/main', help='rama o commit con que comparar (por defecto origin/main)')
     a = ap.parse_args()
+    if a.sellar:
+        sys.exit(sellar(AQUI))
     sys.exit(check(AQUI, a.base) if a.check else subir(AQUI))
 
 
