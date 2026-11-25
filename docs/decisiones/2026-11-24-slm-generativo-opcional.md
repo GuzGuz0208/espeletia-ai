@@ -42,3 +42,15 @@ Esto modificaría niveles-de-telefono, que dice «Pro solo nativo».
 ## Más información
 - Spec por escribir: `slm-reformulacion` (R2 implementa; R3 mide y verifica licencias; R1 escribe el banco de reformulación).
 - Alternativas: Qwen3-0.6B (Apache-2.0, 570 MB); Gemma 3 270M/1B (Gemma Terms, con más carga legal).
+
+## Evidencia (24-nov, laboratorio/slm.html)
+- Qwen2.5-0.5B-Instruct, WASM int8, PC de escritorio sin GPU: **0 de 7** respuestas útiles con prompt en español y **1 de 7** con
+  prompt en inglés + ejemplo.
+- Inventó lugares y datos: «parque de fútbol de Brasil», «The Pizza Hut» en Brisas, «frío hasta 25 °C».
+- Velocidad: 5 s hasta la primera palabra y 7 a 18 s por respuesta. En un teléfono sería más lento.
+- El verificador determinista bloqueó las cifras y nombres inventados, pero no las respuestas inútiles ni una cifra real mal ubicada.
+- **Recomendación de R3:** no usar generación en la app para el jueves. En su lugar, la **respuesta extractiva** (spec
+  respuesta-extractiva): la frase oficial más pertinente, elegida con el mismo e5. El laboratorio queda como evidencia para el jurado
+  de por qué el diseño recupera y verifica en vez de generar. Pendiente: medir WebGPU en el teléfono y un modelo de 1,5B antes de
+  cerrar del todo esta opción.
+
